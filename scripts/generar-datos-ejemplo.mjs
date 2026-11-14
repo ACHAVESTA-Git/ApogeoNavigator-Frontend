@@ -85,8 +85,23 @@ for (const archivo of (await readdir(DATA_DIR)).sort()) {
   conteo[id] = filas.length;
   if (id === SITIO_HERO) {
     // Contenido de la landing (no es respaldo): una fila cada 3 h del mes del relato.
-    const mes = filas.filter((f, i) => i % PASO_HERO_HORAS === 0 && aMs(f.utc) < aMs(HERO_HASTA));
-    await escribir(HERO, { ...cabecera, fin_utc: mes.at(-1).utc, paso_horas: PASO_HERO_HORAS, filas: mes });
+    const horarias = filas.filter((f) => aMs(f.utc) < aMs(HERO_HASTA));
+    const mes = horarias.filter((_, i) => i % PASO_HERO_HORAS === 0);
+    // Cifras exactas del relato, calculadas con TODAS las filas horarias del mes (no con la muestra de 3 h).
+    const cruces = horarias.flatMap((f, i) => (i && (horarias[i - 1].tierra_el_deg > 0) !== (f.tierra_el_deg > 0) ? [{ utc: f.utc, sale: f.tierra_el_deg > 0 }] : []));
+    const resumen = {
+      sitios: sitios.length,
+      horas_total: horarias.length,
+      horas_sol: horarias.filter((f) => f.sol_el_deg > 0).length,
+      horas_tierra: horarias.filter((f) => f.tierra_el_deg > 0).length,
+      sol_el_min_deg: Math.min(...horarias.map((f) => f.sol_el_deg)),
+      sol_el_max_deg: Math.max(...horarias.map((f) => f.sol_el_deg)),
+      tierra_salida_utc: cruces.find((c) => c.sale)?.utc ?? null,
+      tierra_puesta_utc: cruces.find((c) => !c.sale)?.utc ?? null,
+      // primera puesta del Sol en todos los datos del sitio (fuera del mes del relato)
+      sol_puesta_utc: filas.find((f, i) => i && filas[i - 1].sol_el_deg > 0 && f.sol_el_deg <= 0)?.utc ?? null,
+    };
+    await escribir(HERO, { ...cabecera, fin_utc: mes.at(-1).utc, paso_horas: PASO_HERO_HORAS, resumen, filas: mes });
   }
 }
 

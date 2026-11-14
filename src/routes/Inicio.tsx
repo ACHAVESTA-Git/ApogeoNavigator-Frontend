@@ -1,18 +1,17 @@
 import { ArrowRight, Sunset } from "lucide-react";
 import { GlifoSol, GlifoTierra } from "../components/glifos/Astros";
 import { DiagramaPolo } from "../components/hero/DiagramaPolo";
-import { EscenaHero } from "../components/hero/EscenaHero";
+import { RelatoInicio } from "../components/hero/RelatoInicio";
 import { Pie } from "../components/layout/Pie";
 import { TituloPagina } from "../components/layout/TituloPagina";
 import { EnlaceBoton, EnlaceExterno } from "../components/ui/Boton";
 import { Desplegable } from "../components/ui/Desplegable";
 import { DATOS, ENLACES, INCLINACION_EJE_LUNAR_DEG, MUESTRA, PARAM_URL, RUTAS } from "../lib/constants";
-import { mesLargo, soloFecha } from "../lib/fechas";
-import { grados, latitud } from "../lib/formato";
+import { soloFecha } from "../lib/fechas";
+import { grados } from "../lib/formato";
 import { T } from "../lib/textos";
 import { cargarSitios } from "../rutas";
 
-const LAT_SHACKLETON = -89.66; // sites.csv
 const ICONO = { sol: <GlifoSol px={22} />, tierra: <GlifoTierra px={22} />, puesta: <Sunset aria-hidden="true" className="text-texto size-[22px]" strokeWidth={1.5} /> };
 const SECCION = "contenedor grid grid-cols-1 gap-x-6 gap-y-6 py-14 md:grid-cols-12 md:py-20";
 const TITULO_SECCION = "rotulo md:col-span-3";
@@ -22,22 +21,22 @@ export default function Inicio() {
   const inclinacion = grados(INCLINACION_EJE_LUNAR_DEG, 2);
   return (
     <>
-      <EscenaHero>
-        <p className="rotulo">{t.rotulo(latitud(LAT_SHACKLETON), mesLargo(DATOS.DESDE_POR_DEFECTO))}</p>
-        <TituloPagina documento={t.documento} className="text-display! mt-3 max-w-[17ch] md:mt-5">
-          {t.titular.antes}<span className="text-sol">{t.titular.acento}</span>{t.titular.despues}
-        </TituloPagina>
-        <p className="text-texto-2 max-md:text-apoyo mt-3 max-w-[52ch] md:mt-6 md:text-[1.0625rem]">{t.apoyo}</p>
-        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 md:mt-8">
-          <EnlaceBoton to={RUTAS.SITIOS} variante="primario" className="px-5" onPointerEnter={() => void cargarSitios()} onFocus={() => void cargarSitios()}>
-            {t.explorar}
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </EnlaceBoton>
-          <EnlaceBoton to={`${RUTAS.CIELO(DATOS.SITIO_DESTACADO)}?${PARAM_URL.T}=${DATOS.T_POR_DEFECTO}`} variante="texto">
-            {t.verCielo}
-          </EnlaceBoton>
-        </div>
-      </EscenaHero>
+      <RelatoInicio
+        titulo={
+          <TituloPagina documento={t.documento} className="text-display! mt-3 max-w-[15ch] md:mt-5">
+            {t.titular.antes}<span className="text-sol">{t.titular.acento}</span>{t.titular.despues}
+          </TituloPagina>
+        }
+        cta={
+          <>
+            <EnlaceBoton to={RUTAS.SITIOS} variante="primario" className="px-6" onPointerEnter={() => void cargarSitios()} onFocus={() => void cargarSitios()}>
+              {t.explorar}
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </EnlaceBoton>
+            <EnlaceBoton to={`${RUTAS.CIELO(DATOS.SITIO_DESTACADO)}?${PARAM_URL.T}=${DATOS.T_POR_DEFECTO}`} variante="secundario">{t.verCielo}</EnlaceBoton>
+          </>
+        }
+      />
 
       <div className="bg-regolito">
         <section aria-labelledby="preguntas" className={SECCION}>

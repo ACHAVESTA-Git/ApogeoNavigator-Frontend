@@ -202,6 +202,8 @@ export const HERO = {
   ROTULO_MEDIO_PX: 44, // media anchura del rótulo de un glifo
   ROTULO_ALTO_PX: 26,
   CLAVE_SESION_INTRO: "apogeo.introVista",
+  // Relato con scroll: tramo del desplazamiento (0…1) de cada acto y fecha en la que termina.
+  RELATO: { ALTO_SVH: 340, CORTES: [0.34, 0.7], FECHAS: ["2026-12-13T00:00Z", "2026-12-28T00:00Z"], CONTEO_MS: 900, VENTANA_DEG: { movil: 150, escritorio: 360 } },
 } as const;
 
 export const MAPA = {
