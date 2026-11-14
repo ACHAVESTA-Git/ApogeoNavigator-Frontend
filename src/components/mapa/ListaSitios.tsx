@@ -30,7 +30,7 @@ export function ListaSitios({ sitios, activo, alActivar, alSeleccionar }: {
                   onPointerLeave={() => alActivar(null)}
                   onFocus={() => alActivar(s.site_id)}
                   onBlur={() => alActivar(null)}
-                  className={unir("tactil flex w-full items-center gap-3 py-2.5 pr-1 pl-2 text-left transition-colors duration-(--dur-micro)",
+                  className={unir("tactil flex w-full items-center gap-3 py-2.5 pr-1 pl-2 text-left transition-[background-color,transform] duration-(--dur-micro) active:scale-[0.98]",
                     s.site_id === activo ? "bg-superficie" : "hover:bg-superficie")}
                 >
                   <span className="min-w-0 flex-1">

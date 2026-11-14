@@ -67,7 +67,7 @@ export function AppShell() {
         <BannerDatosEjemplo />
         <div ref={contenedor} className="relative overflow-x-clip">
           <HorizonteContinuo registro={registro} contenedor={contenedor} />
-          <main id="contenido" tabIndex={-1} className="pb-[calc(var(--barra-inferior-alto)+var(--bandeja-alto)+env(safe-area-inset-bottom))] outline-none md:pb-(--bandeja-alto)">
+          <main id="contenido" tabIndex={-1} className="relative z-[1] pb-[calc(var(--barra-inferior-alto)+var(--bandeja-alto)+env(safe-area-inset-bottom))] outline-none md:pb-(--bandeja-alto)">
             <AnimatePresence mode="wait" initial={false}>
               <m.div
                 key={clave}

@@ -100,7 +100,7 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
             onPointerLeave={() => alActivar(null)}
             onFocus={() => alActivar(s.site_id)}
             onBlur={() => alActivar(null)}
-            className={unir("group absolute z-20 flex size-11 -translate-1/2 items-center justify-center rounded-full", esActivo && "z-30")}
+            className={unir("group absolute z-20 flex size-11 -translate-1/2 items-center justify-center rounded-full active:[&>svg]:scale-[0.92]", esActivo && "z-30")}
             style={{ left: pct(C + p.x), top: pct(C + p.y) }}
           >
             <svg aria-hidden="true" viewBox="-12 -12 24 24"
