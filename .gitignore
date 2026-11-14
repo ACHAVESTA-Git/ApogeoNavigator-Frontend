@@ -4,3 +4,6 @@ dist/
 *.local
 .firebase/
 .idea/
+*.tsbuildinfo
+coverage/
+docs/capturas/
