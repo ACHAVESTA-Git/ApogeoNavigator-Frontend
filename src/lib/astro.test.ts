@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { avisosDe, calcularMetricas, eventosEn, esSemaforo, esSensibleAlRelieve, eventosCruce, instantePorDefecto, mediasNoches, nivel,
-  proximosEventos, resumenDiario, semaforo, tramosVisibles } from "./astro";
+  proximosEventos, resumenDiario, semaforo, siluetasVisibles, tramosVisibles } from "./astro";
 import { SEMAFORO } from "./constants";
 import { aMs, sumarHoras } from "./fechas";
 import type { FilaEfemeride } from "./tipos";
@@ -83,6 +83,12 @@ describe("cruces del horizonte", () => {
     expect(e.tierra).toEqual({ visible: false, proxima_puesta_utc: null, proxima_salida_utc: null, horas_restantes: null });
     expect(proximosEventos(filas, sumarHoras(T0, 3))!.sol.horas_restantes).toBe(2);
     expect(proximosEventos(filas, sumarHoras(T0, 99))).toBeNull();
+  });
+  it("da la silueta hora a hora de cada tramo visible", () => {
+    const siluetas = siluetasVisibles(filas, "sol", T0, sumarHoras(T0, 7));
+    expect(siluetas.map((s) => s.map((p) => p.elevacion))).toEqual([[1, 1], [2, 2]]);
+    expect(siluetas[1][0].ms).toBe(aMs(sumarHoras(T0, 5)));
+    expect(siluetasVisibles(filas, "tierra", T0, sumarHoras(T0, 7))).toEqual([]);
   });
   it("agrupa las horas visibles en tramos continuos", () => {
     const tramos = tramosVisibles(filas, "sol", T0, sumarHoras(T0, 7));

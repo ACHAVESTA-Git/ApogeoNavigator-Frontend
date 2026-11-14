@@ -190,7 +190,7 @@ export const MAPA = {
 } as const;
 
 export const DIA_LUNAR = { ALTO_PX: { movil: 260, escritorio: 420 }, PX_POR_DIA_MOVIL: 24, MARGEN_IZQ: 44, MARGEN_SUP: 16, MARGEN_INF: 30 } as const;
-export const BANDA = { ALTO_PX: { grande: 96, compacta: 44 }, MIN_ALTO_PX: 5, DIAS_ETIQUETA: 7 } as const;
+export const BANDA = { ALTO_PX: { grande: 150, media: 92, compacta: 40 }, MIN_ALTO_PX: 4, MIN_ANCHO: 2, DIAS_ETIQUETA: 7, SEMANAS: 4, DIAS_SEMANA: 7 } as const;
 
 export const HORIZONTE_PUNTOS = 64;
 export const HORIZONTE_COPIAS = 3; // una por sitio en Comparar; en el resto coinciden

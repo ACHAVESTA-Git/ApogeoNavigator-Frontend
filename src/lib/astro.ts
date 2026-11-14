@@ -180,6 +180,26 @@ export function tramosVisibles(filas: readonly FilaEfemeride[], astro: Astro, de
   return tramos;
 }
 
+export interface PuntoSilueta {
+  ms: number;
+  elevacion: number;
+}
+/** Elevación hora a hora de cada tramo visible en [desde, hasta): la silueta de las bandas de luz. */
+export function siluetasVisibles(filas: readonly FilaEfemeride[], astro: Astro, desde: Utc, hasta: Utc): PuntoSilueta[][] {
+  const clave = CLAVE_ELEVACION[astro];
+  const siluetas: PuntoSilueta[][] = [];
+  let actual: PuntoSilueta[] | null = null;
+  for (const fila of filasEnIntervalo(filas, desde, hasta)) {
+    if (!sobreHorizonte(fila[clave])) {
+      actual = null;
+      continue;
+    }
+    if (!actual) siluetas.push((actual = []));
+    actual.push({ ms: aMs(fila.utc), elevacion: fila[clave] });
+  }
+  return siluetas;
+}
+
 export interface ResumenDia {
   fecha: string; // 'YYYY-MM-DD' (UTC)
   horasSol: number;
