@@ -12,7 +12,7 @@ export function SelectorMes({ periodo }: { periodo: ReturnType<typeof usePeriodo
       <button type="button" className={PASO} aria-label={t.mesAnterior} disabled={!periodo.hayAnterior} onClick={() => periodo.moverMes(-1)}>
         <ChevronLeft aria-hidden="true" className="size-4" />
       </button>
-      <p aria-live="polite" className="text-apoyo text-texto min-w-32 px-1 text-center font-semibold first-letter:uppercase sm:min-w-40">
+      <p aria-live="polite" className="text-apoyo text-texto min-w-28 px-1 text-center font-semibold first-letter:uppercase sm:min-w-40">
         {periodoLegible(periodo.desde, periodo.hasta)}
       </p>
       <button type="button" className={PASO} aria-label={t.mesSiguiente} disabled={!periodo.haySiguiente} onClick={() => periodo.moverMes(1)}>

@@ -139,7 +139,11 @@ export const PANORAMA = {
   GIRO_DEG: 45,
   RASTRO_HORAS: 12,
   HORIZONTE_FRACCION: 0.62,
-  ALTO_PX: { movil: 300, escritorio: 440 },
+  // Alto = fracción del alto de la ventana, acotado: el panorama y su control de tiempo caben en el primer pliegue.
+  ALTO_PX: { movil: { min: 220, max: 300, fraccion: 0.36 }, escritorio: { min: 300, max: 440, fraccion: 0.42 } },
+  ETIQUETA: { ANCHO_CARACTER_PX: 7.3, MARGEN_PX: 8, MARGEN_IZQ_PX: 48, SEPARACION_PX: 10, ALTO_PX: 16 },
+  ZONA_BOTONES: { ANCHO_PX: 250, ALTO_PX: 64 }, // esquina inferior derecha, reservada a los botones de giro
+  DIFUMINADO_BORDE_PX: 28,
   SEPARACION_MARCAS_PX: 15,
   MARGEN_SUPERIOR_PX: 28,
   MARGEN_INFERIOR_PX: 26,
@@ -170,6 +174,8 @@ export const HERO = {
   BARRIDO: { MITAD: 0.16, OPACIDAD: 0.5 }, // semianchura del barrido de luz rasante (fracción del ancho)
   RADIO_SOL: { movil: 10, escritorio: 13 },
   RADIO_TIERRA: { movil: 7, escritorio: 9 },
+  ROTULO_MEDIO_PX: 44, // media anchura del rótulo de un glifo
+  ROTULO_ALTO_PX: 26,
   CLAVE_SESION_INTRO: "apogeo.introVista",
 } as const;
 

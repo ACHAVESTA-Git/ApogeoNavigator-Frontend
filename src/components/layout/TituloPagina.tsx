@@ -18,7 +18,7 @@ export function TituloPagina({ documento, className, children }: { documento: st
     if (haNavegado) ref.current?.focus({ preventScroll: true });
   }, []);
   return (
-    <h1 ref={ref} tabIndex={-1} className={className === "rotulo" ? "rotulo" : unir("titulo-instrumento text-titulo text-texto text-balance", className)}>
+    <h1 ref={ref} tabIndex={-1} className={className?.startsWith("rotulo") ? className : unir("titulo-instrumento text-titulo text-texto text-balance", className)}>
       {children}
     </h1>
   );

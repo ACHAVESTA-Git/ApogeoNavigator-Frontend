@@ -8,7 +8,7 @@ import { useVisibleEnPantalla } from "../../hooks/useVisibleEnPantalla";
 import { sobreHorizonte } from "../../lib/astro";
 import { GRADOS_VUELTA, HERO, MOVIMIENTO, PANORAMA } from "../../lib/constants";
 import { lupa, normalizarAz } from "../../lib/escalas";
-import { aMs, aUtc, fechaHora, horaLima, redondearHora } from "../../lib/fechas";
+import { aMs, aUtc, fechaHora, horaLima, limitar, redondearHora } from "../../lib/fechas";
 import { grados } from "../../lib/formato";
 import { trazoAPath, trazoArco } from "../../lib/horizonte";
 import { indiceEn, interpolarFila, type PosicionCielo } from "../../lib/interpolar";
@@ -52,6 +52,9 @@ export function EscenaHero({ children }: { children: React.ReactNode }) {
   const [lectura, setLectura] = useState<Lectura>(() => leer(inicial));
   const [reproduciendo, setReproduciendo] = useState(!reducido);
   const ultimaLectura = useRef(0);
+  // Rótulos de los glifos: se ocultan mientras se cruzan con el bloque de texto o se saldrían por un borde.
+  const texto = useRef<HTMLDivElement>(null);
+  const [rotulos, setRotulos] = useState({ sol: true, gemelo: false, tierra: true });
   useEffect(() => setReproduciendo(!reducido), [reducido]);
 
   const yHorizonte = Math.round(alto * HERO.HORIZONTE_FRACCION[clave]);
@@ -101,6 +104,23 @@ export function EscenaHero({ children }: { children: React.ReactNode }) {
     [ancho, xDeAz, yDe, yDelArco],
   );
 
+  const rotulosVisibles = useCallback(
+    (p: PosicionCielo) => {
+      // Caja que ocupa de verdad el texto (titular, apoyo y botones), relativa a la sección.
+      const hijos = [...(texto.current?.children ?? [])].map((h) => h.getBoundingClientRect());
+      const base = texto.current?.getBoundingClientRect();
+      const derecha = Math.max(0, ...hijos.map((h) => h.right - (base?.left ?? 0))) + (base?.left ?? 0);
+      const abajo = Math.max(0, ...hijos.map((h) => h.bottom)) - (texto.current?.closest("section")?.getBoundingClientRect().top ?? 0);
+      const libre = (x: number, y: number, r: number) =>
+        x > HERO.ROTULO_MEDIO_PX && x < ancho - HERO.ROTULO_MEDIO_PX && !(x - HERO.ROTULO_MEDIO_PX < derecha && y - r - HERO.ROTULO_ALTO_PX < abajo);
+      const xs = xDeAz(p.sol_az_deg);
+      const xg = xs < ancho / 2 ? xs + ancho : xs - ancho;
+      const xt = xDeAz(p.tierra_az_deg);
+      return { sol: libre(xs, yDe(xs, p.sol_el_deg), rSol), gemelo: libre(xg, yDe(limitar(xg, 0, ancho), p.sol_el_deg), rSol), tierra: libre(xt, yDe(xt, p.tierra_el_deg), rTierra) };
+    },
+    [ancho, xDeAz, yDe, rSol, rTierra],
+  );
+
   const mostrar = useCallback(
     (nuevo: number, forzar = false) => {
       ms.current = nuevo;
@@ -110,9 +130,10 @@ export function EscenaHero({ children }: { children: React.ReactNode }) {
       if (forzar || ahora - ultimaLectura.current >= INTERVALO_LECTURA) {
         ultimaLectura.current = ahora;
         setLectura({ ms: nuevo, ...posicion });
+        setRotulos(rotulosVisibles(posicion));
       }
     },
-    [colocar],
+    [colocar, rotulosVisibles],
   );
   useEffect(() => mostrar(ms.current, true), [mostrar]);
 
@@ -178,7 +199,7 @@ export function EscenaHero({ children }: { children: React.ReactNode }) {
                 <circle r={rTierra * 1.9} className="fill-tierra" opacity={0.16} filter={`url(#${id}-halo)`} />
                 <TierraSvg r={rTierra} />
                 <text y={-rTierra - 10} textAnchor="middle" className="fill-tierra font-mono text-[12px]" aria-hidden="true">
-                  {tierraVisible ? `${NOMBRE_ASTRO.tierra.toUpperCase()} ${grados(lectura.tierra_el_deg, 1, true)}` : ""}
+                  {tierraVisible && rotulos.tierra ? `${NOMBRE_ASTRO.tierra.toUpperCase()} ${grados(lectura.tierra_el_deg, 1, true)}` : ""}
                 </text>
               </g>
             </g>
@@ -192,7 +213,7 @@ export function EscenaHero({ children }: { children: React.ReactNode }) {
                 <circle r={rSol * 1.6} className="fill-sol" opacity={0.55} filter={`url(#${id}-halo)`} />
                 <SolSvg r={rSol} />
                 <text y={-rSol - 12} textAnchor="middle" className="fill-sol font-mono text-[12px]" aria-hidden="true">
-                  {`${NOMBRE_ASTRO.sol.toUpperCase()} ${grados(lectura.sol_el_deg, 1, true)}`}
+                  {(i === 0 ? rotulos.sol : rotulos.gemelo) ? `${NOMBRE_ASTRO.sol.toUpperCase()} ${grados(lectura.sol_el_deg, 1, true)}` : ""}
                 </text>
               </g>
             ))}
@@ -218,7 +239,7 @@ export function EscenaHero({ children }: { children: React.ReactNode }) {
       <div ref={ancla} aria-hidden="true" className="pointer-events-none absolute inset-x-0" style={{ top: yHorizonte, height: curvatura }} />
 
       <div className="contenedor flex h-full flex-col">
-        <div className="flex flex-col pt-5 md:justify-center md:pt-0" style={{ height: yHorizonte ? yHorizonte - rSol * 3 : "58%" }}>{children}</div>
+        <div ref={texto} className="flex flex-col pt-5 md:justify-center md:pt-0" style={{ height: yHorizonte ? yHorizonte - rSol * 3 : "58%" }}>{children}</div>
         <div className="mt-auto pb-4 md:pb-6">
           <p className="text-dato-sm text-texto font-mono" data-dato>
             <time dateTime={utc}>{fechaHora(utc)}</time> <span className="text-texto-2">{T.utc}</span>

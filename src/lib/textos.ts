@@ -206,6 +206,7 @@ export const T = {
     girarDer: (g: number) => `Girar la vista ${g}° a la derecha`,
     centrar: (astro: string) => `Centrar la vista en ${astro}`,
     arrastra: "Arrastra para girar la mirada",
+    fueraDeVista: (astro: string, g: string, lado: "izquierda" | "derecha") => `${astro} está a ${g} a la ${lado}, fuera de la vista. Pulsa para centrar.`,
     etiqueta: (nombre: string, az: string, el: string) => `${nombre} ${az} / ${el}`,
     bajo: "(bajo el horizonte)",
     panel: "Lectura del instante",

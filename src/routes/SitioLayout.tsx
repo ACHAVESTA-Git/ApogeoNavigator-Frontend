@@ -44,21 +44,21 @@ export default function SitioLayout() {
   ];
   return (
     <>
-      <header className="contenedor flex flex-wrap items-end justify-between gap-x-8 gap-y-3 pt-5 md:pt-6">
+      <header className="contenedor flex flex-wrap items-end justify-between gap-x-8 gap-y-2 pt-3 md:gap-y-3 md:pt-6">
         <div className="min-w-0">
-          <p className="rotulo flex items-center gap-2">
+          <p className="rotulo flex items-center gap-2 max-md:hidden">
             <GlifoCategoria categoria={sitio.categoria} className="size-3" />
             {NOMBRE_CATEGORIA[sitio.categoria]} · {sitio.agencia}
           </p>
-          <p className="titulo-instrumento text-subtitulo text-texto mt-1.5 md:text-[1.5rem]">{sitio.nombre}</p>
-          <p className="text-dato-sm text-texto-2 mt-1 font-mono" data-dato>{coordenadas(sitio.lat_deg, sitio.lon_este_deg)}</p>
+          <p className="titulo-instrumento text-texto truncate text-[1.0625rem] md:mt-1.5 md:text-[1.5rem]">{sitio.nombre}</p>
+          <p className="text-dato-sm text-texto-2 font-mono md:mt-1" data-dato>{coordenadas(sitio.lat_deg, sitio.lon_este_deg)}</p>
         </div>
         <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-between sm:gap-3">
           <SelectorMes periodo={periodo} />
           <BotonComparar siteId={id} compacto className="max-sm:px-2.5" />
         </div>
       </header>
-      <div className="bg-vacio sticky top-(--nav-alto-movil) z-20 mt-2 md:top-(--nav-alto)">
+      <div className="bg-vacio sticky top-(--nav-alto-movil) z-20 mt-1 md:top-(--nav-alto) md:mt-2">
         <div className="contenedor"><PestanasRuta etiqueta={t.pestanas} pestanas={pestanas} /></div>
       </div>
       <Outlet context={{ sitio, desde: periodo.desde, hasta: periodo.hasta } satisfies ContextoSitio} />
