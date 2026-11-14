@@ -24,7 +24,9 @@ export default function Inicio() {
     <>
       <EscenaHero>
         <p className="rotulo">{t.rotulo(latitud(LAT_SHACKLETON), mesLargo(DATOS.DESDE_POR_DEFECTO))}</p>
-        <TituloPagina documento={t.documento} className="text-display! mt-3 max-w-[17ch] md:mt-5">{t.titular}</TituloPagina>
+        <TituloPagina documento={t.documento} className="text-display! mt-3 max-w-[17ch] md:mt-5">
+          {t.titular.antes}<span className="text-sol">{t.titular.acento}</span>{t.titular.despues}
+        </TituloPagina>
         <p className="text-texto-2 max-md:text-apoyo mt-3 max-w-[52ch] md:mt-6 md:text-[1.0625rem]">{t.apoyo}</p>
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 md:mt-8">
           <EnlaceBoton to={RUTAS.SITIOS} variante="primario" className="px-5" onPointerEnter={() => void cargarSitios()} onFocus={() => void cargarSitios()}>

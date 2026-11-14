@@ -76,7 +76,9 @@ export const T = {
   inicio: {
     documento: "Inicio",
     rotulo: (coordenada: string, periodo: string) => `Cráter Shackleton · ${coordenada} · ${periodo}`,
-    titular: "En el polo sur, el Sol no sale ni se pone: rueda por el horizonte.",
+    // El acento de color va solo en «el Sol». La frase vale para el mes del relato: con más meses de datos, el Sol
+    // de Shackleton sí llega a ponerse (27/01/2027), así que no se afirma que no se ponga «nunca».
+    titular: { antes: "En el polo sur, ", acento: "el Sol", despues: " no se pone en todo el mes: rueda por el horizonte." },
     apoyo: "Un paso de unos kilómetros o de unos días decide si un módulo tiene energía y línea directa con la Tierra. Compáralo en minutos.",
     explorar: "Explorar sitios",
     verCielo: "Ver el cielo de Shackleton",
@@ -335,14 +337,19 @@ const redondo = (v: number): string => numero(v, 0);
 /** 'en 291 h' */
 export const enHoras = (h: number): string => `en ${horas(Math.round(h))}`;
 
-/** Línea del panel de lectura: qué hará el astro y cuándo. */
-export function proximoCambio(e: EventosAstro): string {
-  if (e.horas_restantes === null) {
-    return e.visible ? "no se pone en el periodo con datos" : "no sale en el periodo con datos";
-  }
+/**
+ * Línea del panel de lectura: qué hará el astro y cuándo. Si el cambio cae después del periodo que se está
+ * mirando (`finPeriodo`), se dice primero que no cambia en ese periodo y la fecha queda como dato secundario.
+ */
+export function proximoCambio(e: EventosAstro, periodo?: { desde: Utc; hasta: Utc }): string {
+  const [verbo, sustantivo] = e.visible ? ["se pone", "puesta"] : ["sale", "salida"];
+  if (e.horas_restantes === null) return `no ${verbo} en el periodo con datos`;
   const cuando = e.visible ? e.proxima_puesta_utc : e.proxima_salida_utc;
-  const verbo = e.visible ? "se pone" : "sale";
-  return `${verbo} ${enHoras(e.horas_restantes)} · ${cuando ? fechaHora(cuando) : ""} ${T.utc}`.trim();
+  const fecha = cuando ? `${fechaHora(cuando)} ${T.utc}` : "";
+  if (periodo && cuando && cuando >= periodo.hasta) {
+    return `no ${verbo} en ${periodoLegible(periodo.desde, periodo.hasta)} · próxima ${sustantivo}: ${fecha}`;
+  }
+  return `${verbo} ${enHoras(e.horas_restantes)} · ${fecha}`.trim();
 }
 /** Texto vivo de la línea de tiempo: 'Faltan 9 h para la puesta del Sol'. */
 export function faltanPara(astro: Astro, e: EventosAstro): string {

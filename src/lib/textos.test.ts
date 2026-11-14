@@ -17,6 +17,11 @@ describe("textos generados", () => {
     expect(faltanPara("tierra", visible)).toBe("Faltan 291 h para la puesta de la Tierra");
     const fijo = { visible: true, proxima_puesta_utc: null, proxima_salida_utc: null, horas_restantes: null };
     expect(proximoCambio(fijo)).toBe("no se pone en el periodo con datos");
+    // La puesta existe, pero cae fuera del mes que se está mirando: no se contradice el relato del mes.
+    const diciembre = { desde: "2026-12-01T00:00Z", hasta: "2027-01-01T00:00Z" };
+    const enEnero = { visible: true, proxima_puesta_utc: "2027-01-27T11:00Z", proxima_salida_utc: null, horas_restantes: 1044 };
+    expect(proximoCambio(enEnero, diciembre)).toBe("no se pone en diciembre de 2026 · próxima puesta: 2027-01-27 11:00 UTC");
+    expect(proximoCambio(visible, diciembre)).toBe("se pone en 291 h · 2026-12-27 02:00 UTC");
     expect(faltanPara("sol", { ...visible, visible: false, horas_restantes: 9 })).toBe("Faltan 9 h para la salida del Sol");
   });
   it("genera el veredicto solo con las métricas", () => {
