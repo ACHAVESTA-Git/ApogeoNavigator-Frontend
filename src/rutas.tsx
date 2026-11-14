@@ -13,6 +13,7 @@ const Ventanas = lazy(() => import("./routes/Ventanas"));
 const DiaLunar = lazy(() => import("./routes/DiaLunar"));
 const Comparar = lazy(() => import("./routes/Comparar"));
 const Acceso = lazy(() => import("./routes/Acceso"));
+const GestorClaves = lazy(() => import("./routes/GestorClaves"));
 const NoEncontrado = lazy(() => import("./routes/NoEncontrado"));
 
 const PARAM_SITIO = ":siteId";
@@ -31,6 +32,7 @@ export function Rutas() {
         </Route>
         <Route path={RUTAS.COMPARAR} element={<Comparar />} />
         <Route path={RUTAS.ACCESO} element={<Acceso />} />
+        <Route path={RUTAS.CLAVES} element={<GestorClaves />} />
         <Route path="*" element={<NoEncontrado />} />
       </Route>
     </Routes>
