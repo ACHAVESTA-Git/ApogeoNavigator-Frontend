@@ -1,16 +1,15 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Outlet, useOutletContext, useParams } from "react-router";
 import { BotonComparar } from "../components/mapa/BotonComparar";
 import { EnlaceBoton } from "../components/ui/Boton";
 import { EstadoCarga, EstadoError, EstadoVacio } from "../components/ui/Estados";
 import { GlifoCategoria } from "../components/glifos/GlifoCategoria";
 import { PestanasRuta } from "../components/ui/Segmentado";
-import { clasesBoton } from "../components/ui/clases";
+import { SelectorMes } from "../components/ui/SelectorMes";
 import { usePeriodo } from "../hooks/useParametrosUrl";
 import { useSitio } from "../hooks/useSitio";
 import { RUTAS } from "../lib/constants";
 import { coordenadas } from "../lib/formato";
-import { NOMBRE_CATEGORIA, T, periodoLegible } from "../lib/textos";
+import { NOMBRE_CATEGORIA, T } from "../lib/textos";
 import type { Site, Utc } from "../lib/tipos";
 
 export interface ContextoSitio {
@@ -43,7 +42,6 @@ export default function SitioLayout() {
     { a: `${RUTAS.VENTANAS(id)}${periodo.consulta}`, etiqueta: t.ventanas },
     { a: `${RUTAS.DIA_LUNAR(id)}${periodo.consulta}`, etiqueta: t.diaLunar },
   ];
-  const paso = clasesBoton("secundario", "px-0 border-linea");
   return (
     <>
       <header className="contenedor flex flex-wrap items-end justify-between gap-x-8 gap-y-3 pt-5 md:pt-6">
@@ -56,17 +54,7 @@ export default function SitioLayout() {
           <p className="text-dato-sm text-texto-2 mt-1 font-mono" data-dato>{coordenadas(sitio.lat_deg, sitio.lon_este_deg)}</p>
         </div>
         <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-between sm:gap-3">
-          <div role="group" aria-label={t.periodo} className="flex items-center">
-            <button type="button" className={paso} aria-label={t.mesAnterior} disabled={!periodo.hayAnterior} onClick={() => periodo.moverMes(-1)}>
-              <ChevronLeft aria-hidden="true" className="size-4" />
-            </button>
-            <p aria-live="polite" className="text-apoyo text-texto min-w-32 px-1 text-center font-semibold first-letter:uppercase sm:min-w-40">
-              {periodoLegible(periodo.desde, periodo.hasta)}
-            </p>
-            <button type="button" className={paso} aria-label={t.mesSiguiente} disabled={!periodo.haySiguiente} onClick={() => periodo.moverMes(1)}>
-              <ChevronRight aria-hidden="true" className="size-4" />
-            </button>
-          </div>
+          <SelectorMes periodo={periodo} />
           <BotonComparar siteId={id} compacto className="max-sm:px-2.5" />
         </div>
       </header>
