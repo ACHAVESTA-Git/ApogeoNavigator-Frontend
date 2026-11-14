@@ -53,6 +53,20 @@ export const T = {
     peor: "el peor de energía y comunicación",
     sensible: "sensible al relieve",
   },
+  banner: {
+    texto: (fecha: string) =>
+      `Mostrando una instantánea de los CSV del ${fecha} porque la API no responde. Las cifras son reales, pero pueden estar desactualizadas.`,
+    corto: "Datos de ejemplo activos",
+    cerrar: "Ocultar el aviso de datos de ejemplo",
+  },
+  reloj: { rotulo: "UTC simulado", titulo: "Instante de la simulación (no es la hora actual)" },
+  noEncontrado: {
+    documento: "Fuera del mapa",
+    rotulo: "Error 404",
+    titulo: "Fuera del mapa",
+    texto: "Esta ruta no existe en nuestro mapa lunar.",
+    volver: "Volver a Sitios",
+  },
   errores: {
     generico: "Algo no salió como esperábamos.",
     sinServicio: "Los datos no están disponibles ahora.",
