@@ -254,4 +254,5 @@ export const ENLACES = {
   MOON_TREK: "https://trek.nasa.gov/moon/",
   REPO_FRONTEND: "https://github.com/ACHAVESTA-Git/ApogeoNavigator-Frontend",
   REPO_BACKEND: "https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend",
+  SEGURIDAD: "https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend/tree/dev/docs",
 } as const;
