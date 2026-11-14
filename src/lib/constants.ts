@@ -85,7 +85,9 @@ export const LUPA_K_DEG = 2;
 export const ELEVACION_MAX_DEG = 90;
 export const INCLINACION_EJE_LUNAR_DEG = 1.54;
 export const ZONA_HORARIA_LOCAL = { IANA: "America/Lima", ETIQUETA: "Lima (UTC−5)", NOMBRE: "Lima", DESFASE: "UTC−5" } as const;
-export const LOCALE = "es-PE";
+export const LOCALE = "es-PE"; // fechas
+// es-PE usa punto decimal en CLDR; el plan pide coma decimal en la interfaz, así que las cifras usan «es».
+export const LOCALE_NUMEROS = "es";
 export const REGEX = {
   SITE_ID: /^[a-z0-9][a-z0-9_-]{2,39}$/,
   UTC: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$/,
