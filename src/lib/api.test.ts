@@ -87,15 +87,23 @@ describe("respaldo a datos de ejemplo", () => {
 
 describe("métricas", () => {
   const base = { site_id: "shackleton", pct_sol: 100, pct_tierra: 39.11, sol_el_max_deg: 1.7385 };
-  it("respeta el semáforo y los avisos que manda la API", async () => {
-    const semaforo = { energia: "amarillo", comunicacion: "rojo", global: "rojo" };
+  it("respeta el semáforo y los avisos de la API cuando coinciden con la leyenda", async () => {
+    const semaforo = { energia: "verde", comunicacion: "rojo", global: "rojo" };
     const avisos = [{ codigo: "sensible_al_relieve", mensaje: "Texto de la API" }];
     simularFetch(() => json({ resultados: [{ ...base, semaforo, avisos }] }));
     const { resultados } = await obtenerMetricas(["shackleton"], {}, { modo: "false" });
     expect(resultados[0].semaforo).toEqual(semaforo);
     expect(resultados[0].avisos).toEqual(avisos);
   });
-  it("solo recalcula si el semáforo no es válido o faltan los avisos", async () => {
+  it("si la API usa umbrales antiguos, pinta el nivel coherente con la leyenda", async () => {
+    // Chang'e 4, dic 2026: 49,73 % de sol. Con 70/40 la API decía «amarillo»; con 45/25 es «verde».
+    const antiguo = { energia: "amarillo", comunicacion: "rojo", global: "rojo" };
+    simularFetch(() => json({ resultados: [{ site_id: "change4", pct_sol: 49.73, pct_tierra: 0, sol_el_max_deg: 45.98, semaforo: antiguo }] }));
+    const { resultados } = await obtenerMetricas(["change4"], {}, { modo: "false" });
+    expect(resultados[0].semaforo).toEqual({ energia: "verde", comunicacion: "rojo", global: "rojo" });
+    expect(resultados[0].avisos).toEqual([]);
+  });
+  it("recalcula si el semáforo no tiene la forma esperada o faltan los avisos", async () => {
     simularFetch(() => json({ resultados: [{ ...base, semaforo: { energia: "x" } }] }));
     const { resultados } = await obtenerMetricas(["shackleton"], {}, { modo: "false" });
     expect(resultados[0].semaforo).toEqual({ energia: "verde", comunicacion: "rojo", global: "rojo" });
