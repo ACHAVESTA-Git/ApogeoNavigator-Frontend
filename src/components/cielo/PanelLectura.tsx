@@ -17,8 +17,8 @@ export function PanelLectura({ utc, posicion, eventos, periodo, className }: {
 }) {
   const t = T.cielo;
   return (
-    <section aria-label={t.panel} className={unir("font-mono", className)} data-dato>
-      <dl className="grid grid-cols-[4.5rem_1fr] gap-x-3 gap-y-1">
+    <section aria-label={t.panel} className={unir("grid gap-x-10 gap-y-4 font-mono md:grid-cols-3", className)} data-dato>
+      <dl className="grid grid-cols-[4.5rem_1fr] content-start gap-x-3 gap-y-1">
         <dt className="rotulo self-center">{T.utc}</dt>
         <dd className="text-dato text-texto"><time dateTime={utc}>{fechaHora(utc)}</time></dd>
         <dt className="rotulo self-center">{t.lima}</dt>
@@ -29,7 +29,7 @@ export function PanelLectura({ utc, posicion, eventos, periodo, className }: {
         const visible = sobreHorizonte(el);
         const e = eventos?.[astro];
         return (
-          <dl key={astro} className="border-linea mt-4 grid grid-cols-[4.5rem_1fr] gap-x-3 gap-y-1 border-t pt-4">
+          <dl key={astro} className="grid grid-cols-[4.5rem_1fr] content-start gap-x-3 gap-y-1 max-md:capilar-t max-md:pt-4">
             <dt className="rotulo flex items-center gap-2 self-center">
               <GlifoAstro astro={astro} px={14} fantasma={!visible} />
               {NOMBRE_ASTRO[astro]}

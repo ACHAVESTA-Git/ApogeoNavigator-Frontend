@@ -52,7 +52,9 @@ export function usePeriodo() {
     return {
       desde, hasta, fijar, moverMes,
       hayAnterior: aMs(sumarMeses(mes, -1)) >= aMs(DATOS.COBERTURA.DESDE),
-      haySiguiente: aMs(sumarMeses(mes, 2)) <= aMs(DATOS.COBERTURA.HASTA),
+      haySiguiente: aMs(sumarMeses(mes, 2)) <= aMs(sumarMeses(DATOS.COBERTURA.HASTA, DATOS.PROYECCION_MESES)),
+      /** El periodo queda más allá de los datos: solo existe como proyección de /api/simulacion. */
+      esProyeccion: aMs(desde) >= aMs(DATOS.COBERTURA.HASTA),
       /** Parámetros para conservar el periodo al cambiar de pestaña. */
       consulta: valido ? `?${new URLSearchParams({ [PARAM_URL.DESDE]: desde, [PARAM_URL.HASTA]: hasta })}` : "",
     };
