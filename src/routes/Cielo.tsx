@@ -24,7 +24,7 @@ import { ApiError } from "../lib/errores";
 import { aMs } from "../lib/fechas";
 import { interpolarFila } from "../lib/interpolar";
 import { T, describirCielo } from "../lib/textos";
-import type { FilaEfemeride, Site } from "../lib/tipos";
+import type { FilaEfemeride, Site, Utc } from "../lib/tipos";
 import { useContextoSitio } from "./SitioLayout";
 
 const CieloCenital = lazy(() => import("../components/cielo/CieloCenital"));
@@ -32,7 +32,7 @@ type Vista = "panorama" | "cenital";
 const ESCALAS = [{ valor: "lupa" as Escala, etiqueta: T.cielo.lupa }, { valor: "lineal" as Escala, etiqueta: T.cielo.lineal }];
 const VISTAS = [{ valor: "panorama" as Vista, etiqueta: T.cielo.panorama }, { valor: "cenital" as Vista, etiqueta: T.cielo.cenital }];
 
-function Instrumento({ sitio, filas }: { sitio: Site; filas: FilaEfemeride[] }) {
+function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemeride[]; periodo: { desde: Utc; hasta: Utc } }) {
   const t = T.cielo;
   const idTitulo = useId();
   const [params] = useSearchParams();
@@ -107,7 +107,7 @@ function Instrumento({ sitio, filas }: { sitio: Site; filas: FilaEfemeride[] }) 
           )}
           <AvisoHorizonteIdeal className="mt-3" />
         </div>
-        <PanelLectura utc={reloj.tUtc} posicion={posicion} eventos={eventos} className="min-w-0 lg:col-span-3 lg:pt-2" />
+        <PanelLectura utc={reloj.tUtc} posicion={posicion} eventos={eventos} periodo={periodo} className="min-w-0 lg:col-span-3 lg:pt-2" />
       </div>
 
       <div className="mt-6">
@@ -148,5 +148,5 @@ export default function Cielo() {
       </div>
     );
   }
-  return <Instrumento key={`${sitio.site_id}-${desde}`} sitio={sitio} filas={data.filas} />;
+  return <Instrumento key={`${sitio.site_id}-${desde}`} sitio={sitio} filas={data.filas} periodo={{ desde, hasta }} />;
 }

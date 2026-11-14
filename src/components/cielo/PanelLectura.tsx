@@ -12,8 +12,8 @@ const ASTROS: readonly Astro[] = ["sol", "tierra"];
 const COLOR: Record<Astro, string> = { sol: "text-sol", tierra: "text-tierra" };
 
 /** Lectura del instante en «tabla de instrumento»: UTC, Lima y, por astro, azimut, elevación, estado y próximo cambio. */
-export function PanelLectura({ utc, posicion, eventos, className }: {
-  utc: Utc; posicion: PosicionCielo; eventos?: Record<Astro, EventosAstro> | null; className?: string;
+export function PanelLectura({ utc, posicion, eventos, periodo, className }: {
+  utc: Utc; posicion: PosicionCielo; eventos?: Record<Astro, EventosAstro> | null; periodo?: { desde: Utc; hasta: Utc }; className?: string;
 }) {
   const t = T.cielo;
   return (
@@ -43,7 +43,7 @@ export function PanelLectura({ utc, posicion, eventos, className }: {
               {visible ? T.sobreHorizonte : T.bajoHorizonte}
             </dd>
             <dt className="sr-only">Próximo cambio</dt>
-            <dd className="text-dato-sm text-texto-2 col-start-2 min-h-[1.3em]">{e ? proximoCambio(e) : "…"}</dd>
+            <dd className="text-dato-sm text-texto-2 col-start-2 min-h-[1.3em]">{e ? proximoCambio(e, periodo) : "…"}</dd>
           </dl>
         );
       })}
