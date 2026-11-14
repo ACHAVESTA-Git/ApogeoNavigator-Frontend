@@ -1,4 +1,5 @@
 // Instante de la simulación que muestra el reloj de la cabecera. Lo actualizan el Cielo, el Día lunar y el hero.
+import { motionValue } from "motion/react";
 import { useSyncExternalStore } from "react";
 import { DATOS } from "./constants";
 import type { Utc } from "./tipos";
@@ -20,3 +21,13 @@ export const useInstanteGlobal = (): Utc =>
     () => instante,
     () => instante,
   );
+
+/**
+ * Franja de tiempo que se está mirando dentro del periodo, en % (0–100): alimenta la barra de 2 px bajo las
+ * pestañas del sitio. En el Cielo y el Día lunar va de 0 al instante `t`; en Ventanas, el rango elegido.
+ */
+export const franjaTiempo = { desde: motionValue(0), hasta: motionValue(0) };
+export function fijarFranjaTiempo(desde: number, hasta: number): void {
+  franjaTiempo.desde.set(desde * 100);
+  franjaTiempo.hasta.set(hasta * 100);
+}

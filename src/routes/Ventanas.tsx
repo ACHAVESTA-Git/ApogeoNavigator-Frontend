@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { AvisoHorizonteIdeal } from "../components/layout/AvisoHorizonteIdeal";
 import { TituloPagina } from "../components/layout/TituloPagina";
 import { GlifoSemaforo } from "../components/glifos/GlifoSemaforo";
@@ -13,7 +14,8 @@ import { useMetricas } from "../hooks/useMetricas";
 import { usePeriodo } from "../hooks/useParametrosUrl";
 import { avisoDeRelieve } from "../lib/astro";
 import { ApiError, mensajeDeError } from "../lib/errores";
-import { horasEntre } from "../lib/fechas";
+import { horasEntre, inicioDeMes, sumarMeses } from "../lib/fechas";
+import { fijarFranjaTiempo } from "../lib/relojGlobal";
 import { horas } from "../lib/formato";
 import { NOMBRE_NIVEL, T, periodoLegible } from "../lib/textos";
 import { useContextoSitio } from "./SitioLayout";
@@ -32,6 +34,13 @@ export default function Ventanas() {
   const error = metricas.error ?? efemerides.error;
   const errorDeRango = error instanceof ApiError && error.esNoProcesable ? mensajeDeError(error, T.errores.sinDatosRango) : null;
   const aviso = m && avisoDeRelieve(m);
+  // Barra de tiempo: qué parte del mes cubre el rango elegido.
+  useEffect(() => {
+    const mes = inicioDeMes(desde);
+    const total = horasEntre(mes, sumarMeses(mes, 1));
+    fijarFranjaTiempo(horasEntre(mes, desde) / total, Math.min(1, horasEntre(mes, hasta) / total));
+    return () => fijarFranjaTiempo(0, 0);
+  }, [desde, hasta]);
   const total = m ? horasEntre(m.inicio_utc, m.fin_utc) : 0;
 
   return (
