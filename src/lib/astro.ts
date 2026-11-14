@@ -1,8 +1,13 @@
 // Cálculos en el cliente con las mismas reglas que el backend (app/services/lectura.py):
 // métricas, semáforo, cruces del horizonte y próximos eventos. Sirven de respaldo y para los gráficos.
-import { DATOS, HORAS_POR_DIA, MS_POR_HORA, SEMAFORO, UMBRAL_RASANTE_DEG } from "./constants";
+import { AVISO, DATOS, HORAS_POR_DIA, MS_POR_HORA, SEMAFORO, UMBRAL_RASANTE_DEG } from "./constants";
 import { aMs, soloFecha } from "./fechas";
-import type { Astro, EventosAstro, FilaEfemeride, NivelSemaforo, Semaforo, Utc, ValoresMetricas } from "./tipos";
+import type { Astro, Aviso, EventosAstro, FilaEfemeride, NivelSemaforo, Semaforo, Utc, ValoresMetricas } from "./tipos";
+
+// Mismo texto que MSG_AVISO_RELIEVE del backend.
+const AVISO_RELIEVE_RESPALDO =
+  `Sensible al relieve: el Sol no supera ${UMBRAL_RASANTE_DEG}° sobre el horizonte ideal, ` +
+  "así que una colina puede taparlo y las horas de sol reales ser menores";
 
 type ClaveElevacion = "sol_el_deg" | "tierra_el_deg";
 export const CLAVE_ELEVACION: Record<Astro, ClaveElevacion> = { sol: "sol_el_deg", tierra: "tierra_el_deg" };
@@ -67,9 +72,15 @@ export function esSemaforo(valor: unknown): valor is Semaforo {
   const v = valor as Record<string, unknown>;
   return (["energia", "comunicacion", "global"] as const).every((k) => NIVELES.includes(v[k] as NivelSemaforo));
 }
-/** El Sol nunca supera el umbral rasante: cualquier relieve real lo taparía. */
-export const esSensibleAlRelieve = (m: Pick<ValoresMetricas, "sol_el_max_deg" | "horas_sol">): boolean =>
-  m.horas_sol > 0 && m.sol_el_max_deg < UMBRAL_RASANTE_DEG;
+/** Misma regla que warnings_for() del backend: el Sol nunca supera el umbral rasante. Solo para el respaldo. */
+export function avisosDe(m: Pick<ValoresMetricas, "sol_el_max_deg">): Aviso[] {
+  return m.sol_el_max_deg < UMBRAL_RASANTE_DEG ? [{ codigo: AVISO.RELIEVE, mensaje: AVISO_RELIEVE_RESPALDO }] : [];
+}
+/** ¿La API marcó la métrica como sensible al relieve? */
+export const esSensibleAlRelieve = (m: { avisos?: readonly Aviso[] }): boolean =>
+  (m.avisos ?? []).some((a) => a.codigo === AVISO.RELIEVE);
+export const avisoDeRelieve = (m: { avisos?: readonly Aviso[] }): Aviso | undefined =>
+  (m.avisos ?? []).find((a) => a.codigo === AVISO.RELIEVE);
 
 export interface EventoCruce {
   utc: Utc;

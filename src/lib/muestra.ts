@@ -2,7 +2,7 @@
 // PARA QUITAR EL RESPALDO: borrar este archivo, public/muestra/, el script y BannerDatosEjemplo,
 // y la función conRespaldo() de api.ts.
 import { useSyncExternalStore } from "react";
-import { calcularMetricas, proximosEventos, semaforo } from "./astro";
+import { avisosDe, calcularMetricas, proximosEventos, semaforo } from "./astro";
 import { API, DATOS, HORAS_POR_DIA, MS_POR_HORA, MUESTRA } from "./constants";
 import { ApiError } from "./errores";
 import { aMs, aUtc } from "./fechas";
@@ -117,6 +117,7 @@ export async function metricasMuestra(ids: string[], rango?: Rango): Promise<Res
       fin_utc: hasta,
       ...valores,
       semaforo: semaforo(valores.pct_sol, valores.pct_tierra),
+      avisos: avisosDe(valores),
       origen: "ejemplo",
       referencia: ref ? { ...soloValores(ref), coincide: coincide(valores, ref) } : null,
     });

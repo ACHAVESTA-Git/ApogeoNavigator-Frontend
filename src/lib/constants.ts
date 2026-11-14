@@ -81,7 +81,10 @@ export const SEMAFORO = {
   COMUNICACION: { VERDE_MIN: 70, AMARILLO_MIN: 40 }, // por % de horas con la Tierra visible
   ORDEN: ["rojo", "amarillo", "verde"],
 } as const;
+// El semáforo y los avisos los calcula la API. Estos umbrales existen SOLO para el respaldo con datos de
+// ejemplo y la prueba de oro (deben coincidir con app/core/config.py); los componentes no los aplican.
 export const UMBRAL_RASANTE_DEG = 3; // sol_el_max < 3° ⇒ aviso «sensible al relieve»
+export const AVISO = { RELIEVE: "sensible_al_relieve" } as const;
 export const LUPA_K_DEG = 2;
 export const ELEVACION_MAX_DEG = 90;
 export const INCLINACION_EJE_LUNAR_DEG = 1.54;

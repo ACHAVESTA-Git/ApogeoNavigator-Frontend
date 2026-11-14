@@ -1,8 +1,8 @@
 // Cadenas de la interfaz y plantillas generadas a partir de datos. Todo en español.
-import { DATOS, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
+import { DATOS, SEMAFORO, ZONA_HORARIA_LOCAL } from "./constants";
 import { esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
-import type { Astro, Categoria, EventosAstro, Metrica, NivelSemaforo, Utc } from "./tipos";
+import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
 
 export const NOMBRE_ASTRO: Record<Astro, string> = { sol: "Sol", tierra: "Tierra" };
 export const ARTICULO_ASTRO: Record<Astro, string> = { sol: "el Sol", tierra: "la Tierra" };
@@ -105,13 +105,6 @@ export function describirInstante(utc: Utc, fila: FilaCielo): string {
 
 export const horaLocal = (hora: string): string => `${hora} ${ZONA_HORARIA_LOCAL.NOMBRE}, ${ZONA_HORARIA_LOCAL.DESFASE}`;
 
-/** Aviso genérico por umbral (no depende del sitio): el 100 % es del horizonte ideal. */
-export function avisoRelieve(m: Pick<Metrica, "sol_el_max_deg" | "pct_sol">): string {
-  return (
-    `El Sol nunca supera ${grados(m.sol_el_max_deg, 1)} (menos de ${UMBRAL_RASANTE_DEG}°): cualquier relieve real lo taparía. ` +
-    `Este ${pct(m.pct_sol)} es del horizonte ideal.`
-  );
-}
 export const SIN_LINEA_DIRECTA = "Sin línea directa con la Tierra: requiere satélite de retransmisión.";
 
 export interface FilaVeredicto { nombre: string; horas_sol: number; pct_sol: number; horas_tierra_visible: number; pct_tierra: number }

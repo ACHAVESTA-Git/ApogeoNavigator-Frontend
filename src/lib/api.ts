@@ -1,5 +1,5 @@
 // Cliente HTTP de la API. Es el ÚNICO archivo que construye URL de la API (a partir de constants.ts).
-import { esSemaforo, semaforo } from "./astro";
+import { avisosDe, esSemaforo, semaforo } from "./astro";
 import { API, API_BASE_URL, MODO_MUESTRA } from "./constants";
 import { ApiError, ErrorDeRed, esApiAusente } from "./errores";
 import { efemeridesMuestra, marcarMuestraActiva, metricasMuestra, puestasMuestra, sitiosMuestra } from "./muestra";
@@ -62,13 +62,18 @@ async function conRespaldo<T>(deApi: () => Promise<T>, deMuestra: () => Promise<
   }
 }
 
-/** El semáforo se recalcula con los umbrales de constants.ts para que cifra, color y leyenda coincidan siempre. */
+/**
+ * El semáforo y los avisos son de la API. El backend tipa `semaforo` como dict[str, str], así que se valida su
+ * forma; solo si no cuadra (o falta `avisos` en un backend antiguo) se usa el cálculo de respaldo.
+ */
 function normalizarMetrica(m: Metrica): Metrica {
-  const propio = semaforo(m.pct_sol, m.pct_tierra);
-  if (import.meta.env.DEV && (!esSemaforo(m.semaforo) || m.semaforo.global !== propio.global)) {
-    console.warn(`Semáforo de la API distinto del calculado en el cliente para ${m.site_id}`, m.semaforo, propio);
-  }
-  return { ...m, semaforo: propio };
+  const valido = esSemaforo(m.semaforo);
+  if (!valido && import.meta.env.DEV) console.warn(`Semáforo no válido de la API para ${m.site_id}`, m.semaforo);
+  return {
+    ...m,
+    semaforo: valido ? m.semaforo : semaforo(m.pct_sol, m.pct_tierra),
+    avisos: Array.isArray(m.avisos) ? m.avisos : avisosDe(m),
+  };
 }
 
 export interface Opciones {
