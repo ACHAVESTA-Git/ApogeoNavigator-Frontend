@@ -13,7 +13,9 @@ export const API = {
   VALIDAR: (tipo: TipoArchivo) => `/api/datos/validar/${tipo}`,
   GUARDAR: (tipo: TipoArchivo) => `/api/datos/${tipo}`,
   CLAVES: "/api/admin/claves",
-  CLAVE: (id: string) => `/api/admin/claves/${encodeURIComponent(id)}`,
+  CLAVE_PUBLICA: (id: string) => `/api/admin/claves/${encodeURIComponent(id)}/publica`,
+  CLAVE_REVOCAR: (id: string) => `/api/admin/claves/${encodeURIComponent(id)}/revocar`,
+  CLAVE_ROTAR: (id: string) => `/api/admin/claves/${encodeURIComponent(id)}/rotar`,
   CABECERA_CLAVE: "X-API-Key",
   CAMPO_ARCHIVO: "file",
   PARAM: { SITE_ID: "site_id", DESDE: "desde", HASTA: "hasta" },
@@ -227,6 +229,15 @@ export const MAPA = {
 export const DIA_LUNAR = { ALTO_PX: { movil: 260, escritorio: 420 }, PX_POR_DIA_MOVIL: 24, MARGEN_IZQ: 44, MARGEN_SUP: 16, MARGEN_INF: 30 } as const;
 export const BANDA = { ALTO_PX: { grande: 150, media: 92, compacta: 40 }, MIN_ALTO_PX: 4, MIN_ANCHO: 2, DIAS_ETIQUETA: 7, SEMANAS: 4, DIAS_SEMANA: 7 } as const;
 
+/** Gestor de claves post-cuánticas (docs/plan/seguridad-oauth-pqc.md §7.3). */
+export const CLAVES_PQC = {
+  SESSION_STORAGE: "apogeo.claveAdmin", // ADMIN_API_KEY: distinta de la de carga; nunca en el bundle
+  MOTIVO: { MIN: 3, MAX: 200 },
+  LIMITE: 200,
+  UUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+  TIPOS: ["kem", "firma"],
+  HUELLA_VISIBLE: 12,
+} as const;
 export const HORIZONTE_PUNTOS = 64;
 export const HORIZONTE_COPIAS = 3; // una por sitio en Comparar; en el resto coinciden
 export const TACTIL_MIN_PX = 44;
