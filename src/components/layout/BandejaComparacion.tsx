@@ -15,12 +15,25 @@ export default function BandejaComparacion() {
   const { data: sitios } = useSites();
   const { pathname } = useLocation();
   const visible = ids.length > 0 && pathname !== RUTAS.COMPARAR;
+  const compacta = pathname.startsWith(`${RUTAS.SITIOS}/`);
   useEffect(() => {
-    document.documentElement.style.setProperty("--bandeja-alto", visible ? ALTO : "0px");
+    document.documentElement.style.setProperty("--bandeja-alto", visible && !compacta ? ALTO : "0px");
     return () => document.documentElement.style.setProperty("--bandeja-alto", "0px");
-  }, [visible]);
+  }, [visible, compacta]);
   if (!visible) return null;
   const nombre = (id: string) => nombreCorto(sitios?.find((s) => s.site_id === id)?.nombre ?? id);
+  const destino = `${RUTAS.COMPARAR}?${PARAM_URL.SITIOS}=${ids.join(",")}`;
+  // Dentro de un sitio la franja taparía el control de tiempo: se pliega en una píldora a la derecha.
+  if (compacta) {
+    const texto = T.comparacion.corto(ids.length, DATOS.MAX_COMPARAR);
+    const clases = clasesBoton("secundario", "bg-elevada min-h-9! shadow-none");
+    return (
+      <aside aria-label={T.comparacion.bandeja}
+        className="fixed right-3 bottom-[calc(var(--barra-inferior-alto)+env(safe-area-inset-bottom)+8px)] z-30 md:right-(--margen) md:bottom-4">
+        {lista ? <Link to={destino} className={clases}>{texto}</Link> : <p className={clases}>{texto} · {T.comparacion.faltan(DATOS.MIN_COMPARAR)}</p>}
+      </aside>
+    );
+  }
   return (
     <aside aria-label={T.comparacion.bandeja}
       className="bg-elevada border-horizonte fixed inset-x-0 bottom-[calc(var(--barra-inferior-alto)+env(safe-area-inset-bottom))] z-30 border-t md:bottom-0">
@@ -37,9 +50,7 @@ export default function BandejaComparacion() {
           ))}
         </ul>
         {lista ? (
-          <Link to={`${RUTAS.COMPARAR}?${PARAM_URL.SITIOS}=${ids.join(",")}`} className={clasesBoton("primario", "min-h-9! shrink-0")}>
-            {T.comparacion.comparar}
-          </Link>
+          <Link to={destino} className={clasesBoton("primario", "min-h-9! shrink-0")}>{T.comparacion.comparar}</Link>
         ) : (
           <span className="text-apoyo text-texto-2 shrink-0">{T.comparacion.faltan(DATOS.MIN_COMPARAR)}</span>
         )}

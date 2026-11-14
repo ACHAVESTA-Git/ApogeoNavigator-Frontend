@@ -80,7 +80,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
   return (
     <div className="contenedor pt-4 pb-12">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <TituloPagina documento={t.documento(sitio.nombre)} className="rotulo">
+        <TituloPagina documento={t.documento(sitio.nombre)} className="rotulo max-md:sr-only">
           <span id={idTitulo}>{t.titulo(sitio.nombre)}</span>
         </TituloPagina>
         <div className="flex gap-x-2 md:gap-x-6">
@@ -105,17 +105,15 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
               </div>
             </Suspense>
           )}
-          <AvisoHorizonteIdeal className="mt-3" />
+          {/* El control de tiempo va pegado al gráfico: es la interacción principal y debe verse sin desplazarse */}
+          <ReglaTiempo filas={filas} reloj={reloj} className="mt-3" />
+          <div className="mt-2"><ControlesTiempo reloj={reloj} /></div>
         </div>
         <PanelLectura utc={reloj.tUtc} posicion={posicion} eventos={eventos} periodo={periodo} className="min-w-0 lg:col-span-3 lg:pt-2" />
       </div>
+      <AvisoHorizonteIdeal className="mt-5" />
 
-      <div className="mt-6">
-        <ReglaTiempo filas={filas} reloj={reloj} />
-        <div className="mt-3"><ControlesTiempo reloj={reloj} /></div>
-      </div>
-
-      <div className="mt-10">
+      <div className="mt-8">
         <Desplegable titulo={t.tabla}><TablaCielo filas={filas} indice={reloj.indice} /></Desplegable>
         <Desplegable titulo={t.atajos} className="border-b">
           <dl className="text-apoyo grid gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
