@@ -264,7 +264,7 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo 
               return (
                 <button key={astro} type="button" onClick={() => centrarEn(astro)}
                   aria-label={T.cielo.fueraDeVista(NOMBRE_ASTRO[astro], cuanto, izquierda ? "izquierda" : "derecha")}
-                  className={unir("bg-vacio/85 border-linea text-dato-sm pointer-events-auto inline-flex min-h-9 items-center gap-1.5 rounded-xs border px-2 font-mono",
+                  className={unir("bg-vacio/85 border-linea text-dato-sm pointer-events-auto inline-flex min-h-9 items-center gap-1.5 rounded-control border px-2 font-mono",
                     COLOR_TEXTO[astro], izquierda ? "self-start" : "flex-row-reverse self-end")}>
                   {izquierda ? <ChevronLeft aria-hidden="true" className="size-4" /> : <ChevronRight aria-hidden="true" className="size-4" />}
                   <GlifoAstro astro={astro} px={12} />

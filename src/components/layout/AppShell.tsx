@@ -60,7 +60,7 @@ export function AppShell() {
   return (
     <ContextoAppReact.Provider value={app}>
       <ContextoHorizonte.Provider value={registro}>
-        <a href="#contenido" className="bg-texto text-vacio sr-only z-50 rounded-xs px-4 py-3 font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
+        <a href="#contenido" className="bg-texto text-vacio sr-only z-50 rounded-control px-4 py-3 font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
           {T.saltar}
         </a>
         <NavPrincipal />

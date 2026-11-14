@@ -112,7 +112,7 @@ export const CATEGORIAS = ["apolo", "artemis", "clps", "internacional", "histori
 
 export const MOVIMIENTO = {
   // ms; espejo de --dur-* en index.css
-  MICRO: 120,
+  MICRO: 140,
   CORTA: 200,
   MEDIA: 320,
   LARGA: 560,
@@ -123,9 +123,14 @@ export const MOVIMIENTO = {
   HERO_CICLO: 14_000,
   DIA_LUNAR_CICLO: 12_000,
   INERCIA_MAX: 300,
-  EASE_SALIDA: [0.22, 1, 0.36, 1],
-  EASE_ENTRADA: [0.64, 0, 0.78, 0],
-  EASE_ORBITA: [0.65, 0, 0.35, 1],
+  EASE_SALIDA: [0.23, 1, 0.32, 1],
+  EASE_ENTRADA: [0.23, 1, 0.32, 1], // las salidas también usan ease-out: nunca ease-in en la interfaz
+  EASE_ORBITA: [0.77, 0, 0.175, 1],
+  // Springs (interrumpibles: conservan la velocidad al cambiar de destino).
+  SPRING_SUAVE: { type: "spring", duration: 0.45, bounce: 0 }, // paneles, fichas, popup
+  SPRING_VIVO: { type: "spring", duration: 0.5, bounce: 0.2 }, // solo al soltar un arrastre
+  CIERRE_HOJA: { DISTANCIA: 0.4, VELOCIDAD_PX_S: 500 }, // se cierra por distancia O por velocidad
+  ELASTICO: 0.2,
   REFRESCO_LECTURA_HZ: 10,
   DEBOUNCE_URL_MS: 250,
   DEBOUNCE_ANUNCIO_MS: 500,

@@ -32,10 +32,10 @@
 
   --text-display: clamp(2.25rem, 1.2rem + 4.2vw, 4.5rem);
   --text-display--line-height: 1.02;
-  --text-display--letter-spacing: -0.02em;
+  --text-display--letter-spacing: -0.03em;
   --text-titulo: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
   --text-titulo--line-height: 1.1;
-  --text-titulo--letter-spacing: -0.012em;
+  --text-titulo--letter-spacing: -0.015em;
   --text-subtitulo: 1.25rem;
   --text-subtitulo--line-height: 1.3;
   --text-cuerpo: 1rem;
@@ -44,7 +44,7 @@
   --text-apoyo--line-height: 1.45;
   --text-rotulo: 0.75rem;
   --text-rotulo--line-height: 1.2;
-  --text-rotulo--letter-spacing: 0.08em;
+  --text-rotulo--letter-spacing: 0.1em;
   --text-dato-xl: clamp(2.5rem, 1.5rem + 3vw, 4rem);
   --text-dato-xl--line-height: 1;
   --text-dato: 1rem;
@@ -53,7 +53,10 @@
   --text-dato-sm--line-height: 1.3;
 
   --radius-*: initial;
-  --radius-xs: 2px;
+  --radius-xs: 4px;        /* detalles mínimos (foco, marcas) */
+  --radius-control: 12px;  /* campos, botones cuadrados, filas */
+  --radius-panel: 18px;    /* paneles y fichas */
+  --radius-capa: 22px;     /* popup y hoja */
   --radius-full: 9999px;
 
   --breakpoint-sm: 30rem;
@@ -62,14 +65,21 @@
   --breakpoint-xl: 80rem;
   --breakpoint-2xl: 90rem;
 
-  --ease-salida: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-entrada: cubic-bezier(0.64, 0, 0.78, 0);
-  --ease-orbita: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Una sola familia: ease-out fuerte para entrar Y salir (nunca ease-in en la interfaz), in-out para lo que se
+     mueve dentro de la pantalla y la curva de hoja para capas que suben. */
+  --ease-salida: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-entrada: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-orbita: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-hoja: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-frenado: cubic-bezier(0.05, 0.7, 0.1, 1);   /* fallos: el cambio «se clava» */
 
   --shadow-*: initial;
   --shadow-glow-sol: 0 0 18px 2px rgb(255 181 71 / 0.45), 0 0 64px 8px rgb(255 181 71 / 0.18);
   --shadow-glow-tierra: 0 0 10px 1px rgb(90 169 255 / 0.35);
+  /* Profundidad por capas: lo que flota proyecta una sombra suave y lleva un brillo interior de 1 px arriba. */
+  --shadow-flotante: 0 28px 70px -24px rgb(0 0 0 / 0.75), 0 2px 8px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(237 235 228 / 0.08);
+  --shadow-panel: inset 0 1px 0 rgb(237 235 228 / 0.06), 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-boton: inset 0 1px 0 rgb(255 255 255 / 0.55), 0 1px 2px rgb(0 0 0 / 0.5);
 
   --animate-girar: girar 900ms linear infinite;
   --animate-aparecer: aparecer var(--dur-corta) var(--ease-salida) both;
@@ -84,7 +94,7 @@
 :root {
   color-scheme: dark;
   /* Duraciones: espejo de MOVIMIENTO en src/lib/constants.ts (no duplicar valores en componentes) */
-  --dur-micro: 120ms;
+  --dur-micro: 140ms;
   --dur-corta: 200ms;
   --dur-media: 320ms;
   --dur-larga: 560ms;
@@ -109,7 +119,7 @@
   body { min-height: 100svh; font-variation-settings: "wdth" 100; -webkit-font-smoothing: antialiased;
          font-size: var(--text-cuerpo); line-height: 1.55; }
   .font-mono, [data-dato] { font-variant-numeric: tabular-nums slashed-zero; }
-  .rotulo { font-size: var(--text-rotulo); line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase;
+  .rotulo { font-size: var(--text-rotulo); line-height: 1.2; letter-spacing: 0.1em; text-transform: uppercase;
             font-weight: 600; font-variation-settings: "wdth" 125; color: var(--color-texto-3); }
   .titulo-instrumento { font-variation-settings: "wdth" 118; font-weight: 600; }
   :focus-visible { outline: 2px solid var(--color-foco); outline-offset: 2px; border-radius: var(--radius-xs); }
@@ -126,6 +136,19 @@
 @utility rayado-artefacto {
   background-image: repeating-linear-gradient(135deg,
     color-mix(in srgb, var(--color-vacio) 70%, transparent) 0 2px, transparent 2px 7px);
+}
+/* Panel: superficie escalonada con borde tenue y brillo superior (sustituye a las líneas rectas). */
+@utility panel {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-superficie) 82%, transparent), color-mix(in srgb, var(--color-regolito) 88%, transparent));
+  border: 1px solid rgb(237 235 228 / 0.08);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+}
+/* Material translúcido: solo en cabeceras y controles sobre la escena, nunca bajo cifras. */
+@utility material {
+  background: rgb(10 10 9 / 0.62);
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
 }
 /* Capilar: divisor decorativo casi invisible (la única línea fuerte de la app es el horizonte). */
 @utility capilar-b {
@@ -163,23 +186,10 @@
   &[data-visto="true"] { clip-path: inset(0 0 0 0); }
 }
 
-/* Popup modal (<dialog> nativo): nace de su botón, arriba a la derecha, y vuelve a él. Velo sin desenfoque. */
-.popup { margin: auto; transform-origin: top right; }
-.popup::backdrop { background: var(--color-velo); }
-.popup[open] { animation: popup-nace var(--dur-corta) var(--ease-salida); }
-.popup[open]::backdrop { animation: aparecer var(--dur-corta) var(--ease-salida); }
-.popup[data-cerrando="true"] { animation: popup-vuelve 160ms var(--ease-entrada) forwards; }
-@keyframes popup-nace { from { opacity: 0; transform: scale(0.98); } }
-@keyframes popup-vuelve { to { opacity: 0; transform: scale(0.98); } }
-@media (max-width: 47.99rem) { .popup { transform-origin: bottom center; } }
-
-/* Hoja inferior móvil: sube desde abajo y vuelve por donde entró. */
-.hoja::backdrop { background: var(--color-velo); }
-.hoja[open] { animation: hoja-sube var(--dur-media) var(--ease-salida); }
-.hoja[open]::backdrop { animation: aparecer var(--dur-corta) var(--ease-salida); }
-.hoja[data-cerrando="true"] { animation: hoja-baja 160ms var(--ease-entrada) forwards; }
-@keyframes hoja-sube { from { transform: translateY(100%); } }
-@keyframes hoja-baja { to { transform: translateY(100%); } }
+/* Capas modales sobre <dialog> nativo (foco atrapado y fondo inerte gratis). El movimiento lo lleva motion con
+   springs interrumpibles; aquí solo se anula el aspecto por defecto del diálogo. */
+.capa { background: transparent; border: 0; padding: 0; margin: 0; max-width: none; max-height: none; width: 100vw; height: 100dvh; overflow: visible; }
+.capa::backdrop { background: transparent; }
 
 /* Check de confirmación: primero el círculo y luego el trazo (stroke-dashoffset). */
 .check-circulo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 350ms var(--ease-salida) forwards; }
@@ -195,7 +205,10 @@
 .regla-tiempo::-moz-range-thumb { width: 3px; height: 44px; border: 0; border-radius: 0;
   background: var(--color-texto); box-shadow: 0 0 0 1px var(--color-vacio); cursor: ew-resize; }
 
+/* Movimiento reducido = más suave, no cero: se quitan desplazamientos y escalas (las animaciones terminan al
+   instante), pero se conservan los fundidos cortos de color y opacidad, que orientan sin marear. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
-                           transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+                           transition-property: opacity, color, background-color, border-color !important;
+                           transition-duration: 120ms !important; scroll-behavior: auto !important; }
 }

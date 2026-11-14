@@ -59,7 +59,7 @@ export default function SitioLayout() {
           <BotonComparar siteId={id} compacto className="max-sm:px-2.5" />
         </div>
       </header>
-      <div className="bg-vacio sticky top-(--nav-alto-movil) z-20 mt-1 md:top-(--nav-alto) md:mt-2">
+      <div className="material sticky top-(--nav-alto-movil) z-20 mt-1 md:top-(--nav-alto) md:mt-2">
         <div className="contenedor">
           <PestanasRuta etiqueta={t.pestanas} pestanas={pestanas} />
           <div className="-mt-0.5"><BarraTiempo /></div>

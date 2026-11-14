@@ -19,7 +19,7 @@ export function CifraMetrica({ astro, porcentaje, horasVisibles, horasTotales, n
   const eje = EJE[astro];
   const cifra = useCifraAnimada<HTMLParagraphElement>(porcentaje, pct);
   return (
-    <div className={unir("min-w-0", className)}>
+    <div className={unir("panel min-w-0 p-4 md:p-5", className)}>
       <h2 className="rotulo flex items-center gap-2">
         <GlifoAstro astro={astro} px={14} />
         {eje.rotulo}

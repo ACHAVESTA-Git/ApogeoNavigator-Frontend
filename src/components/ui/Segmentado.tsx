@@ -6,6 +6,12 @@ const ITEM =
   "tactil inline-flex items-center justify-center px-3 md:px-4 text-apoyo font-semibold whitespace-nowrap border-b-2 " +
   "transition-[color,border-color,transform] duration-(--dur-micro)";
 const estado = (activo: boolean) => (activo ? "border-texto text-texto" : "border-transparent text-texto-2 hover:text-texto");
+// Conmutadores: pista redondeada con la opción activa como pastilla elevada.
+const PISTA = "bg-texto/[0.05] inline-flex max-w-full gap-0.5 overflow-x-auto rounded-full border border-texto/8 p-1";
+const PASTILLA =
+  "inline-flex min-h-9 items-center justify-center rounded-full px-3.5 text-apoyo font-semibold whitespace-nowrap " +
+  "transition-[background-color,color,transform,box-shadow] duration-(--dur-micro) ease-salida active:scale-[0.97] disabled:opacity-40";
+const pastilla = (activo: boolean) => (activo ? "bg-elevada text-texto shadow-panel" : "text-texto-2 hover:text-texto");
 
 export interface OpcionSegmento<V extends string> {
   valor: V;
@@ -33,13 +39,13 @@ export function Segmentado<V extends string>({ etiqueta, opciones, valor, alCamb
   };
   return (
     <div role={comoRadio ? "radiogroup" : "group"} aria-label={etiqueta} onKeyDown={alPulsar}
-      className={unir("border-linea flex max-w-full overflow-x-auto border-b", className)}>
+      className={unir(PISTA, className)}>
       {opciones.map((o) => {
         const activo = o.valor === valor;
         const estadoAria = comoRadio ? { role: "radio", "aria-checked": activo, tabIndex: activo ? 0 : -1 } : { "aria-pressed": activo };
         return (
           <button key={o.valor} type="button" data-valor={o.valor} disabled={o.desactivada} title={o.nota} onClick={() => alCambiar(o.valor)}
-            className={unir(ITEM, estado(activo), "active:scale-[0.98] disabled:opacity-45")} {...estadoAria}>
+            className={unir(PASTILLA, pastilla(activo))} {...estadoAria}>
             {o.etiqueta}
           </button>
         );

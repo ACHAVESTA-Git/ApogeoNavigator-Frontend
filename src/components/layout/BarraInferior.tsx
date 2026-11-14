@@ -15,7 +15,7 @@ export function BarraInferior() {
   return (
     <nav
       aria-label={T.nav.principal}
-      className="bg-vacio border-linea fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="material capilar-t fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {DESTINOS.map(({ a, etiqueta, Icono, exacto }) => (
         <NavLink
