@@ -63,17 +63,17 @@ async function conRespaldo<T>(deApi: () => Promise<T>, deMuestra: () => Promise<
 }
 
 /**
- * El semáforo y los avisos son de la API. El backend tipa `semaforo` como dict[str, str], así que se valida su
- * forma; solo si no cuadra (o falta `avisos` en un backend antiguo) se usa el cálculo de respaldo.
+ * El semáforo y los avisos son de la API. Red de seguridad: la leyenda de la interfaz sale de los umbrales
+ * de constants.ts, así que si la API manda un nivel distinto del que dan esos umbrales (backend sin actualizar
+ * o forma no válida) se pinta el calculado. Color y leyenda nunca pueden contradecirse.
  */
 function normalizarMetrica(m: Metrica): Metrica {
-  const valido = esSemaforo(m.semaforo);
-  if (!valido && import.meta.env.DEV) console.warn(`Semáforo no válido de la API para ${m.site_id}`, m.semaforo);
-  return {
-    ...m,
-    semaforo: valido ? m.semaforo : semaforo(m.pct_sol, m.pct_tierra),
-    avisos: Array.isArray(m.avisos) ? m.avisos : avisosDe(m),
-  };
+  const propio = semaforo(m.pct_sol, m.pct_tierra);
+  const coincide = esSemaforo(m.semaforo) && (["energia", "comunicacion", "global"] as const).every((k) => m.semaforo[k] === propio[k]);
+  if (!coincide && import.meta.env.DEV) {
+    console.warn(`Semáforo de la API distinto de los umbrales del cliente para ${m.site_id}`, m.semaforo, propio);
+  }
+  return { ...m, semaforo: coincide ? m.semaforo : propio, avisos: Array.isArray(m.avisos) ? m.avisos : avisosDe(m) };
 }
 
 export interface Opciones {
