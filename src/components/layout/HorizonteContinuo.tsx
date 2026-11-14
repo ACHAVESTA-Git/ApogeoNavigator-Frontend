@@ -34,6 +34,7 @@ interface Morph {
 export function HorizonteContinuo({ registro, contenedor }: { registro: RegistroHorizonte; contenedor: React.RefObject<HTMLElement> }) {
   const reducido = useMovimientoReducido();
   const paths = useRef<(SVGPathElement | null)[]>([]);
+  const svg = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     let cuadro = 0;
@@ -87,6 +88,9 @@ export function HorizonteContinuo({ registro, contenedor }: { registro: Registro
         progresoIntro = suavizarSalida(p);
         if (p >= 1) intro = null;
       }
+      // Durante el morph la línea pasa POR DEBAJO del contenido (no cruza por encima de los textos); al terminar
+      // vuelve arriba, porque en reposo debe verse sobre los fondos de cada pantalla.
+      if (svg.current) svg.current.style.zIndex = morph ? "0" : "";
       if (morph) {
         const p = Math.min(1, (ahora - morph.inicio) / MOVIMIENTO.LARGA);
         const f = suavizar(p);
@@ -106,7 +110,7 @@ export function HorizonteContinuo({ registro, contenedor }: { registro: Registro
   }, [registro, contenedor, reducido]);
 
   return (
-    <svg aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 size-full overflow-visible">
+    <svg ref={svg} aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 size-full overflow-visible">
       {COPIAS.map((i) => (
         <path
           key={i}

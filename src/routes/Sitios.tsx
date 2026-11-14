@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { m } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useCallback, useId, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { useApp } from "../components/layout/contexto";
@@ -41,13 +41,14 @@ export default function Sitios() {
   const seleccionado = sitios?.find((s) => s.site_id === params.get(PARAM_URL.SITIO)) ?? null;
 
   const queryClient = useQueryClient();
-  const seleccionar = useCallback(
+  const seleccionar = useCallback((id: string | null) => escribir({ [PARAM_URL.SITIO]: id }, { reemplazar: false }), [escribir]);
+  // Prefetch con intención: quien se detiene en un sitio suele abrir su ficha y después su cielo.
+  const activar = useCallback(
     (id: string | null) => {
-      escribir({ [PARAM_URL.SITIO]: id }, { reemplazar: false });
-      // Prefetch con intención: quien abre la ficha suele ir después a «Ver su cielo».
+      setActivo(id);
       if (id) void queryClient.prefetchQuery(consultaEfemerides(id, RANGO_POR_DEFECTO));
     },
-    [escribir, queryClient],
+    [queryClient],
   );
   const cerrar = useCallback(() => seleccionar(null), [seleccionar]);
   const opciones = [{ valor: TODAS as Filtro, etiqueta: t.todas }, ...presentes.map((c) => ({ valor: c as Filtro, etiqueta: NOMBRE_CATEGORIA[c] }))];
@@ -56,7 +57,7 @@ export default function Sitios() {
     <>
       <Segmentado etiqueta={t.filtro} opciones={opciones} valor={filtro}
         alCambiar={(v) => escribir({ [PARAM_URL.CATEGORIA]: v === TODAS ? null : v })} className="mb-5" />
-      <ListaSitios sitios={visibles} activo={activo} alActivar={setActivo} alSeleccionar={seleccionar} />
+      <ListaSitios sitios={visibles} activo={activo} alActivar={activar} alSeleccionar={seleccionar} />
     </>
   );
 
@@ -68,7 +69,7 @@ export default function Sitios() {
         <p className="text-texto-2 mt-3 max-w-[52ch]">{t.entrada}</p>
         <div className="mt-6 lg:mt-8 lg:pr-10">
           <MapaPolar sitios={visibles} activo={activo} seleccionado={seleccionado?.site_id ?? null}
-            alActivar={setActivo} alSeleccionar={seleccionar} cargando={isPending} />
+            alActivar={activar} alSeleccionar={seleccionar} cargando={isPending} />
         </div>
         <div className="mt-5"><LeyendaCategorias categorias={presentes} /></div>
       </div>
@@ -84,13 +85,22 @@ export default function Sitios() {
           <EstadoVacio titulo={t.vacio}><Boton variante="primario" onClick={abrirCarga}>{T.nav.subir}</Boton></EstadoVacio>
         )}
         {sitios && sitios.length > 0 && (
-          esEscritorio && seleccionado ? (
-            <m.div key={seleccionado.site_id}
-              initial={reducido ? false : { opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: MOVIMIENTO.MEDIA / 1000, ease: MOVIMIENTO.EASE_SALIDA }}>
-              <FichaSitio sitio={seleccionado} alVolver={cerrar} idTitulo={idFicha} />
-            </m.div>
-          ) : lista
+          // La ficha entra desde la derecha y SALE por donde entró (160 ms); la lista vuelve con un fundido corto.
+          <AnimatePresence mode="wait" initial={false}>
+            {esEscritorio && seleccionado ? (
+              <m.div key={seleccionado.site_id}
+                initial={reducido ? false : { opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0, transition: { duration: MOVIMIENTO.MEDIA / 1000, ease: MOVIMIENTO.EASE_SALIDA } }}
+                exit={reducido ? undefined : { opacity: 0, x: 24, transition: { duration: MOVIMIENTO.SALIDA_RUTA / 1000, ease: MOVIMIENTO.EASE_ENTRADA } }}>
+                <FichaSitio sitio={seleccionado} alVolver={cerrar} idTitulo={idFicha} />
+              </m.div>
+            ) : (
+              <m.div key="lista" initial={reducido ? false : { opacity: 0 }} animate={{ opacity: 1, transition: { duration: MOVIMIENTO.CORTA / 1000 } }}
+                exit={reducido ? undefined : { opacity: 0, transition: { duration: MOVIMIENTO.MICRO / 1000 } }}>
+                {lista}
+              </m.div>
+            )}
+          </AnimatePresence>
         )}
       </div>
 
