@@ -1,0 +1,14 @@
+server {
+  listen 80;
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # En local, /api va al backend (BACKEND_URL). En producción lo hace Firebase Hosting.
+  location /api/ {
+    proxy_pass ${BACKEND_URL};
+  }
+
+  location / {
+    try_files $uri /index.html;
+  }
+}
