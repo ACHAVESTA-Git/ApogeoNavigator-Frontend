@@ -19,7 +19,7 @@ import { SolSvg, TierraSvg } from "../glifos/Astros";
 import { useApp } from "../layout/contexto";
 import { useAnclaHorizonte } from "../layout/horizonteContexto";
 import { ContornosRegolito } from "./ContornosRegolito";
-import { ReglaHero } from "./ReglaHero";
+import { Transporte } from "../tiempo/Transporte";
 
 const FILAS = (datos as Efemerides).filas;
 const T0 = aMs(FILAS[0].utc);
@@ -251,14 +251,19 @@ export function EscenaHero({ children }: { children: React.ReactNode }) {
             <span className={tierraVisible ? "text-tierra" : "text-texto-2"}>{NOMBRE_ASTRO.tierra.toUpperCase()} {estadoTierra}</span>
           </p>
           <div className="mt-3 max-w-3xl">
-            <ReglaHero
+            <Transporte
               filas={FILAS}
-              indice={indiceEn(FILAS, lectura.ms)}
-              reproduciendo={reproduciendo && !reducido}
-              alAlternar={() => setReproduciendo((v) => !v)}
-              alMover={(i) => {
-                setReproduciendo(false);
-                mostrar(aMs(FILAS[i].utc), true);
+              variante="minima"
+              etiqueta={T.inicio.regla}
+              control={{
+                indice: indiceEn(FILAS, lectura.ms),
+                reproduciendo: reproduciendo && !reducido,
+                alternar: () => setReproduciendo((v) => !v),
+                // Tocar la regla pausa el bucle: desde ahí el mes lo recorre la persona.
+                irAIndice: (i) => {
+                  setReproduciendo(false);
+                  mostrar(aMs(FILAS[i].utc), true);
+                },
               }}
             />
           </div>

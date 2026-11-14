@@ -3,16 +3,17 @@ import { Suspense, lazy, useCallback, useEffect, useId, useMemo, useRef, type Ke
 import { useSearchParams } from "react-router";
 import { PanelLectura } from "../components/cielo/PanelLectura";
 import { PanoramaCielo, type Escala } from "../components/cielo/PanoramaCielo";
-import { ControlesTiempo, ReglaTiempo } from "../components/cielo/ReglaTiempo";
 import { TablaCielo } from "../components/cielo/TablaCielo";
 import { AvisoHorizonteIdeal } from "../components/layout/AvisoHorizonteIdeal";
 import { useApp } from "../components/layout/contexto";
 import { TituloPagina } from "../components/layout/TituloPagina";
+import { Transporte, controlDeReloj } from "../components/tiempo/Transporte";
 import { Boton } from "../components/ui/Boton";
 import { Desplegable } from "../components/ui/Desplegable";
 import { EstadoCarga, EstadoError } from "../components/ui/Estados";
 import { Segmentado } from "../components/ui/Segmentado";
 import { useEfemerides } from "../hooks/useEfemerides";
+import { useDesde } from "../hooks/useMedia";
 import { useEscribirUrl } from "../hooks/useParametrosUrl";
 import { usePuestas } from "../hooks/usePuestas";
 import { useRelojSimulacion } from "../hooks/useRelojSimulacion";
@@ -39,6 +40,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
   const escribir = useEscribirUrl();
   const { anunciar } = useApp();
   const reloj = useRelojSimulacion(filas, sitio.site_id);
+  const esEscritorio = useDesde("lg");
   const vista: Vista = params.get(PARAM_URL.VISTA) === "cenital" ? "cenital" : "panorama";
   const escala: Escala = params.get(PARAM_URL.ESCALA) === "lineal" ? "lineal" : "lupa";
 
@@ -106,8 +108,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
             </Suspense>
           )}
           {/* El control de tiempo va pegado al gráfico: es la interacción principal y debe verse sin desplazarse */}
-          <ReglaTiempo filas={filas} reloj={reloj} className="mt-3" />
-          <div className="mt-2"><ControlesTiempo reloj={reloj} /></div>
+          <Transporte filas={filas} control={controlDeReloj(reloj, filas)} conHoras={esEscritorio} className="mt-3" />
         </div>
         <PanelLectura utc={reloj.tUtc} posicion={posicion} eventos={eventos} periodo={periodo} className="min-w-0 lg:col-span-3 lg:pt-2" />
       </div>

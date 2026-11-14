@@ -3,6 +3,7 @@ import { BotonComparar } from "../components/mapa/BotonComparar";
 import { EnlaceBoton } from "../components/ui/Boton";
 import { EstadoCarga, EstadoError, EstadoVacio } from "../components/ui/Estados";
 import { GlifoCategoria } from "../components/glifos/GlifoCategoria";
+import { BarraTiempo } from "../components/tiempo/BarraTiempo";
 import { PestanasRuta } from "../components/ui/Segmentado";
 import { SelectorMes } from "../components/ui/SelectorMes";
 import { usePeriodo } from "../hooks/useParametrosUrl";
@@ -59,7 +60,10 @@ export default function SitioLayout() {
         </div>
       </header>
       <div className="bg-vacio sticky top-(--nav-alto-movil) z-20 mt-1 md:top-(--nav-alto) md:mt-2">
-        <div className="contenedor"><PestanasRuta etiqueta={t.pestanas} pestanas={pestanas} /></div>
+        <div className="contenedor">
+          <PestanasRuta etiqueta={t.pestanas} pestanas={pestanas} />
+          <div className="-mt-0.5"><BarraTiempo /></div>
+        </div>
       </div>
       <Outlet context={{ sitio, desde: periodo.desde, hasta: periodo.hasta } satisfies ContextoSitio} />
     </>

@@ -5,7 +5,7 @@ import { useApp } from "../components/layout/contexto";
 import { instantePorDefecto } from "../lib/astro";
 import { DATOS, MOVIMIENTO, MS_POR_HORA, PARAM_URL, VELOCIDAD_POR_DEFECTO } from "../lib/constants";
 import { aMs, esUtc, limitar } from "../lib/fechas";
-import { fijarInstanteGlobal } from "../lib/relojGlobal";
+import { fijarFranjaTiempo, fijarInstanteGlobal } from "../lib/relojGlobal";
 import type { FilaEfemeride, Utc } from "../lib/tipos";
 import { useMovimientoReducido } from "./useMovimientoReducido";
 import { useEscribirUrl } from "./useParametrosUrl";
@@ -59,12 +59,17 @@ export function useRelojSimulacion(filas: readonly FilaEfemeride[], siteId: stri
   const t = useMotionValue(inicial.ms);
   const [indice, setIndice] = useState(() => Math.floor((inicial.ms - desdeMs) / pasoMs));
   const [reproduciendo, setReproduciendo] = useState(false);
+  useEffect(() => {
+    fijarFranjaTiempo(0, (t.get() - desdeMs) / (hastaMs - desdeMs));
+    return () => fijarFranjaTiempo(0, 0);
+  }, [t, desdeMs, hastaMs]);
   const [velocidad, setVelocidad] = useState<number>(VELOCIDAD_POR_DEFECTO);
 
   const fijar = useCallback(
     (ms: number) => {
       const v = limitar(ms, desdeMs, hastaMs);
       t.set(v);
+      fijarFranjaTiempo(0, (v - desdeMs) / (hastaMs - desdeMs));
       setIndice(Math.floor((v - desdeMs) / pasoMs));
     },
     [t, desdeMs, hastaMs, pasoMs],

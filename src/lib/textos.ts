@@ -66,6 +66,7 @@ export const T = {
     regla: "Instante",
     velocidad: "Velocidad",
     porSegundo: (h: number) => (h % 24 === 0 ? `${h / 24} d/s` : `${h} h/s`),
+    reiniciar: "Volver al inicio del periodo",
     menosDia: "Retroceder 1 día",
     menosHora: "Retroceder 1 hora",
     masHora: "Avanzar 1 hora",
