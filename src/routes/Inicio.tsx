@@ -14,7 +14,7 @@ import { cargarSitios } from "../rutas";
 
 const LAT_SHACKLETON = -89.66; // sites.csv
 const ICONO = { sol: <GlifoSol px={22} />, tierra: <GlifoTierra px={22} />, puesta: <Sunset aria-hidden="true" className="text-texto size-[22px]" strokeWidth={1.5} /> };
-const SECCION = "contenedor grid gap-x-6 gap-y-6 py-14 md:grid-cols-12 md:py-20";
+const SECCION = "contenedor grid grid-cols-1 gap-x-6 gap-y-6 py-14 md:grid-cols-12 md:py-20";
 const TITULO_SECCION = "rotulo md:col-span-3";
 
 export default function Inicio() {

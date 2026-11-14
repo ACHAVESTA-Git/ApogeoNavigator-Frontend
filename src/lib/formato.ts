@@ -1,5 +1,5 @@
 // Formato de cifras para la interfaz (coma decimal). En la API y los CSV sigue el punto.
-import { LOCALE_NUMEROS } from "./constants";
+import { LOCALE_NUMEROS, MAPA } from "./constants";
 
 const MENOS = "−";
 const cache = new Map<number, Intl.NumberFormat>();
@@ -28,6 +28,9 @@ export const horas = (valor: number): string => `${numeroCorto(valor)} h`;
 export const latitud = (lat: number, decimales = 2): string => `${numero(Math.abs(lat), decimales)}° ${lat < 0 ? "S" : "N"}`;
 export const longitud = (lon: number, decimales = 2): string => `${numero(Math.abs(lon), decimales)}° ${lon < 0 ? "O" : "E"}`;
 export const coordenadas = (lat: number, lon: number): string => `${latitud(lat)} · ${longitud(lon)}`;
+
+/** 'Apolo 11' de 'Apolo 11 - Mar de la Tranquilidad'. */
+export const nombreCorto = (nombre: string): string => nombre.split(MAPA.SEPARADOR_NOMBRE)[0];
 
 const KB = 1024;
 export function tamanoArchivo(bytes: number): string {
