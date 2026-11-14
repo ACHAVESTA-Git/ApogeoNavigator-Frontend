@@ -115,17 +115,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
       <AvisoHorizonteIdeal className="mt-5" />
 
       <div className="mt-8">
-        <Desplegable titulo={t.tabla}><TablaCielo filas={filas} indice={reloj.indice} /></Desplegable>
-        <Desplegable titulo={t.atajos} className="border-b">
-          <dl className="text-apoyo grid gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
-            {t.listaAtajos.map(([tecla, accion]) => (
-              <div key={tecla} className="contents">
-                <dt className="text-texto font-mono">{tecla}</dt>
-                <dd className="text-texto-2">{accion}</dd>
-              </div>
-            ))}
-          </dl>
-        </Desplegable>
+        <Desplegable titulo={t.tabla} className="border-b"><TablaCielo filas={filas} indice={reloj.indice} /></Desplegable>
       </div>
     </div>
   );
