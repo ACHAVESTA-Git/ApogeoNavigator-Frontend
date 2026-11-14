@@ -86,10 +86,20 @@ describe("respaldo a datos de ejemplo", () => {
 });
 
 describe("métricas", () => {
-  it("recalcula el semáforo con los umbrales del cliente", async () => {
-    simularFetch(() => json({ resultados: [{ site_id: "shackleton", pct_sol: 100, pct_tierra: 39.11, semaforo: { energia: "x" } }] }));
+  const base = { site_id: "shackleton", pct_sol: 100, pct_tierra: 39.11, sol_el_max_deg: 1.7385 };
+  it("respeta el semáforo y los avisos que manda la API", async () => {
+    const semaforo = { energia: "amarillo", comunicacion: "rojo", global: "rojo" };
+    const avisos = [{ codigo: "sensible_al_relieve", mensaje: "Texto de la API" }];
+    simularFetch(() => json({ resultados: [{ ...base, semaforo, avisos }] }));
+    const { resultados } = await obtenerMetricas(["shackleton"], {}, { modo: "false" });
+    expect(resultados[0].semaforo).toEqual(semaforo);
+    expect(resultados[0].avisos).toEqual(avisos);
+  });
+  it("solo recalcula si el semáforo no es válido o faltan los avisos", async () => {
+    simularFetch(() => json({ resultados: [{ ...base, semaforo: { energia: "x" } }] }));
     const { resultados } = await obtenerMetricas(["shackleton"], {}, { modo: "false" });
     expect(resultados[0].semaforo).toEqual({ energia: "verde", comunicacion: "rojo", global: "rojo" });
+    expect(resultados[0].avisos[0].codigo).toBe("sensible_al_relieve");
   });
 });
 

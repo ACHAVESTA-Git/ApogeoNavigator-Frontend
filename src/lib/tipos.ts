@@ -51,12 +51,18 @@ export interface ValoresMetricas {
 export interface ReferenciaMetricas extends ValoresMetricas {
   coincide: boolean;
 }
+/** Aviso que acompaña al semáforo (hoy solo `sensible_al_relieve`). El mensaje lo redacta la API. */
+export interface Aviso {
+  codigo: string;
+  mensaje: string;
+}
 export interface Metrica extends ValoresMetricas {
   // intervalo [desde, hasta)
   site_id: string;
   inicio_utc: Utc;
   fin_utc: Utc;
   semaforo: Semaforo;
+  avisos: Aviso[];
   origen: "calculado" | "ejemplo";
   referencia: ReferenciaMetricas | null;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avisoRelieve, describirCielo, describirInstante, faltanPara, periodoLegible, proximoCambio, umbralNivel, veredicto } from "./textos";
+import { describirCielo, describirInstante, faltanPara, periodoLegible, proximoCambio, umbralNivel, veredicto } from "./textos";
 
 const fila = { sol_az_deg: 151.4, sol_el_deg: 1.17, tierra_az_deg: 237.48, tierra_el_deg: -45.4 };
 
@@ -38,8 +38,5 @@ describe("textos generados", () => {
     expect(periodoLegible("2026-12-01T00:00Z", "2026-12-08T00:00Z")).toBe("2026-12-01 → 2026-12-08");
     expect(umbralNivel("rojo", { VERDE_MIN: 70, AMARILLO_MIN: 40 })).toBe("< 40 %");
     expect(umbralNivel("amarillo", { VERDE_MIN: 70, AMARILLO_MIN: 40 })).toBe("40–70 %");
-  });
-  it("avisa de los datos sensibles al relieve", () => {
-    expect(avisoRelieve({ sol_el_max_deg: 1.7385, pct_sol: 100 })).toContain("nunca supera 1,7°");
   });
 });

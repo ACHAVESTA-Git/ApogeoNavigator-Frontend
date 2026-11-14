@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcularMetricas, esSemaforo, esSensibleAlRelieve, eventosCruce, instantePorDefecto, mediasNoches, nivel,
+import { avisosDe, calcularMetricas, esSemaforo, esSensibleAlRelieve, eventosCruce, instantePorDefecto, mediasNoches, nivel,
   proximosEventos, resumenDiario, semaforo, tramosVisibles } from "./astro";
 import { SEMAFORO } from "./constants";
 import { aMs, sumarHoras } from "./fechas";
@@ -56,10 +56,15 @@ describe("semáforo", () => {
     expect(esSemaforo({ energia: "azul", comunicacion: "rojo", global: "rojo" })).toBe(false);
     expect(esSemaforo(null)).toBe(false);
   });
-  it("marca como sensible al relieve un Sol que nunca supera 3°", () => {
-    expect(esSensibleAlRelieve({ sol_el_max_deg: 1.7385, horas_sol: 744 })).toBe(true);
-    expect(esSensibleAlRelieve({ sol_el_max_deg: 11.07, horas_sol: 417 })).toBe(false);
-    expect(esSensibleAlRelieve({ sol_el_max_deg: -0.4, horas_sol: 0 })).toBe(false);
+  it("respaldo: avisa de un Sol que nunca supera 3° (misma regla que el backend)", () => {
+    expect(avisosDe({ sol_el_max_deg: 1.7385 })).toEqual([{ codigo: "sensible_al_relieve", mensaje: expect.stringContaining("3°") }]);
+    expect(avisosDe({ sol_el_max_deg: -0.4291 })).toHaveLength(1); // el backend también avisa con el Sol bajo el horizonte
+    expect(avisosDe({ sol_el_max_deg: 11.07 })).toEqual([]);
+  });
+  it("lee el aviso de relieve que manda la API", () => {
+    expect(esSensibleAlRelieve({ avisos: [{ codigo: "sensible_al_relieve", mensaje: "x" }] })).toBe(true);
+    expect(esSensibleAlRelieve({ avisos: [] })).toBe(false);
+    expect(esSensibleAlRelieve({})).toBe(false);
   });
 });
 
