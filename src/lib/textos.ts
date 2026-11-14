@@ -313,6 +313,36 @@ export const T = {
     nErrores: (n: number) => `${n} ${n === 1 ? "error" : "errores"}`,
     nAdvertencias: (n: number) => `${n} ${n === 1 ? "advertencia" : "advertencias"}`,
   },
+  comparar: {
+    documento: "Comparar",
+    rotulo: "Comparar",
+    titulo: (periodo: string) => `Mismo periodo, destinos distintos · ${periodo}`,
+    tituloFechas: (nombre: string) => `Mismo sitio, fechas distintas · ${nombre}`,
+    tituloElegir: "Elige qué comparar",
+    modo: "Qué comparar",
+    modoSitios: "Sitios",
+    modoFechas: "Fechas",
+    elegirSitios: (min: number, max: number) => `Elige de ${min} a ${max} sitios`,
+    elegirMeses: (min: number, max: number) => `Elige de ${min} a ${max} meses`,
+    sitio: "Sitio",
+    sugerida: "Comparación sugerida: el polo, casi el polo y el ecuador.",
+    maximo: (max: number) => `Solo se pueden comparar ${max} a la vez. Quita uno para añadir otro.`,
+    comparar: (n: number) => `Comparar ${n}`,
+    cambiar: "Cambiar selección",
+    grafico: "Horizontes apilados. Con el foco aquí, las flechas mueven el cursor compartido 1 hora (con Mayús, 1 día).",
+    cursor: "Cursor",
+    sinCursor: "Pasa el puntero por las bandas o usa las flechas para leer cada sitio a la misma hora.",
+    hora: (n: number) => `hora ${n} del periodo`,
+    menosDia: "Mover el cursor 1 día atrás",
+    masDia: "Mover el cursor 1 día adelante",
+    tabla: "Ver como tabla",
+    tablaTitulo: "Métricas de cada fila de la comparación",
+    metrica: "Métrica",
+    filas: { horas_sol: "Horas de sol", pct_sol: "% de horas con sol", sol_el_max_deg: "Altura máxima del Sol", horas_tierra_visible: "Horas con la Tierra visible", pct_tierra: "% de horas con la Tierra", energia: "Energía", comunicacion: "Comunicación", global: "Viabilidad global" },
+    mejor: "mejor",
+    verSitio: (nombre: string) => `Ver las ventanas de ${nombre}`,
+    cargando: "Comparando…",
+  },
   noEncontrado: {
     documento: "Fuera del mapa",
     rotulo: "Error 404",
@@ -379,16 +409,30 @@ export const horaLocal = (hora: string): string => `${hora} ${ZONA_HORARIA_LOCAL
 
 export const SIN_LINEA_DIRECTA = "Sin línea directa con la Tierra: requiere satélite de retransmisión.";
 
-export interface FilaVeredicto { nombre: string; horas_sol: number; pct_sol: number; horas_tierra_visible: number; pct_tierra: number }
+export interface FilaVeredicto {
+  nombre: string;
+  horas_sol: number;
+  pct_sol: number;
+  horas_tierra_visible: number;
+  pct_tierra: number;
+  /** La API avisó de que las horas de sol dependen del relieve. */
+  sensible?: boolean;
+}
 const listar = (nombres: string[]): string =>
   nombres.length <= 1 ? (nombres[0] ?? "") : `${nombres.slice(0, -1).join(", ")} y ${nombres[nombres.length - 1]}`;
+const mayuscula = (texto: string): string => texto.charAt(0).toUpperCase() + texto.slice(1);
+const frases = (...partes: string[]): string => partes.filter(Boolean).map((p) => `${mayuscula(p)}.`).join(" ");
+/** Recuerda que un primer puesto en horas de sol puede deberse al horizonte ideal. */
+const cautela = (filas: FilaVeredicto[]): string => {
+  const sensibles = filas.filter((f) => f.sensible && f.horas_sol > 0).map((f) => f.nombre);
+  return sensibles.length ? `ojo: las horas de sol de ${listar(sensibles)} son del horizonte ideal y dependen del relieve` : "";
+};
 
-/** Frase de comparación generada solo con las métricas: ordena, no opina. */
+/** Sitios distintos en un mismo periodo. Frase generada solo con las métricas: ordena, no opina. */
 export function veredicto(filas: FilaVeredicto[], periodo: string): string {
   if (filas.length < 2) return "";
   const porSol = [...filas].sort((a, b) => b.horas_sol - a.horas_sol);
-  const [mejor, ...resto] = porSol;
-  const ultimo = resto[resto.length - 1];
+  const [mejor, ultimo] = [porSol[0], porSol[porSol.length - 1]];
   const dif = mejor.horas_sol - ultimo.horas_sol;
   const sol =
     dif === 0
@@ -402,7 +446,21 @@ export function veredicto(filas: FilaVeredicto[], periodo: string): string {
   if (completos.length) partes.push(`${listar(completos.map((f) => f.nombre))} ${completos.length > 1 ? "ven" : "ve"} la Tierra todo el periodo`);
   parciales.forEach((f) => partes.push(`${f.nombre} la ve ${horas(f.horas_tierra_visible)} (${pct(f.pct_tierra)})`));
   if (sinTierra.length) partes.push(`${listar(sinTierra.map((f) => f.nombre))} no ${sinTierra.length > 1 ? "la ven" : "la ve"} nunca`);
-  return `${sol}. ${partes.join("; ")}.`.replace(/\. ([a-zñáéíóú])/u, (_, c: string) => `. ${c.toUpperCase()}`);
+  return frases(sol, partes.join("; "), cautela(filas));
+}
+
+/** Un mismo sitio en fechas distintas (`nombre` es el periodo de cada fila). */
+export function veredictoFechas(filas: FilaVeredicto[], sitio: string): string {
+  if (filas.length < 2) return "";
+  const porSol = [...filas].sort((a, b) => b.horas_sol - a.horas_sol);
+  const [mejor, ultimo] = [porSol[0], porSol[porSol.length - 1]];
+  const dif = mejor.horas_sol - ultimo.horas_sol;
+  const sol =
+    dif === 0
+      ? `en ${sitio} hay las mismas horas de sol (${horas(mejor.horas_sol)}) en ${listar(filas.map((f) => f.nombre))}`
+      : `en ${sitio}, ${mejor.nombre} tiene ${horas(dif)} más de sol que ${ultimo.nombre}`;
+  const tierra = `la Tierra se ve ${listar(filas.map((f) => `${horas(f.horas_tierra_visible)} en ${f.nombre}`))}`;
+  return frases(sol, tierra, cautela(filas));
 }
 
 /** 'diciembre de 2026' si el rango es un mes natural completo; si no, '2026-12-01 → 2026-12-08'. */
