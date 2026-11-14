@@ -81,6 +81,26 @@ export const T = {
     // de Shackleton sí llega a ponerse (27/01/2027), así que no se afirma que no se ponga «nunca».
     titular: { antes: "En el polo sur, ", acento: "el Sol", despues: " no se pone en todo el mes: rueda por el horizonte." },
     apoyo: "Un paso de unos kilómetros o de unos días decide si un módulo tiene energía y línea directa con la Tierra. Compáralo en minutos.",
+    // Relato con scroll en tres actos. Todas las cifras salen de hero-shackleton.json (CSV reales).
+    actos: {
+      progreso: "Actos del relato",
+      ir: (n: number) => `Ir al acto ${n}`,
+      uno: { rotulo: "Acto 1 · El problema", kpi: "Horas con Sol en diciembre", contexto: (min: string, max: string) => `El Sol nunca sube de ${max} ni baja de ${min}: da la vuelta al horizonte sin ponerse. Cualquier colina puede taparlo.` },
+      dos: {
+        rotulo: "Acto 2 · La exploración",
+        titular: { antes: "Pero ", acento: "la Tierra", despues: " sí se esconde." },
+        kpi: "Horas con enlace directo",
+        contexto: (salida: string, puesta: string, sin: string) => `Sale el ${salida} y se pone el ${puesta} (UTC). El resto del mes, ${sin} sin línea directa con la Tierra.`,
+      },
+      tres: {
+        rotulo: "Acto 3 · La decisión",
+        titular: "Elige dónde aterrizar.",
+        kpi: "Sitios para comparar",
+        contexto: (puesta: string) => `Unos kilómetros o unos días lo cambian todo: el ${puesta} (UTC) el Sol de Shackleton también se pone. Compara energía y enlace antes de decidir.`,
+      },
+      de: (total: string) => `de ${total}`,
+      sigue: "Desplázate para avanzar el mes",
+    },
     explorar: "Explorar sitios",
     verCielo: "Ver el cielo de Shackleton",
     escena: "Panorama de 360° del horizonte de Shackleton. El Sol recorre el horizonte sin ponerse; la Tierra sale y se pone.",
