@@ -16,6 +16,9 @@ import { marcarNavegacion } from "./TituloPagina";
 
 // Diferida: solo se descarga cuando hay algún sitio fijado para comparar.
 const BandejaComparacion = lazy(() => import("./BandejaComparacion"));
+// El popup de carga se descarga al pasar el ratón o el foco por «Subir datos» y se monta al pulsar.
+const cargarPopupCarga = () => import("../upload/UploadDialog");
+const UploadDialog = lazy(cargarPopupCarga);
 const MS = 1000;
 /** Las pestañas de un sitio comparten clave: cambiar de pestaña no reanima todo el layout del sitio. */
 function claveDeRuta(pathname: string): string {
@@ -46,7 +49,8 @@ export function AppShell() {
 
   const anunciar = useCallback((mensaje: string) => setAnuncio(mensaje), []);
   const abrirCarga = useCallback(() => setCargaAbierta(true), []);
-  const precargarCarga = useCallback(() => undefined, []);
+  const precargarCarga = useCallback(() => void cargarPopupCarga(), []);
+  const cerrarCarga = useCallback(() => setCargaAbierta(false), []);
   const app = useMemo<ContextoApp>(
     () => ({ abrirCarga, precargarCarga, modalAbierto: cargaAbierta, anunciar }),
     [abrirCarga, precargarCarga, cargaAbierta, anunciar],
@@ -79,6 +83,7 @@ export function AppShell() {
         {hayFijados && <Suspense fallback={null}><BandejaComparacion /></Suspense>}
         <BarraInferior />
         <div aria-live="polite" role="status" className="sr-only">{anuncio}</div>
+        {cargaAbierta && <Suspense fallback={null}><UploadDialog alCerrar={cerrarCarga} /></Suspense>}
       </ContextoHorizonte.Provider>
     </ContextoAppReact.Provider>
   );
