@@ -23,6 +23,7 @@ export interface RelojSimulacion {
   pausar: () => void;
   alternar: () => void;
   irA: (ms: number) => void;
+  arrastrarA: (ms: number) => void;
   paso: (horas: number) => void;
   velocidad: number;
   setVelocidad: (horasPorSegundo: number) => void;
@@ -114,6 +115,14 @@ export function useRelojSimulacion(filas: readonly FilaEfemeride[], siteId: stri
     },
     [fijar, desdeMs, pasoMs],
   );
+  /** Arrastre directo del tiempo: sigue al dedo de forma continua (sin saltar de hora en hora) y pausa. */
+  const arrastrarA = useCallback(
+    (ms: number) => {
+      setReproduciendo(false);
+      fijar(ms);
+    },
+    [fijar],
+  );
   const pausar = useCallback(() => irA(t.get()), [irA, t]);
   const reproducir = useCallback(() => {
     if (t.get() >= hastaMs) fijar(desdeMs); // al final del periodo, vuelve a empezar
@@ -123,7 +132,7 @@ export function useRelojSimulacion(filas: readonly FilaEfemeride[], siteId: stri
   return {
     t, tUtc, indice, desdeMs, hastaMs, reproduciendo, reproducir, pausar,
     alternar: reproduciendo ? pausar : reproducir,
-    irA,
+    irA, arrastrarA,
     paso: useCallback((h: number) => irA(t.get() + h * MS_POR_HORA), [irA, t]),
     velocidad, setVelocidad, ajustado: inicial.ajustado,
   };

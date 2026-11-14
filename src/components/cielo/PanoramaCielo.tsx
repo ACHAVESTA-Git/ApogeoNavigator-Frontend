@@ -6,15 +6,16 @@ import { useAltoVentana, useDesde } from "../../hooks/useMedia";
 import { useMovimientoReducido } from "../../hooks/useMovimientoReducido";
 import { useValorMotion } from "../../hooks/useValorMotion";
 import { CLAVE_AZIMUT, CLAVE_ELEVACION, sobreHorizonte } from "../../lib/astro";
-import { GRADOS_VUELTA, MOVIMIENTO, PANORAMA } from "../../lib/constants";
+import { ESCENA, GRADOS_VUELTA, MOVIMIENTO, MS_POR_HORA, PANORAMA } from "../../lib/constants";
 import { desenrollar, diferenciaAngular, elevacionAY, escalaMixta, normalizarAz } from "../../lib/escalas";
 import { limitar } from "../../lib/fechas";
-import { grados } from "../../lib/formato";
+import { grados, pct as pctTexto } from "../../lib/formato";
 import { indiceEn, interpolarFila } from "../../lib/interpolar";
 import { NOMBRE_ASTRO, T, describirCielo } from "../../lib/textos";
 import type { Astro, FilaEfemeride, Utc } from "../../lib/tipos";
 import { GlifoAstro, SolSvg, TierraSvg } from "../glifos/Astros";
 import { useAnclaHorizonte } from "../layout/horizonteContexto";
+import { crearPaisaje, faseTierra, leerColores, pintarEscena, semillaDe, type Colores } from "./lienzoLunar";
 import { clasesBoton, unir } from "../ui/clases";
 
 const COPIAS = [-1, 0, 1]; // el mundo de 360° se dibuja tres veces: la vista puede girar sin costuras
@@ -30,9 +31,15 @@ export type Escala = "lupa" | "lineal";
  * escala de lupa (el tramo 0–5° ocupa buena parte de la altura, porque en el polo los astros viven ahí).
  * Arriba de la línea, el cielo; debajo, el regolito, donde los astros ocultos se dibujan como fantasmas.
  */
-export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo }: {
+export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo, semilla, alArrastrarTiempo, alSoltarTiempo, incertidumbre = 0 }: {
   filas: readonly FilaEfemeride[]; t: MotionValue<number>; tUtc: Utc; escala: Escala;
   alPulsarTecla: (e: KeyboardEvent, girar: (grados: number) => void) => void; idTitulo: string;
+  /** Texto que fija el paisaje ilustrativo (el id del sitio): cada sitio tiene siempre el mismo relieve. */
+  semilla: string;
+  /** Arrastrar el suelo mueve el tiempo: recibe el instante en ms mientras se arrastra y al soltar. */
+  alArrastrarTiempo: (ms: number) => void; alSoltarTiempo: (ms: number) => void;
+  /** Incertidumbre de la proyección en grados (0 = dato de Horizons). */
+  incertidumbre?: number;
 }) {
   const id = useId();
   const reducido = useMovimientoReducido();
@@ -41,10 +48,10 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo 
   const [refCaja, { ancho }] = useDimensiones<HTMLDivElement>();
   const ventana = PANORAMA.VENTANA_DEG[esEscritorio ? "escritorio" : esTableta ? "tableta" : "movil"];
   const altoVentana = useAltoVentana();
-  const limites = PANORAMA.ALTO_PX[esTableta ? "escritorio" : "movil"];
+  const limites = ESCENA.ALTO[esTableta ? "escritorio" : "movil"];
   const alto = Math.round(limitar(altoVentana * limites.fraccion, limites.min, limites.max));
   const ppd = ancho / ventana; // píxeles por grado de azimut
-  const yHorizonte = Math.round(alto * PANORAMA.HORIZONTE_FRACCION);
+  const yHorizonte = Math.round(alto * ESCENA.HORIZONTE_FRACCION);
   const altoCielo = yHorizonte - PANORAMA.MARGEN_SUPERIOR_PX;
   const altoSubsuelo = alto - yHorizonte - PANORAMA.MARGEN_INFERIOR_PX;
 
@@ -100,26 +107,76 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo 
   useEffect(() => centro.set(interpolarFila(filas, t.get()).sol_az_deg), [filas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Arrastre con inercia corta (WCAG 2.5.7: los botones de giro son la alternativa sin arrastre).
-  const arrastre = useRef<{ x: number; t: number; v: number } | null>(null);
+  // Manipulación directa, 1:1 con el dedo: arrastrar el CIELO gira la mirada; arrastrar el SUELO mueve el tiempo.
+  const arrastre = useRef<{ x: number; t: number; v: number; tiempo: number | null } | null>(null);
+  const [zona, setZona] = useState<"cielo" | "suelo">("cielo");
+  const msPorPx = ancho ? (ESCENA.HORAS_POR_ANCHO * MS_POR_HORA) / ancho : 0;
   const alBajar = (e: PointerEvent<HTMLDivElement>) => {
-    if ((e.target as Element).closest("button")) return;
+    if ((e.target as Element).closest("button, input, [data-transporte]")) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     centro.stop();
-    arrastre.current = { x: e.clientX, t: e.timeStamp, v: 0 };
+    const enSuelo = e.clientY - e.currentTarget.getBoundingClientRect().top > yHorizonte;
+    arrastre.current = { x: e.clientX, t: e.timeStamp, v: 0, tiempo: enSuelo ? t.get() : null };
   };
   const alMover = (e: PointerEvent<HTMLDivElement>) => {
     const a = arrastre.current;
-    if (!a || !ppd) return;
+    if (!a) {
+      setZona(e.clientY - e.currentTarget.getBoundingClientRect().top > yHorizonte ? "suelo" : "cielo");
+      return;
+    }
+    if (!ppd) return;
     const dx = e.clientX - a.x;
+    if (a.tiempo !== null) {
+      a.tiempo += dx * msPorPx; // hacia la derecha, el tiempo avanza
+      a.x = e.clientX;
+      alArrastrarTiempo(a.tiempo);
+      return;
+    }
     const dt = Math.max(1, e.timeStamp - a.t);
     centro.set(centro.get() - dx / ppd);
-    arrastre.current = { x: e.clientX, t: e.timeStamp, v: -dx / ppd / dt };
+    arrastre.current = { ...a, x: e.clientX, t: e.timeStamp, v: (-dx / ppd / dt) * 1000 }; // grados por segundo
   };
   const alSoltar = () => {
     const a = arrastre.current;
     arrastre.current = null;
-    if (a && !reducido && Math.abs(a.v) > 0.02) girarA(centro.get() + a.v * MOVIMIENTO.INERCIA_MAX * 0.5, MOVIMIENTO.INERCIA_MAX);
+    if (!a) return;
+    if (a.tiempo !== null) return alSoltarTiempo(a.tiempo);
+    // Inercia con spring sembrado con la velocidad del gesto: cada lanzamiento aterriza distinto.
+    if (!reducido && Math.abs(a.v) > 20) animate(centro, centro.get() + a.v * 0.28, { ...MOVIMIENTO.SPRING_SUAVE, velocity: a.v });
   };
+
+  // Lienzo: se repinta solo cuando cambia algo (tiempo, giro, escala o tamaño), no en un bucle continuo.
+  const lienzo = useRef<HTMLCanvasElement>(null);
+  const colores = useRef<Colores | null>(null);
+  const paisaje = useMemo(() => crearPaisaje(semillaDe(semilla)), [semilla]);
+  const pendiente = useRef(0);
+  const pintar = useCallback(() => {
+    cancelAnimationFrame(pendiente.current);
+    pendiente.current = requestAnimationFrame(() => {
+      const el = lienzo.current;
+      const ctx = el?.getContext("2d");
+      if (!el || !ctx || !ancho) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, ESCENA.DPR_MAX);
+      if (el.width !== Math.round(ancho * dpr) || el.height !== Math.round(alto * dpr)) {
+        el.width = Math.round(ancho * dpr);
+        el.height = Math.round(alto * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      colores.current ??= leerColores(el);
+      pintarEscena(ctx, {
+        ancho, alto, yHorizonte, ppd, centro: centro.get(), incertidumbre,
+        yDe: elevacionAY(escalaMixta(mezcla.get()), yHorizonte, altoCielo, altoSubsuelo),
+      }, posicion.get(), paisaje, colores.current);
+    });
+  }, [ancho, alto, yHorizonte, ppd, altoCielo, altoSubsuelo, centro, mezcla, posicion, paisaje, incertidumbre]);
+  useEffect(() => {
+    pintar();
+    const bajas = [posicion.on("change", pintar), centro.on("change", pintar), mezcla.on("change", pintar)];
+    return () => {
+      bajas.forEach((baja) => baja());
+      cancelAnimationFrame(pendiente.current);
+    };
+  }, [pintar, posicion, centro, mezcla]);
 
   // Rastro: trayectoria de las ±12 h alrededor del instante (hacia dónde se mueve cada astro).
   const i0 = indiceEn(filas, t.get());
@@ -148,12 +205,14 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo 
   const rxRasante = (ANCHO_MAX_PX - (ANCHO_MAX_PX - ANCHO_MIN_PX) * fRasante) / 2;
   const marcasAz = Array.from({ length: GRADOS_VUELTA / PANORAMA.MARCA_AZIMUT_CADA }, (_, k) => k * PANORAMA.MARCA_AZIMUT_CADA);
 
+  const rSol = ESCENA.RADIO_SOL_PX;
+  const rTierra = rSol * ESCENA.RAZON_TIERRA_SOL;
   const etiqueta = (astro: Astro) => {
     const el = lectura[CLAVE_ELEVACION[astro]];
     const texto = T.cielo.etiqueta(NOMBRE_ASTRO[astro], grados(lectura[CLAVE_AZIMUT[astro]], 1), grados(el, 2, true));
     return sobreHorizonte(el) ? texto : `${texto} ${T.cielo.bajo}`;
   };
-  const botonGiro = clasesBoton("secundario", "bg-vacio/80 px-0 border-linea");
+  const botonGiro = clasesBoton("secundario", "material px-0");
 
   return (
     <figure className="m-0">
@@ -171,13 +230,13 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo 
         onPointerUp={alSoltar}
         onPointerCancel={alSoltar}
         onWheel={(e) => Math.abs(e.deltaX) > Math.abs(e.deltaY) && ppd && centro.set(centro.get() + e.deltaX / ppd)}
-        className="relative cursor-grab touch-pan-y overflow-hidden select-none active:cursor-grabbing"
+        className={unir("relative touch-pan-y overflow-hidden rounded-panel select-none", zona === "suelo" ? "cursor-ew-resize" : "cursor-grab active:cursor-grabbing")}
         style={{ height: alto }}
       >
+        <canvas ref={lienzo} aria-hidden="true" className="absolute inset-0 size-full" />
         {ancho > 0 && (
-          <svg role="img" aria-labelledby={idTitulo} aria-describedby={`${id}-desc`} width={ancho} height={alto} className="block">
+          <svg role="img" aria-labelledby={idTitulo} aria-describedby={`${id}-desc`} width={ancho} height={alto} className="relative block">
             <defs>
-              <filter id={`${id}-halo`} x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation={8} /></filter>
               {/* Lo que cruza la costura de 360° se desvanece en los bordes en vez de cortarse */}
               <linearGradient id={`${id}-fundido`}>
                 <stop offset="0" stopColor="black" />
@@ -188,13 +247,7 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo 
               <mask id={`${id}-bordes`} maskUnits="userSpaceOnUse" x={0} y={0} width={ancho} height={alto}>
                 <rect width={ancho} height={alto} fill={`url(#${id}-fundido)`} />
               </mask>
-              <radialGradient id={`${id}-rasante`}>
-                <stop offset="0" className="[stop-color:var(--color-sol)]" stopOpacity="0.45" />
-                <stop offset="1" className="[stop-color:var(--color-sol)]" stopOpacity="0" />
-              </radialGradient>
             </defs>
-            <rect x={0} y={yHorizonte} width={ancho} height={alto - yHorizonte} className="fill-regolito" />
-
             {/* Eje de elevación: líneas a todo el ancho con su cota a la izquierda */}
             <g aria-hidden="true">
               {marcas.map((e) => (
@@ -223,24 +276,6 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo 
                   {rastros.map((r) => (
                     <path key={r.astro} d={r.d} className={unir("fill-none", TRAZO[r.astro])} strokeWidth={1.25} strokeDasharray="2 5" opacity={0.75} />
                   ))}
-                  {/* Resplandor rasante: más ancho cuanto más bajo está el Sol */}
-                  {sobreHorizonte(lectura.sol_el_deg) && (
-                    <m.g style={{ x: x.sol }}>
-                      <ellipse cy={yHorizonte} rx={rxRasante} ry={ALTO_PX} fill={`url(#${id}-rasante)`} />
-                    </m.g>
-                  )}
-                  <g className="animate-aparecer" style={{ animationDelay: `${MOVIMIENTO.LARGA}ms` }}>
-                    {ASTROS.map((astro) => {
-                      const oculto = !sobreHorizonte(lectura[CLAVE_ELEVACION[astro]]);
-                      const r = astro === "sol" ? PANORAMA.RADIO_SOL : PANORAMA.RADIO_TIERRA;
-                      return (
-                        <m.g key={astro} style={{ x: x[astro], y: y[astro] }}>
-                          {astro === "sol" && !oculto && <circle r={r * 1.7} className="fill-sol" opacity={0.6} filter={`url(#${id}-halo)`} />}
-                          {astro === "sol" ? <SolSvg r={r} fantasma={oculto} /> : <TierraSvg r={r} fantasma={oculto} />}
-                        </m.g>
-                      );
-                    })}
-                  </g>
                 </g>
               ))}
             </m.g>
@@ -249,13 +284,13 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo 
         )}
         {ancho > 0 && ASTROS.map((astro) => (
           <EtiquetaAstro key={astro} texto={etiqueta(astro)} xPantalla={xPantalla[astro]} yGlifo={y[astro]} ancho={ancho} alto={alto}
-            radio={astro === "sol" ? PANORAMA.RADIO_SOL : PANORAMA.RADIO_TIERRA}
+            radio={astro === "sol" ? rSol + 4 : rTierra}
             debajo={!sobreHorizonte(lectura[CLAVE_ELEVACION[astro]])}
             className={sobreHorizonte(lectura[CLAVE_ELEVACION[astro]]) ? COLOR_TEXTO[astro] : "text-texto-2"} />
         ))}
         {/* Astros fuera de la ventana visible: una flecha en el borde que dice hacia dónde y cuánto girar */}
         {ventana < GRADOS_VUELTA && (
-          <div className="pointer-events-none absolute top-8 right-1 left-12 flex flex-col gap-1">
+          <div className="pointer-events-none absolute top-16 right-2 left-12 flex flex-col gap-1">
             {ASTROS.slice().reverse().map((astro) => {
               const delta = diferenciaAngular(centroLeido, lectura[CLAVE_AZIMUT[astro]]);
               if (Math.abs(delta) <= ventana / 2) return null;
@@ -277,24 +312,30 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo 
         {/* Ancla del horizonte continuo: el eje 0° del panorama */}
         <div ref={ancla} aria-hidden="true" className="pointer-events-none absolute inset-x-0 h-px" style={{ top: yHorizonte }} />
 
-        <p className="text-texto-3 pointer-events-none absolute top-1.5 right-2 text-right text-[0.75rem]">
-          {escala === "lupa" ? T.cielo.escalaLupa : T.cielo.escalaLineal}
-        </p>
-        <div className="absolute right-2 bottom-2 flex gap-2">
-          {ASTROS.slice().reverse().map((astro) => (
-            <button key={astro} type="button" className={botonGiro} aria-label={T.cielo.centrar(NOMBRE_ASTRO[astro])} onClick={() => centrarEn(astro)}>
-              <GlifoAstro astro={astro} px={16} />
+        <p className="text-texto-3 pointer-events-none absolute top-3 left-16 text-[0.75rem] max-md:hidden">{escala === "lupa" ? T.cielo.escalaLupa : T.cielo.escalaLineal}</p>
+        <div className="pointer-events-none absolute top-3 right-3 flex flex-col items-end gap-2">
+          <div className="pointer-events-auto flex gap-2">
+            {ASTROS.slice().reverse().map((astro) => (
+              <button key={astro} type="button" className={botonGiro} aria-label={T.cielo.centrar(NOMBRE_ASTRO[astro])} title={T.cielo.centrar(NOMBRE_ASTRO[astro])} onClick={() => centrarEn(astro)}>
+                <GlifoAstro astro={astro} px={16} />
+              </button>
+            ))}
+            <button type="button" className={botonGiro} aria-label={T.cielo.girarIzq(PANORAMA.GIRO_DEG)} onClick={() => girar(-PANORAMA.GIRO_DEG)}>
+              <ChevronLeft aria-hidden="true" className="size-4" />
             </button>
-          ))}
-          <button type="button" className={botonGiro} aria-label={T.cielo.girarIzq(PANORAMA.GIRO_DEG)} onClick={() => girar(-PANORAMA.GIRO_DEG)}>
-            <ChevronLeft aria-hidden="true" className="size-4" />
-          </button>
-          <button type="button" className={botonGiro} aria-label={T.cielo.girarDer(PANORAMA.GIRO_DEG)} onClick={() => girar(PANORAMA.GIRO_DEG)}>
-            <ChevronRight aria-hidden="true" className="size-4" />
-          </button>
+            <button type="button" className={botonGiro} aria-label={T.cielo.girarDer(PANORAMA.GIRO_DEG)} onClick={() => girar(PANORAMA.GIRO_DEG)}>
+              <ChevronRight aria-hidden="true" className="size-4" />
+            </button>
+          </div>
         </div>
+        {/* Avisos de honestidad, siempre visibles dentro de la escena */}
+        <p className="text-texto-3 pointer-events-none absolute right-3 font-mono text-[0.6875rem]" style={{ top: yHorizonte - 18 }}>{T.cielo.horizonteIdeal}</p>
+        <p className="text-texto-2 pointer-events-none absolute left-14 text-[0.75rem]" style={{ top: yHorizonte + 34 }}>{T.cielo.relieve}</p>
       </div>
-      <figcaption id={`${id}-desc`} className="sr-only">{describirCielo(tUtc, filas[i0])}</figcaption>
+      <p aria-hidden="true" className="text-texto-3 mt-2 text-[0.75rem] max-md:hidden">
+        {T.cielo.arrastra}. {T.cielo.tamanos} {T.cielo.faseTierra(pctTexto(faseTierra(lectura) * 100))}.
+      </p>
+      <figcaption id={`${id}-desc`} className="sr-only">{describirCielo(tUtc, filas[i0])} {T.cielo.relieve}</figcaption>
     </figure>
   );
 }

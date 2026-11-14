@@ -9,6 +9,7 @@ export const API = {
   EFEMERIDES: (id: string) => `/api/efemerides/${encodeURIComponent(id)}`,
   METRICAS: "/api/metricas",
   PUESTAS: (id: string) => `/api/puestas/${encodeURIComponent(id)}`,
+  SIMULACION: (id: string) => `/api/simulacion/${encodeURIComponent(id)}`,
   VALIDAR: (tipo: TipoArchivo) => `/api/datos/validar/${tipo}`,
   GUARDAR: (tipo: TipoArchivo) => `/api/datos/${tipo}`,
   CLAVES: "/api/admin/claves",
@@ -65,6 +66,8 @@ export const DATOS = {
   T_POR_DEFECTO: "2026-12-14T23:00Z",
   // Cobertura de los CSV del 14/11/2026 (límites del selector de mes). Fuera de ella la API responde 422.
   COBERTURA: { DESDE: "2026-12-01T00:00Z", HASTA: "2027-06-01T00:00Z" },
+  // Meses más allá de los datos que se pueden pedir a /api/simulacion (proyección marcada, con incertidumbre).
+  PROYECCION_MESES: 1,
   SITIO_DESTACADO: "shackleton",
   // Comparación sugerida cuando aún no se ha elegido nada: polo, casi polo y ecuador.
   COMPARACION_SUGERIDA: ["shackleton", "im1_odysseus", "apollo11"],
@@ -147,7 +150,7 @@ export const PANORAMA = {
   // Alto = fracción del alto de la ventana, acotado: el panorama y su control de tiempo caben en el primer pliegue.
   ALTO_PX: { movil: { min: 220, max: 300, fraccion: 0.36 }, escritorio: { min: 300, max: 440, fraccion: 0.42 } },
   ETIQUETA: { ANCHO_CARACTER_PX: 7.3, MARGEN_PX: 8, MARGEN_IZQ_PX: 48, SEPARACION_PX: 10, ALTO_PX: 16 },
-  ZONA_BOTONES: { ANCHO_PX: 250, ALTO_PX: 64 }, // esquina inferior derecha, reservada a los botones de giro
+  ZONA_BOTONES: { ANCHO_PX: 0, ALTO_PX: 0 }, // los botones de giro van arriba: abajo no hay zona reservada
   DIFUMINADO_BORDE_PX: 28,
   SEPARACION_MARCAS_PX: 15,
   MARGEN_SUPERIOR_PX: 28,
@@ -164,6 +167,23 @@ export const PANORAMA = {
   RADIO_SOL: 7,
   RADIO_TIERRA: 6,
   RESPLANDOR: { ANCHO_MAX_PX: 520, ANCHO_MIN_PX: 60, ALTO_PX: 10, HASTA_DEG: 15 },
+} as const;
+
+/** Escena inmersiva del cielo (lienzo). Los tamaños de los astros están ampliados; se conserva la proporción real. */
+export const ESCENA = {
+  DPR_MAX: 2,
+  ALTO: { movil: { min: 280, max: 380, fraccion: 0.42 }, escritorio: { min: 440, max: 760, fraccion: 0.7 } },
+  HORIZONTE_FRACCION: 0.56,
+  // Tamaño aparente real: Sol ≈ 0,53°, Tierra ≈ 1,9° desde la Luna (casi 4 veces mayor).
+  RADIO_SOL_PX: 5.5,
+  RAZON_TIERRA_SOL: 3.6,
+  ESTRELLAS: 260,
+  ROCAS: 46,
+  RELIEVE_PX: { lejano: 14, cercano: 18 }, // relieve ILUSTRATIVO: no sale de datos de topografía
+  SOMBRA_MAX_PX: 150,
+  PASO_PERFIL_PX: 4,
+  CREPUSCULO_DEG: { desde: -1.2, hasta: 2.5 }, // tramo en que el suelo pasa de noche a día
+  HORAS_POR_ANCHO: 96, // arrastrar el suelo de lado a lado recorre 4 días
 } as const;
 
 export const HERO = {

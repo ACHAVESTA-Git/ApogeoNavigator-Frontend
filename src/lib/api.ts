@@ -3,7 +3,7 @@ import { avisosDe, esSemaforo, semaforo } from "./astro";
 import { API, API_BASE_URL, MODO_MUESTRA } from "./constants";
 import { ApiError, ErrorDeRed, esApiAusente } from "./errores";
 import { efemeridesMuestra, marcarMuestraActiva, metricasMuestra, puestasMuestra, sitiosMuestra } from "./muestra";
-import type { Efemerides, InformeCsv, Metrica, Puestas, Rango, RespuestaMetricas, ResultadoGuardado, Site, TipoArchivo, Utc } from "./tipos";
+import type { Efemerides, InformeCsv, Metrica, Puestas, Rango, RespuestaMetricas, ResultadoGuardado, Simulacion, Site, TipoArchivo, Utc } from "./tipos";
 
 type Params = Record<string, string | readonly string[] | undefined>;
 
@@ -96,6 +96,13 @@ export const obtenerMetricas = (ids: string[], rango: Rango = {}, { signal, modo
 
 export const obtenerPuestas = (id: string, desde?: Utc, { signal, modo }: Opciones = {}): Promise<Puestas> =>
   conRespaldo(() => pedir<Puestas>(API.PUESTAS(id), { desde }, signal), () => puestasMuestra(id, desde), modo);
+
+/**
+ * Serie para animar el cielo más allá de los datos: la proyección viene marcada punto a punto. No tiene respaldo
+ * de ejemplo: una proyección no se puede sacar de los CSV, y no se inventa.
+ */
+export const obtenerSimulacion = (id: string, rango: Rango = {}, { signal }: Opciones = {}): Promise<Simulacion> =>
+  pedir<Simulacion>(API.SIMULACION(id), { ...rango }, signal);
 
 // ---------------------------------------------------------------- carga de CSV (nunca usa la muestra)
 async function subir<T>(ruta: string, archivo: File, clave: string): Promise<T> {

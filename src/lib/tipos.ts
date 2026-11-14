@@ -35,6 +35,20 @@ export interface Efemerides {
   paso_horas: number;
   filas: FilaEfemeride[];
 }
+/** Punto de GET /api/simulacion/{id}: dato de Horizons o proyección marcada, con su incertidumbre (RMSE). */
+export interface PuntoSimulacion extends FilaEfemeride {
+  origen: "datos" | "proyeccion";
+  incertidumbre_deg: Omit<FilaEfemeride, "utc"> | null;
+}
+export interface Simulacion {
+  site_id: string;
+  desde_utc: Utc;
+  hasta_utc: Utc;
+  paso_horas: number;
+  fin_datos_utc: Utc;
+  avisos: { codigo: string; mensaje: string }[];
+  puntos: PuntoSimulacion[];
+}
 export interface Semaforo {
   energia: NivelSemaforo;
   comunicacion: NivelSemaforo;

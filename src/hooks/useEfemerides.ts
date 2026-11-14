@@ -8,5 +8,5 @@ export const consultaEfemerides = (id: string, rango: Rango = {}) => ({
   queryFn: ({ signal }: { signal: AbortSignal }) => obtenerEfemerides(id, rango, { signal }),
 });
 /** Efemérides de un sitio en [desde, hasta] (extremos incluidos). Una petición por sitio y rango, en caché. */
-export const useEfemerides = (id: string | undefined, rango: Rango = {}, { mantener = false } = {}) =>
-  useQuery({ ...consultaEfemerides(id ?? "", rango), enabled: Boolean(id), placeholderData: mantener ? keepPreviousData : undefined });
+export const useEfemerides = (id: string | undefined, rango: Rango = {}, { mantener = false } = {}, activo = true) =>
+  useQuery({ ...consultaEfemerides(id ?? "", rango), enabled: Boolean(id) && activo, placeholderData: mantener ? keepPreviousData : undefined });
