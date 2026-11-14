@@ -101,7 +101,7 @@ export function Transporte({ filas, control, variante = "completa", etiqueta = T
         {contador}
         {control.velocidad !== undefined && control.setVelocidad && (
           <Segmentado comoRadio etiqueta={t.velocidad} opciones={VELOCIDADES} valor={String(control.velocidad)}
-            alCambiar={(v) => control.setVelocidad?.(Number(v))} className="ml-auto border-b-0" />
+            alCambiar={(v) => control.setVelocidad?.(Number(v))} className="ml-auto" />
         )}
       </div>
     </div>

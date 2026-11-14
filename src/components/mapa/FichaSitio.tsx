@@ -46,7 +46,7 @@ export function FichaSitio({ sitio, alVolver, idTitulo }: { sitio: Site; alVolve
         <Lectura rotulo={t.coordenadas} className="col-span-2">{coordenadas(sitio.lat_deg, sitio.lon_este_deg)}</Lectura>
       </dl>
 
-      <dl className="border-linea mt-5 grid grid-cols-2 gap-x-6 border-y py-4" aria-busy={!m}>
+      <dl className="panel mt-5 grid grid-cols-2 gap-x-6 p-4" aria-busy={!m}>
         <Lectura rotulo={<span className="inline-flex items-center gap-2"><GlifoAstro astro="sol" px={12} />{t.solPeriodo}</span>}
           nota={m && <GlifoSemaforo nivel={m.semaforo.energia} nota={esSensibleAlRelieve(m)} className="mt-1" />}>
           {m ? <Cifra pct={m.pct_sol} horas={m.horas_sol} /> : "—"}

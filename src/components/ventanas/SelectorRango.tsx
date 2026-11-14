@@ -5,7 +5,7 @@ import { T } from "../../lib/textos";
 import type { Utc } from "../../lib/tipos";
 import { Boton } from "../ui/Boton";
 
-const CAMPO = "tactil bg-superficie border-linea text-texto w-full rounded-xs border px-3 font-mono text-[0.9375rem] aria-[invalid=true]:border-critico";
+const CAMPO = "tactil bg-superficie border-linea text-texto w-full rounded-control border px-3 font-mono text-[0.9375rem] aria-[invalid=true]:border-critico";
 
 /** Misma validación que el backend, antes de llamar: formato, orden, ≤ 35 días y dentro de los datos. */
 export function validarRango(desde: Utc | null, hasta: Utc | null): string | null {

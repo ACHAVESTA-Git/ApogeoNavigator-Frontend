@@ -52,7 +52,7 @@ export default function UploadDialog({ alCerrar }: { alCerrar: () => void }) {
       {u.paso === "hecho" && (
         <>
           {u.conteo.noGuardados > 0 && <Boton variante="texto" onClick={u.revisarNoGuardados} className="col-span-3 sm:mr-auto">{t.revisarNoGuardados}</Boton>}
-          <Boton variante="primario" className="col-span-3 sm:min-w-36" onClick={(e) => e.currentTarget.closest("dialog")?.close()}>{t.listo}</Boton>
+          <Boton variante="primario" className="col-span-3 sm:min-w-36" onClick={(e) => e.currentTarget.closest("dialog")?.dispatchEvent(new Event("cancel", { cancelable: true }))}>{t.listo}</Boton>
         </>
       )}
     </div>

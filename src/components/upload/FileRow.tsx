@@ -43,7 +43,7 @@ export function FileRow({ archivo: a, alQuitar }: { archivo: ArchivoCarga; alQui
   return (
     <li className="capilar-b">
       <div className="flex min-h-15 items-center gap-3 py-2">
-        <span className="bg-superficie flex size-8 shrink-0 items-center justify-center rounded-xs">
+        <span className="bg-superficie flex size-8 shrink-0 items-center justify-center rounded-control">
           <FileSpreadsheet aria-hidden="true" className="text-texto-2 size-4" />
         </span>
         <div className="min-w-0 flex-1">
@@ -62,7 +62,7 @@ export function FileRow({ archivo: a, alQuitar }: { archivo: ArchivoCarga; alQui
         </div>
         {alQuitar && (
           <button type="button" onClick={alQuitar} aria-label={T.carga.quitar(a.archivo.name)}
-            className="tactil text-critico hover:bg-superficie inline-flex shrink-0 items-center justify-center rounded-xs transition-colors duration-(--dur-micro) active:scale-[0.98]">
+            className="tactil text-critico hover:bg-superficie inline-flex shrink-0 items-center justify-center rounded-control transition-colors duration-(--dur-micro) active:scale-[0.98]">
             <Trash2 aria-hidden="true" className="size-4" />
           </button>
         )}

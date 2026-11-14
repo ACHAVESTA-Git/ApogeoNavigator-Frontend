@@ -87,10 +87,10 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
         </TituloPagina>
         <div className="flex gap-x-2 md:gap-x-6">
           {vista === "panorama" && (
-            <Segmentado etiqueta={t.escala} opciones={ESCALAS} valor={escala} className="border-b-0"
+            <Segmentado etiqueta={t.escala} opciones={ESCALAS} valor={escala}
               alCambiar={(v) => escribir({ [PARAM_URL.ESCALA]: v === "lupa" ? null : v })} />
           )}
-          <Segmentado etiqueta={t.vista} opciones={VISTAS} valor={vista} className="border-b-0"
+          <Segmentado etiqueta={t.vista} opciones={VISTAS} valor={vista}
             alCambiar={(v) => escribir({ [PARAM_URL.VISTA]: v === "panorama" ? null : v })} />
         </div>
       </div>
@@ -110,7 +110,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
           {/* El control de tiempo va pegado al gráfico: es la interacción principal y debe verse sin desplazarse */}
           <Transporte filas={filas} control={controlDeReloj(reloj, filas)} conHoras={esEscritorio} className="mt-3" />
         </div>
-        <PanelLectura utc={reloj.tUtc} posicion={posicion} eventos={eventos} periodo={periodo} className="min-w-0 lg:col-span-3 lg:pt-2" />
+        <PanelLectura utc={reloj.tUtc} posicion={posicion} eventos={eventos} periodo={periodo} className="panel min-w-0 self-start p-4 lg:col-span-3" />
       </div>
       <AvisoHorizonteIdeal className="mt-5" />
 

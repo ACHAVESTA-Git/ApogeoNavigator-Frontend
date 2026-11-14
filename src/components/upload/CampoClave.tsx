@@ -1,7 +1,7 @@
 import { forwardRef, useId } from "react";
 import { T } from "../../lib/textos";
 
-const CAMPO = "tactil bg-superficie border-linea text-texto mt-1.5 w-full rounded-xs border px-3 font-mono focus-visible:-outline-offset-2 aria-[invalid=true]:border-critico";
+const CAMPO = "tactil bg-superficie border-linea text-texto mt-1.5 w-full rounded-control border px-3 font-mono focus-visible:-outline-offset-2 aria-[invalid=true]:border-critico";
 
 /** Clave de la API. Se escribe aquí y se guarda solo en sessionStorage: nunca viaja en el bundle. */
 export const CampoClave = forwardRef<HTMLInputElement, { etiqueta?: string; ayuda?: string; valor: string; invalida: boolean; alCambiar: (valor: string) => void }>(

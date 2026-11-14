@@ -19,7 +19,7 @@ export const DropZone = forwardRef<HTMLButtonElement, { alElegir: (archivos: Fil
       onDragOver={(e) => { e.preventDefault(); setEncima(true); }}
       onDragLeave={() => setEncima(false)}
       onDrop={soltar}
-      className={unir("rounded-xs border border-dashed px-4 py-6 text-center transition-colors duration-(--dur-micro)",
+      className={unir("rounded-control border border-dashed px-4 py-6 text-center transition-colors duration-(--dur-micro)",
         encima ? "border-texto bg-superficie" : "border-horizonte")}
     >
       <CloudUpload aria-hidden="true" className="text-texto-2 mx-auto size-6" strokeWidth={1.5} />

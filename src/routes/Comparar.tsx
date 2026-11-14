@@ -159,7 +159,7 @@ export default function Comparar() {
               <label className="mb-5 block max-w-sm">
                 <span className="rotulo">{t.sitio}</span>
                 <select value={sitioFechas?.site_id} onChange={(e) => escribir({ [PARAM_URL.SITIO]: e.target.value })}
-                  className="tactil bg-superficie border-linea text-texto mt-1.5 w-full rounded-xs border px-3">
+                  className="tactil bg-superficie border-linea text-texto mt-1.5 w-full rounded-control border px-3">
                   {sitios.map((s) => <option key={s.site_id} value={s.site_id}>{s.nombre}</option>)}
                 </select>
               </label>
