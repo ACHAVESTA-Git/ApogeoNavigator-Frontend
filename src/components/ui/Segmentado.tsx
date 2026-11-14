@@ -2,7 +2,7 @@ import { NavLink } from "react-router";
 import { unir } from "./clases";
 
 const ITEM =
-  "tactil inline-flex items-center justify-center px-4 text-apoyo font-semibold whitespace-nowrap border-b-2 " +
+  "tactil inline-flex items-center justify-center px-3 md:px-4 text-apoyo font-semibold whitespace-nowrap border-b-2 " +
   "transition-colors duration-(--dur-micro)";
 const estado = (activo: boolean) => (activo ? "border-texto text-texto" : "border-transparent text-texto-2 hover:text-texto");
 

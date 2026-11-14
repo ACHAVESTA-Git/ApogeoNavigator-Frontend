@@ -6,7 +6,7 @@ import { useApp } from "../layout/contexto";
 import { Boton } from "../ui/Boton";
 
 /** «Añadir a comparar (n/3)»: bloquea el cuarto sitio con un aviso en vez de fallar en silencio. */
-export function BotonComparar({ siteId, className }: { siteId: string; className?: string }) {
+export function BotonComparar({ siteId, className, compacto = false }: { siteId: string; className?: string; compacto?: boolean }) {
   const { ids, alternar } = useComparacion();
   const { anunciar } = useApp();
   const fijado = ids.includes(siteId);
@@ -23,7 +23,12 @@ export function BotonComparar({ siteId, className }: { siteId: string; className
       }}
     >
       {fijado ? <Check aria-hidden="true" className="size-4" /> : <Plus aria-hidden="true" className="size-4" />}
-      {texto}
+      {compacto ? (
+        <>
+          <span className="whitespace-nowrap sm:hidden" aria-hidden="true">{T.comparacion.corto(ids.length, DATOS.MAX_COMPARAR)}</span>
+          <span className="max-sm:sr-only">{texto}</span>
+        </>
+      ) : texto}
     </Boton>
   );
 }

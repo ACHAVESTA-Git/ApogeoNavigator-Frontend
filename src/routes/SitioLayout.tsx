@@ -46,7 +46,7 @@ export default function SitioLayout() {
   const paso = clasesBoton("secundario", "px-0 border-linea");
   return (
     <>
-      <header className="contenedor flex flex-wrap items-end justify-between gap-x-8 gap-y-4 pt-6 md:pt-8">
+      <header className="contenedor flex flex-wrap items-end justify-between gap-x-8 gap-y-3 pt-5 md:pt-6">
         <div className="min-w-0">
           <p className="rotulo flex items-center gap-2">
             <GlifoCategoria categoria={sitio.categoria} className="size-3" />
@@ -55,22 +55,22 @@ export default function SitioLayout() {
           <p className="titulo-instrumento text-subtitulo text-texto mt-1.5 md:text-[1.5rem]">{sitio.nombre}</p>
           <p className="text-dato-sm text-texto-2 mt-1 font-mono" data-dato>{coordenadas(sitio.lat_deg, sitio.lon_este_deg)}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-between sm:gap-3">
           <div role="group" aria-label={t.periodo} className="flex items-center">
             <button type="button" className={paso} aria-label={t.mesAnterior} disabled={!periodo.hayAnterior} onClick={() => periodo.moverMes(-1)}>
               <ChevronLeft aria-hidden="true" className="size-4" />
             </button>
-            <p aria-live="polite" className="text-apoyo text-texto min-w-40 px-2 text-center font-semibold first-letter:uppercase">
+            <p aria-live="polite" className="text-apoyo text-texto min-w-32 px-1 text-center font-semibold first-letter:uppercase sm:min-w-40">
               {periodoLegible(periodo.desde, periodo.hasta)}
             </p>
             <button type="button" className={paso} aria-label={t.mesSiguiente} disabled={!periodo.haySiguiente} onClick={() => periodo.moverMes(1)}>
               <ChevronRight aria-hidden="true" className="size-4" />
             </button>
           </div>
-          <BotonComparar siteId={id} />
+          <BotonComparar siteId={id} compacto className="max-sm:px-2.5" />
         </div>
       </header>
-      <div className="bg-vacio sticky top-(--nav-alto-movil) z-20 mt-4 md:top-(--nav-alto)">
+      <div className="bg-vacio sticky top-(--nav-alto-movil) z-20 mt-2 md:top-(--nav-alto)">
         <div className="contenedor"><PestanasRuta etiqueta={t.pestanas} pestanas={pestanas} /></div>
       </div>
       <Outlet context={{ sitio, desde: periodo.desde, hasta: periodo.hasta } satisfies ContextoSitio} />
