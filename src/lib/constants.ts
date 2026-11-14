@@ -63,6 +63,8 @@ export const DATOS = {
   DESDE_POR_DEFECTO: "2026-12-01T00:00Z",
   HASTA_POR_DEFECTO: "2027-01-01T00:00Z",
   T_POR_DEFECTO: "2026-12-14T23:00Z",
+  // Cobertura de los CSV del 14/11/2026 (límites del selector de mes). Fuera de ella la API responde 422.
+  COBERTURA: { DESDE: "2026-12-01T00:00Z", HASTA: "2027-06-01T00:00Z" },
   SITIO_DESTACADO: "shackleton",
   MIN_COMPARAR: 2,
   MAX_COMPARAR: 3, // = MAX_COMPARE_SITES
@@ -152,14 +154,17 @@ export const PANORAMA = {
 
 export const HERO = {
   PASO_HORAS: 3,
-  HORIZONTE_FRACCION: { movil: 0.6, escritorio: 0.68 },
+  HORIZONTE_FRACCION: { movil: 0.66, escritorio: 0.68 },
   FOTOGRAMA_REDUCIDO: "2026-12-20T00:00Z",
+  INICIO_RELATO: "2026-12-12T00:00Z", // el bucle arranca poco antes de la salida de la Tierra
   CONTORNOS: 10,
-  CURVATURA_PX: 26, // flecha del arco del limbo lunar
-  CIELO_UTIL: 0.8, // fracción del cielo que usa la escala de lupa
-  ELEVACION_TOPE_DEG: 20,
-  RADIO_SOL: 13,
-  RADIO_TIERRA: 9,
+  CURVATURA_PX: { movil: 12, escritorio: 26 }, // flecha del arco del limbo lunar
+  LUPA_PX: { fraccionCielo: { movil: 0.32, escritorio: 0.55 }, max: 340 }, // píxeles que ocupa la escala de lupa completa (0…90°)
+  MARCAS_ELEVACION: [1, 2, 5],
+  TIERRA_FRACCION_X: 0.72, // dónde cae el azimut medio de la Tierra en el panorama de 360°
+  BARRIDO: { MITAD: 0.16, OPACIDAD: 0.5 }, // semianchura del barrido de luz rasante (fracción del ancho)
+  RADIO_SOL: { movil: 10, escritorio: 13 },
+  RADIO_TIERRA: { movil: 7, escritorio: 9 },
   CLAVE_SESION_INTRO: "apogeo.introVista",
 } as const;
 
