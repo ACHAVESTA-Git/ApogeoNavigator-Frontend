@@ -69,6 +69,10 @@
   --shadow-glow-tierra: 0 0 10px 1px rgb(90 169 255 / 0.35);
 
   --animate-girar: girar 900ms linear infinite;
+  --animate-aparecer: aparecer var(--dur-corta) var(--ease-salida) both;
+  @keyframes aparecer {
+    from { opacity: 0; }
+  }
   @keyframes girar {
     to { transform: rotate(360deg); }
   }

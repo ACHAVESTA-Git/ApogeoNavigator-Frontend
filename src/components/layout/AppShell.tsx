@@ -1,6 +1,7 @@
 import { AnimatePresence, m } from "motion/react";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useOutlet } from "react-router";
+import { useComparacion } from "../../hooks/useComparacion";
 import { useMovimientoReducido } from "../../hooks/useMovimientoReducido";
 import { MOVIMIENTO, RUTAS } from "../../lib/constants";
 import { T } from "../../lib/textos";
@@ -13,6 +14,8 @@ import { ContextoHorizonte, type RegistroHorizonte } from "./horizonteContexto";
 import { NavPrincipal } from "./NavPrincipal";
 import { marcarNavegacion } from "./TituloPagina";
 
+// Diferida: solo se descarga cuando hay algún sitio fijado para comparar.
+const BandejaComparacion = lazy(() => import("./BandejaComparacion"));
 const MS = 1000;
 /** Las pestañas de un sitio comparten clave: cambiar de pestaña no reanima todo el layout del sitio. */
 function claveDeRuta(pathname: string): string {
@@ -29,6 +32,7 @@ export function AppShell() {
   const [anuncio, setAnuncio] = useState("");
   const [cargaAbierta, setCargaAbierta] = useState(false);
   const clave = claveDeRuta(pathname);
+  const hayFijados = useComparacion().ids.length > 0;
   const primera = useRef(true);
 
   useEffect(() => {
@@ -72,6 +76,7 @@ export function AppShell() {
             </AnimatePresence>
           </main>
         </div>
+        {hayFijados && <Suspense fallback={null}><BandejaComparacion /></Suspense>}
         <BarraInferior />
         <div aria-live="polite" role="status" className="sr-only">{anuncio}</div>
       </ContextoHorizonte.Provider>

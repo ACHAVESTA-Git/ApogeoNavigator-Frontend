@@ -76,6 +76,8 @@ export const DATOS = {
   DIA_LUNAR_DIAS: 29.5,
 } as const;
 
+export const RANGO_POR_DEFECTO = { desde: DATOS.DESDE_POR_DEFECTO, hasta: DATOS.HASTA_POR_DEFECTO } as const;
+
 export const SEMAFORO = {
   // Decisión del usuario (14/11): en un mes ningún sitio no polar pasa de ~50 % de sol, así que la energía
   // usa umbrales propios; la comunicación mantiene 70/40. El global es el peor de los dos.
@@ -179,6 +181,11 @@ export const MAPA = {
   RADIO_PUNTO: 6,
   ESCALA_ACTIVO: 1.6,
   LON_CARA_OCULTA: 90,
+  ANILLO_HORIZONTE: 0, // visto desde el polo sur, el limbo de la Luna es el ecuador
+  RADIO_ETIQUETA_IZQ: 30, // los sitios pegados al polo se rotulan a la izquierda
+  MERIDIANOS_ROTULADOS: [0, 90, 180, 270],
+  SEPARADOR_NOMBRE: " - ",
+  ESQUELETO_FILAS: 6,
 } as const;
 
 export const DIA_LUNAR = { ALTO_PX: { movil: 260, escritorio: 420 }, PX_POR_DIA_MOVIL: 24, MARGEN_IZQ: 44, MARGEN_SUP: 16, MARGEN_INF: 30 } as const;
@@ -202,7 +209,7 @@ export const RUTAS = {
   CLAVES: "/admin/claves",
 } as const; // sin ruta de carga: es un popup
 export const SEGMENTO = { CIELO: "cielo", VENTANAS: "ventanas", DIA_LUNAR: "dia-lunar" } as const;
-export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista" } as const;
+export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", SITIO: "sitio", CATEGORIA: "cat" } as const;
 
 export const ENLACES = {
   HORIZONS: "https://ssd.jpl.nasa.gov/horizons/",
