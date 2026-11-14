@@ -1,5 +1,5 @@
 import { useTransform } from "motion/react";
-import { Suspense, lazy, useCallback, useEffect, useId, useMemo, type KeyboardEvent } from "react";
+import { Suspense, lazy, useCallback, useEffect, useId, useMemo, useRef, type KeyboardEvent } from "react";
 import { useSearchParams } from "react-router";
 import { PanelLectura } from "../components/cielo/PanelLectura";
 import { PanoramaCielo, type Escala } from "../components/cielo/PanoramaCielo";
@@ -18,9 +18,10 @@ import { usePuestas } from "../hooks/usePuestas";
 import { useRelojSimulacion } from "../hooks/useRelojSimulacion";
 import { useTeclasTiempo } from "../hooks/useTeclasTiempo";
 import { useValorMotion } from "../hooks/useValorMotion";
-import { proximosEventos } from "../lib/astro";
+import { eventosEn, proximosEventos, sobreHorizonte } from "../lib/astro";
 import { MOVIMIENTO, PANORAMA, PARAM_URL } from "../lib/constants";
 import { ApiError } from "../lib/errores";
+import { aMs } from "../lib/fechas";
 import { interpolarFila } from "../lib/interpolar";
 import { T, describirCielo } from "../lib/textos";
 import type { FilaEfemeride, Site } from "../lib/tipos";
@@ -44,8 +45,20 @@ function Instrumento({ sitio, filas }: { sitio: Site; filas: FilaEfemeride[] }) 
   const posicion = useValorMotion(useTransform(reloj.t, (ms) => interpolarFila(filas, ms)));
   // «Puesta en N h»: la API cuando está en pausa; mientras se reproduce, el mismo cálculo sobre las filas ya cargadas.
   const puestas = usePuestas(sitio.site_id, reloj.tUtc, !reloj.reproduciendo);
-  const locales = useMemo(() => proximosEventos(filas, reloj.tUtc), [filas, reloj.tUtc]);
-  const eventos = !reloj.reproduciendo && puestas.data?.desde_utc === reloj.tUtc ? puestas.data : locales;
+  // La última respuesta de la API se proyecta al instante en curso (la API ve todos los datos del sitio; las filas
+  // cargadas, solo este periodo). Si ya no vale, se usa el cálculo local.
+  const ultima = useRef(puestas.data);
+  if (puestas.data) ultima.current = puestas.data;
+  const eventos = useMemo(() => {
+    const locales = proximosEventos(filas, reloj.tUtc);
+    const ref = ultima.current;
+    const fila = filas[reloj.indice];
+    if (!ref || !locales || aMs(ref.desde_utc) > aMs(reloj.tUtc)) return locales;
+    return {
+      sol: eventosEn(ref.sol, reloj.tUtc, sobreHorizonte(fila.sol_el_deg)) ?? locales.sol,
+      tierra: eventosEn(ref.tierra, reloj.tUtc, sobreHorizonte(fila.tierra_el_deg)) ?? locales.tierra,
+    };
+  }, [filas, reloj.tUtc, reloj.indice, puestas.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // La descripción se anuncia solo al pausar o soltar, nunca durante la reproducción.
   useEffect(() => {

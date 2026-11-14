@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avisosDe, calcularMetricas, esSemaforo, esSensibleAlRelieve, eventosCruce, instantePorDefecto, mediasNoches, nivel,
+import { avisosDe, calcularMetricas, eventosEn, esSemaforo, esSensibleAlRelieve, eventosCruce, instantePorDefecto, mediasNoches, nivel,
   proximosEventos, resumenDiario, semaforo, tramosVisibles } from "./astro";
 import { SEMAFORO } from "./constants";
 import { aMs, sumarHoras } from "./fechas";
@@ -89,6 +89,21 @@ describe("cruces del horizonte", () => {
     expect(tramos).toHaveLength(2);
     expect(tramos[0]).toMatchObject({ inicioMs: aMs(T0), horas: 2, elevacionMedia: 1 });
     expect(tramos[1]).toMatchObject({ inicioMs: aMs(sumarHoras(T0, 5)), horas: 2, elevacionMedia: 2 });
+  });
+});
+
+describe("proyección de /api/puestas a otro instante", () => {
+  const ref = { visible: true, proxima_puesta_utc: "2026-12-27T02:00Z", proxima_salida_utc: null, horas_restantes: 291 };
+  it("recalcula las horas restantes mientras no cambie el estado", () => {
+    expect(eventosEn(ref, "2026-12-15T13:00Z", true)?.horas_restantes).toBe(277);
+  });
+  it("deja de valer si el astro cambió de estado o ya pasó el evento", () => {
+    expect(eventosEn(ref, "2026-12-15T13:00Z", false)).toBeNull();
+    expect(eventosEn(ref, "2026-12-27T02:00Z", true)).toBeNull();
+  });
+  it("conserva «no cambia en el periodo con datos»", () => {
+    const fijo = { visible: true, proxima_puesta_utc: null, proxima_salida_utc: null, horas_restantes: null };
+    expect(eventosEn(fijo, "2026-12-15T13:00Z", true)).toBe(fijo);
   });
 });
 
