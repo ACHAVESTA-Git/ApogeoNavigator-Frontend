@@ -39,3 +39,6 @@ export function escalaLineal(d0: number, d1: number, r0: number, r1: number) {
   const factor = d1 === d0 ? 0 : (r1 - r0) / (d1 - d0);
   return (valor: number): number => r0 + (valor - d0) * factor;
 }
+
+/** Mezcla entre la lupa (0) y la escala lineal (1): permite animar el cambio de escala. */
+export const escalaMixta = (mezcla: number): EscalaElevacion => (e) => lupa(e) * (1 - mezcla) + lineal(e) * mezcla;

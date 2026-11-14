@@ -129,6 +129,18 @@ export function proximosEventos(filas: readonly FilaEfemeride[], desde: Utc) {
   return { desde_utc: desde, sol: eventosDesde(filas, indice, "sol", ms), tierra: eventosDesde(filas, indice, "tierra", ms) };
 }
 
+/**
+ * Actualiza una respuesta de /api/puestas a otro instante posterior sin volver a pedirla: sirve mientras el
+ * astro no haya cambiado de estado ni se haya pasado el evento. Devuelve null si ya no es válida.
+ */
+export function eventosEn(referencia: EventosAstro, desde: Utc, visibleAhora: boolean): EventosAstro | null {
+  if (referencia.visible !== visibleAhora) return null;
+  const proximo = visibleAhora ? referencia.proxima_puesta_utc : referencia.proxima_salida_utc;
+  if (!proximo) return referencia.horas_restantes === null ? referencia : null;
+  const horas = (aMs(proximo) - aMs(desde)) / MS_POR_HORA;
+  return horas > 0 ? { ...referencia, horas_restantes: redondear(horas, 1) } : null;
+}
+
 /** Primer instante con ambos astros sobre el horizonte; si no hay, el de mayor elevación solar. */
 export function instantePorDefecto(filas: readonly FilaEfemeride[]): Utc | null {
   if (filas.length === 0) return null;

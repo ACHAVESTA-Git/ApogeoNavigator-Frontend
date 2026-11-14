@@ -137,7 +137,8 @@ export const PANORAMA = {
   GIRO_DEG: 45,
   RASTRO_HORAS: 12,
   HORIZONTE_FRACCION: 0.62,
-  ALTO_PX: { movil: 300, escritorio: 480 },
+  ALTO_PX: { movil: 300, escritorio: 440 },
+  SEPARACION_MARCAS_PX: 15,
   MARGEN_SUPERIOR_PX: 28,
   MARGEN_INFERIOR_PX: 26,
   MARCA_AZIMUT_CADA: 15,
@@ -209,7 +210,7 @@ export const RUTAS = {
   CLAVES: "/admin/claves",
 } as const; // sin ruta de carga: es un popup
 export const SEGMENTO = { CIELO: "cielo", VENTANAS: "ventanas", DIA_LUNAR: "dia-lunar" } as const;
-export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", SITIO: "sitio", CATEGORIA: "cat" } as const;
+export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat" } as const;
 
 export const ENLACES = {
   HORIZONS: "https://ssd.jpl.nasa.gov/horizons/",
