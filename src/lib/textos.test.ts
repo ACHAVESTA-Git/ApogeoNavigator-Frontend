@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describirCielo, describirInstante, faltanPara, periodoLegible, proximoCambio, umbralNivel, veredicto } from "./textos";
+import { describirCielo, describirInstante, faltanPara, periodoLegible, proximoCambio, umbralNivel, veredicto, veredictoFechas } from "./textos";
 
 const fila = { sol_az_deg: 151.4, sol_el_deg: 1.17, tierra_az_deg: 237.48, tierra_el_deg: -45.4 };
 
@@ -37,6 +37,25 @@ describe("textos generados", () => {
     expect(texto).toContain("Apolo 11 y IM-1 Odysseus ven la Tierra todo el periodo");
     expect(texto).toContain("Chang'e 4 no la ve nunca");
     expect(veredicto([], "x")).toBe("");
+    const conAviso = veredicto(
+      [
+        { nombre: "Cráter Shackleton", horas_sol: 744, pct_sol: 100, horas_tierra_visible: 291, pct_tierra: 39.11, sensible: true },
+        { nombre: "Apolo 11", horas_sol: 356, pct_sol: 47.85, horas_tierra_visible: 744, pct_tierra: 100 },
+      ],
+      "diciembre de 2026",
+    );
+    expect(conAviso).toContain("Cráter Shackleton tiene 388 h más de sol que Apolo 11");
+    expect(conAviso).toContain("Ojo: las horas de sol de Cráter Shackleton son del horizonte ideal y dependen del relieve.");
+  });
+  it("compara fechas de un mismo sitio", () => {
+    const texto = veredictoFechas(
+      [
+        { nombre: "diciembre de 2026", horas_sol: 744, pct_sol: 100, horas_tierra_visible: 291, pct_tierra: 39.11 },
+        { nombre: "abril de 2027", horas_sol: 0, pct_sol: 0, horas_tierra_visible: 328, pct_tierra: 45.56 },
+      ],
+      "Cráter Shackleton",
+    );
+    expect(texto).toBe("En Cráter Shackleton, diciembre de 2026 tiene 744 h más de sol que abril de 2027. La Tierra se ve 291 h en diciembre de 2026 y 328 h en abril de 2027.");
   });
   it("nombra el periodo y los umbrales", () => {
     expect(periodoLegible("2026-12-01T00:00Z", "2027-01-01T00:00Z")).toBe("diciembre de 2026");

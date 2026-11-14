@@ -73,7 +73,7 @@ export function BandaLuz({ filas, desde, hasta, tamano = "grande", copia = 0, ra
   const grande = tamano !== "compacta";
 
   return (
-    <div ref={ref} className={unir("relative", className)}>
+    <div ref={ref} data-banda className={unir("relative", className)}>
       <div className="relative" style={{ height: alto }}>
         <div className="revelar-izq absolute inset-0" data-visto={visto}>
           <Siluetas siluetas={sol} astro="sol" alto={alto} x={x} pasoMs={pasoMs} haciaAbajo={false} />

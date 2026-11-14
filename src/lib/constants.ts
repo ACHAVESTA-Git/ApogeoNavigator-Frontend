@@ -66,6 +66,8 @@ export const DATOS = {
   // Cobertura de los CSV del 14/11/2026 (límites del selector de mes). Fuera de ella la API responde 422.
   COBERTURA: { DESDE: "2026-12-01T00:00Z", HASTA: "2027-06-01T00:00Z" },
   SITIO_DESTACADO: "shackleton",
+  // Comparación sugerida cuando aún no se ha elegido nada: polo, casi polo y ecuador.
+  COMPARACION_SUGERIDA: ["shackleton", "im1_odysseus", "apollo11"],
   MIN_COMPARAR: 2,
   MAX_COMPARAR: 3, // = MAX_COMPARE_SITES
   DECIMALES_PCT: 2,
@@ -210,7 +212,7 @@ export const RUTAS = {
   CLAVES: "/admin/claves",
 } as const; // sin ruta de carga: es un popup
 export const SEGMENTO = { CIELO: "cielo", VENTANAS: "ventanas", DIA_LUNAR: "dia-lunar" } as const;
-export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat" } as const;
+export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses" } as const;
 
 export const ENLACES = {
   HORIZONS: "https://ssd.jpl.nasa.gov/horizons/",
