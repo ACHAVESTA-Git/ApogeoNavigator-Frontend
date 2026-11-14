@@ -75,8 +75,9 @@ export const DATOS = {
 } as const;
 
 export const SEMAFORO = {
-  // PROVISIONAL hasta que el PO confirme (igual que config.py)
-  ENERGIA: { VERDE_MIN: 70, AMARILLO_MIN: 40 }, // por % de horas de sol
+  // Decisión del usuario (14/11): en un mes ningún sitio no polar pasa de ~50 % de sol, así que la energía
+  // usa umbrales propios; la comunicación mantiene 70/40. El global es el peor de los dos.
+  ENERGIA: { VERDE_MIN: 45, AMARILLO_MIN: 25 }, // por % de horas de sol
   COMUNICACION: { VERDE_MIN: 70, AMARILLO_MIN: 40 }, // por % de horas con la Tierra visible
   ORDEN: ["rojo", "amarillo", "verde"],
 } as const;

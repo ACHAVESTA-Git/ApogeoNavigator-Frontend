@@ -38,6 +38,19 @@ describe("semáforo", () => {
     expect(nivel(e.AMARILLO_MIN - 0.01, e)).toBe("rojo");
     expect(semaforo(100, 39.11)).toEqual({ energia: "verde", comunicacion: "rojo", global: "rojo" });
   });
+  it("energía: verde ≥ 45 %, amarillo de 25 % a < 45 %, rojo < 25 %", () => {
+    expect(semaforo(47.85, 100)).toEqual({ energia: "verde", comunicacion: "verde", global: "verde" }); // Apolo 11, dic 2026
+    expect(semaforo(45, 100).energia).toBe("verde");
+    expect(semaforo(44.49, 100).energia).toBe("amarillo"); // IM-1 Odysseus, mar 2027
+    expect(semaforo(25, 100).energia).toBe("amarillo");
+    expect(semaforo(24.99, 100).energia).toBe("rojo");
+    expect(semaforo(0, 40.99)).toEqual({ energia: "rojo", comunicacion: "amarillo", global: "rojo" }); // Shackleton, mar 2027
+  });
+  it("comunicación: mantiene 70 % y 40 %", () => {
+    expect(semaforo(100, 70).comunicacion).toBe("verde");
+    expect(semaforo(100, 69.99).comunicacion).toBe("amarillo");
+    expect(semaforo(100, 39.11).comunicacion).toBe("rojo"); // Shackleton, dic 2026
+  });
   it("valida la forma que llega de la API", () => {
     expect(esSemaforo({ energia: "verde", comunicacion: "rojo", global: "rojo" })).toBe(true);
     expect(esSemaforo({ energia: "azul", comunicacion: "rojo", global: "rojo" })).toBe(false);
