@@ -101,6 +101,7 @@ export const T = {
     hero: {
       lugar: (dia: string) => `Cráter Shackleton · ${dia}`,
       escena: (dia: string) => `Panorama del horizonte de Shackleton el ${dia} (UTC): el Sol y la Tierra recorren el día según su efeméride, hora a hora.`,
+      instante: "Instante de la escena",
       hoy: "El cielo de hoy, hora a hora.",
       fuera: {
         antes: (hoy: string, dia: string) => `Hoy (${hoy}) aún no hay datos: se muestra el primer día con datos, ${dia}.`,
@@ -124,6 +125,7 @@ export const T = {
     },
     recorrido: {
       titulo: "Tres pasos para decidir",
+      indice: "Pasos del recorrido",
       paso: (n: number, nombre: string) => `Paso ${n} · ${nombre}`,
       cielo: {
         nombre: "Cielo", titulo: "Mira dónde están el Sol y la Tierra", enlace: "Ver el cielo de Shackleton",

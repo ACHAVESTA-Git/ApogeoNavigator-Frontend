@@ -435,6 +435,7 @@ export const PORTADA = {
   ROTULO_MARGEN_PX: 70, // el rótulo de un astro no se sale de la pantalla
   HUELLA_CARACTERES: 8, // caracteres de la huella SHA3-256 que se muestran como cifra
   REVELADO_MARGEN: "0px 0px -12% 0px", // un bloque se revela cuando ha entrado un 12 % en pantalla
+  PASO_ACTIVO_MARGEN: "-45% 0px -45% 0px", // el paso activo del recorrido es el que cruza la franja central de la pantalla
 } as const;
 
 /** Pantalla de Acceso (login). */

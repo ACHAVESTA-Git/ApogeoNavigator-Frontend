@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { Link } from "react-router";
 import resumenMes from "../../assets/hero-shackleton.json";
 import { useAnalisis } from "../../hooks/useAnalisis";
@@ -98,9 +98,52 @@ function Cifras() {
 
 const ENLACE = "tactil text-texto decoration-horizonte hover:decoration-texto mt-4 inline-flex items-center gap-1.5 font-medium underline underline-offset-4 transition-colors duration-(--dur-corta)";
 
-function Paso({ n, nombre, titulo, texto, enlace, a, altoPanel, children }: { n: number; nombre: string; titulo: string; texto: ReactNode; enlace: string; a: string; altoPanel: string; children: (visto: boolean) => ReactNode }) {
+const PASOS = ["cielo", "comparar", "analisis"] as const;
+const ID_PASO = (paso: (typeof PASOS)[number]) => `paso-${paso}`;
+
+/** Índice del paso que cruza la franja central de la pantalla (0 mientras no haya entrado ninguno). */
+function usePasoActivo(): number {
+  const [activo, setActivo] = useState(0);
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const observador = new IntersectionObserver((entradas) => {
+      for (const e of entradas) if (e.isIntersecting) setActivo(PASOS.findIndex((p) => ID_PASO(p) === e.target.id));
+    }, { rootMargin: PORTADA.PASO_ACTIVO_MARGEN });
+    for (const p of PASOS) {
+      const el = document.getElementById(ID_PASO(p));
+      if (el) observador.observe(el);
+    }
+    return () => observador.disconnect();
+  }, []);
+  return activo;
+}
+
+/**
+ * Índice fijo del recorrido (solo en escritorio): acompaña el scroll y marca el paso que se está leyendo con el
+ * número en ámbar, el nombre en negrita y `aria-current`. Son enlaces: también sirve para saltar a un paso.
+ */
+function IndiceRecorrido({ activo }: { activo: number }) {
+  const t = T.inicio.recorrido;
   return (
-    <li className="grid gap-x-6 gap-y-6 md:grid-cols-12 md:items-center">
+    <nav aria-label={t.indice} className="sticky top-[calc(var(--nav-alto)+2.5rem)] hidden self-start lg:block">
+      <ol>
+        {PASOS.map((paso, i) => (
+          <li key={paso}>
+            <a href={`#${ID_PASO(paso)}`} aria-current={activo === i ? "step" : undefined}
+              className={unir("tactil flex items-center gap-3 transition-colors duration-(--dur-corta)", activo === i ? "text-texto font-semibold" : "text-texto-2 hover:text-texto")}>
+              <span className={unir("text-dato-sm font-mono tabular-nums transition-colors duration-(--dur-corta)", activo === i ? "text-sol" : "text-texto-3")} data-dato>{`0${i + 1}`}</span>
+              {t[paso].nombre}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+function Paso({ id, n, nombre, titulo, texto, enlace, a, altoPanel, children }: { id: string; n: number; nombre: string; titulo: string; texto: ReactNode; enlace: string; a: string; altoPanel: string; children: (visto: boolean) => ReactNode }) {
+  return (
+    <li id={id} className="grid gap-x-6 gap-y-6 md:grid-cols-12 md:items-center">
       <Revelar className="md:col-span-5">
         {() => (
           <>
@@ -180,28 +223,32 @@ function PanelAnalisis() {
 export default function RecorridoInicio({ dia }: { dia: DiaPortada }) {
   const t = T.inicio.recorrido;
   const a = T.inicio.actos;
+  const activo = usePasoActivo();
   return (
     <>
       <Cifras />
       <section aria-labelledby="recorrido" className="border-linea contenedor border-t py-14 md:py-20">
         <h2 id="recorrido" className="rotulo">{t.titulo}</h2>
-        <ol className="mt-10 space-y-16 md:space-y-24">
-          <Paso n={1} nombre={t.cielo.nombre} titulo={t.cielo.titulo} enlace={t.cielo.enlace} a={RUTAS.CIELO(DATOS.SITIO_DESTACADO)} altoPanel="min-h-52"
+        <div className="mt-10 lg:grid lg:grid-cols-[9rem_minmax(0,1fr)] lg:gap-x-10">
+        <IndiceRecorrido activo={activo} />
+        <ol className="space-y-16 md:space-y-24">
+          <Paso id={ID_PASO("cielo")} n={1} nombre={t.cielo.nombre} titulo={t.cielo.titulo} enlace={t.cielo.enlace} a={RUTAS.CIELO(DATOS.SITIO_DESTACADO)} altoPanel="min-h-52"
             texto={<>
               <p>{a.uno.contexto(grados(R.sol_el_min_deg, 2, true), grados(R.sol_el_max_deg, 2, true))}</p>
               <p>{t.cielo.tierra} {a.dos.contexto(a.momento(R.tierra_salida_utc), a.momento(R.tierra_puesta_utc), horas(R.horas_total - R.horas_tierra))}</p>
             </>}>
             {(visto) => <PanelCielo dia={dia} visto={visto} />}
           </Paso>
-          <Paso n={2} nombre={t.comparar.nombre} titulo={t.comparar.titulo} enlace={t.comparar.enlace} a={RUTAS.COMPARAR} altoPanel="min-h-80"
+          <Paso id={ID_PASO("comparar")} n={2} nombre={t.comparar.nombre} titulo={t.comparar.titulo} enlace={t.comparar.enlace} a={RUTAS.COMPARAR} altoPanel="min-h-80"
             texto={<p>{a.tres.contexto(a.momento(R.sol_puesta_utc))}</p>}>
             {() => <PanelComparar />}
           </Paso>
-          <Paso n={3} nombre={t.analisis.nombre} titulo={t.analisis.titulo} enlace={t.analisis.enlace} a={RUTAS.ANALISIS(DATOS.SITIO_DESTACADO)} altoPanel="min-h-64"
+          <Paso id={ID_PASO("analisis")} n={3} nombre={t.analisis.nombre} titulo={t.analisis.titulo} enlace={t.analisis.enlace} a={RUTAS.ANALISIS(DATOS.SITIO_DESTACADO)} altoPanel="min-h-64"
             texto={<p>{t.analisis.texto}</p>}>
             {() => <PanelAnalisis />}
           </Paso>
         </ol>
+        </div>
       </section>
     </>
   );
