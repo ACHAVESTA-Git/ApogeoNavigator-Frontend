@@ -150,7 +150,8 @@ export const T = {
       roles: [] as string[],
     },
     pie: {
-      aviso: "NASA no respalda ni patrocina este proyecto ni a ninguna entidad, producto o servicio de terceros. Los datos provienen de fuentes públicas de NASA y de JPL. Apogeo Team · NASA Space Apps Challenge 2026.",
+      aviso: "NASA no respalda ni patrocina este proyecto ni a ninguna entidad, producto o servicio de terceros. Los datos provienen de fuentes públicas de NASA y de JPL.",
+      autoria: "Apogeo Team · Anthony Chavesta Pisfil · NASA Space Apps Chiclayo 2026",
       licencia: "Código bajo licencia MIT © 2026 Apogeo Team.",
       repoFrontend: "Repositorio del frontend",
       repoBackend: "Repositorio del backend",
