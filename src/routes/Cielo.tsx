@@ -10,13 +10,14 @@ import { TituloPagina } from "../components/layout/TituloPagina";
 import { Transporte, controlDeReloj } from "../components/tiempo/Transporte";
 import { Boton } from "../components/ui/Boton";
 import { Desplegable } from "../components/ui/Desplegable";
-import { EstadoCarga, EstadoError } from "../components/ui/Estados";
+import { CargaHorizons, EstadoCarga, EstadoError } from "../components/ui/Estados";
 import { Segmentado } from "../components/ui/Segmentado";
 import { useEfemerides } from "../hooks/useEfemerides";
 import { useDesde } from "../hooks/useMedia";
 import { useEscribirUrl, usePeriodo } from "../hooks/useParametrosUrl";
 import { useSimulacion } from "../hooks/useSimulacion";
 import { usePuestas } from "../hooks/usePuestas";
+import { esPuntoPropio } from "../lib/puntoPropio";
 import { useRelojSimulacion } from "../hooks/useRelojSimulacion";
 import { useTeclasTiempo } from "../hooks/useTeclasTiempo";
 import { useValorMotion } from "../hooks/useValorMotion";
@@ -56,7 +57,8 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
   // «Puesta en N h»: la API cuando está en pausa; mientras se reproduce, el mismo cálculo sobre las filas ya cargadas.
   // En un instante proyectado la API no tiene datos (respondería 422): ahí vale solo el cálculo local.
   const incertidumbre = incertidumbreDe(filas[reloj.indice]);
-  const puestas = usePuestas(sitio.site_id, reloj.tUtc, !reloj.reproduciendo && incertidumbre === 0);
+  // Un punto propio no tiene /api/puestas: sus cruces salen de las filas que ya trajo /api/horizons.
+  const puestas = usePuestas(sitio.site_id, reloj.tUtc, !reloj.reproduciendo && incertidumbre === 0 && !esPuntoPropio(sitio.site_id));
   // La última respuesta de la API se proyecta al instante en curso (la API ve todos los datos del sitio; las filas
   // cargadas, solo este periodo). Si ya no vale, se usa el cálculo local.
   const ultima = useRef(puestas.data);
@@ -143,12 +145,14 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
 export default function Cielo() {
   const { sitio, desde, hasta } = useContextoSitio();
   const { abrirCarga } = useApp();
-  const { esProyeccion } = usePeriodo();
+  // Un punto propio se consulta en vivo a JPL para cualquier fecha: nunca es una proyección.
+  const propio = esPuntoPropio(sitio.site_id);
+  const esProyeccion = usePeriodo().esProyeccion && !propio;
   const efemerides = useEfemerides(sitio.site_id, { desde, hasta }, {}, !esProyeccion);
   const simulacion = useSimulacion(sitio.site_id, { desde, hasta }, esProyeccion);
   const { isPending, error, refetch } = esProyeccion ? simulacion : efemerides;
   const data = esProyeccion ? (simulacion.data && { filas: simulacion.data.puntos }) : efemerides.data;
-  if (isPending) return <div className="contenedor min-h-[70svh]"><EstadoCarga texto={T.cielo.cargando} /></div>;
+  if (isPending) return <div className="contenedor min-h-[70svh]">{propio ? <CargaHorizons /> : <EstadoCarga texto={T.cielo.cargando} />}</div>;
   if (error || !data?.filas.length) {
     const sinEfemerides = !esProyeccion && error instanceof ApiError && error.esNoEncontrado;
     return (

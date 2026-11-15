@@ -3,7 +3,8 @@ import { AvisoHorizonteIdeal } from "../components/layout/AvisoHorizonteIdeal";
 import { TituloPagina } from "../components/layout/TituloPagina";
 import { GlifoSemaforo } from "../components/glifos/GlifoSemaforo";
 import { Desplegable } from "../components/ui/Desplegable";
-import { EstadoCarga, EstadoError } from "../components/ui/Estados";
+import { CargaHorizons, EstadoCarga, EstadoError } from "../components/ui/Estados";
+import { esPuntoPropio } from "../lib/puntoPropio";
 import { BandaLuz } from "../components/ventanas/BandaLuz";
 import { CifraMetrica } from "../components/ventanas/CifraMetrica";
 import { ReferenciaMetricas } from "../components/ventanas/ReferenciaMetricas";
@@ -59,7 +60,7 @@ export default function Ventanas() {
         )}
       </div>
 
-      {!m && !error && <EstadoCarga texto={t.cargando} className="min-h-[40svh]" />}
+      {!m && !error && (esPuntoPropio(sitio.site_id) ? <CargaHorizons className="min-h-[40svh]" /> : <EstadoCarga texto={t.cargando} className="min-h-[40svh]" />)}
       {error && !errorDeRango && (
         <EstadoError error={error} className="mt-8" alReintentar={() => { void metricas.refetch(); void efemerides.refetch(); }} />
       )}

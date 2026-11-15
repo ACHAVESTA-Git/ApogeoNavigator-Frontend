@@ -6,7 +6,8 @@ import { TituloPagina } from "../components/layout/TituloPagina";
 import { Transporte, controlDeReloj } from "../components/tiempo/Transporte";
 import { EnlaceBoton } from "../components/ui/Boton";
 import { Desplegable } from "../components/ui/Desplegable";
-import { EstadoCarga, EstadoError } from "../components/ui/Estados";
+import { CargaHorizons, EstadoCarga, EstadoError } from "../components/ui/Estados";
+import { esPuntoPropio } from "../lib/puntoPropio";
 import { useEfemerides } from "../hooks/useEfemerides";
 import { useDesde } from "../hooks/useMedia";
 import { useRelojSimulacion } from "../hooks/useRelojSimulacion";
@@ -104,7 +105,7 @@ function Linea({ sitio, filas, desde, hasta }: { sitio: Site; filas: FilaEfemeri
 export default function DiaLunar() {
   const { sitio, desde, hasta } = useContextoSitio();
   const { data, isPending, error, refetch } = useEfemerides(sitio.site_id, { desde, hasta });
-  if (isPending) return <div className="contenedor min-h-[60svh]"><EstadoCarga texto={T.diaLunar.cargando} /></div>;
+  if (isPending) return <div className="contenedor min-h-[60svh]">{esPuntoPropio(sitio.site_id) ? <CargaHorizons /> : <EstadoCarga texto={T.diaLunar.cargando} />}</div>;
   if (error || !data?.filas.length) return <div className="contenedor py-10"><EstadoError error={error ?? undefined} alReintentar={() => void refetch()} /></div>;
   return <Linea key={`${sitio.site_id}-${desde}`} sitio={sitio} filas={data.filas} desde={desde} hasta={hasta} />;
 }

@@ -77,8 +77,20 @@ export interface Metrica extends ValoresMetricas {
   fin_utc: Utc;
   semaforo: Semaforo;
   avisos: Aviso[];
-  origen: "calculado" | "ejemplo";
+  origen: "calculado" | "ejemplo" | "horizons_en_vivo";
   referencia: ReferenciaMetricas | null;
+}
+/** GET /api/horizons: efemérides en vivo de un punto cualquiera, con sus métricas y sus puestas. */
+export interface RespuestaHorizons extends Efemerides {
+  fuente: string;
+  lat_deg: number;
+  lon_este_deg: number;
+  en_cache: boolean;
+  consultado_utc: Utc;
+  metricas: Metrica;
+  puestas: Puestas;
+  /** Solo en el cliente: la respuesta es la muestra de ejemplo, no JPL. */
+  ejemplo?: boolean;
 }
 export interface RespuestaMetricas {
   resultados: Metrica[];
