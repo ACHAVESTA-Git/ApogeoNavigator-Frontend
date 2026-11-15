@@ -5,7 +5,7 @@ import { useCifraAnimada } from "../../hooks/useCifraAnimada";
 import type { DatosFila } from "../../hooks/useFilasComparacion";
 import { useMovimientoReducido } from "../../hooks/useMovimientoReducido";
 import { avisoDeRelieve } from "../../lib/astro";
-import { cifrasPodio, decidir, diferencias, esTruncada, protagonista, rachaDe, RACHAS, varianteRacha, type CifraPodio, type ClaveRacha } from "../../lib/comparar";
+import { cifrasPodio, decidir, diferencias, esTruncada, rachaDe, RACHAS, varianteRacha, type CifraPodio, type ClaveRacha } from "../../lib/comparar";
 import { COMPARAR, MOVIMIENTO } from "../../lib/constants";
 import { esMesCompleto, horasEntre } from "../../lib/fechas";
 import { horas, numeroCorto, pct } from "../../lib/formato";
@@ -25,6 +25,8 @@ const REJILLA: Record<number, string> = {
   2: "grid-cols-2 md:grid-cols-[minmax(0,15rem)_repeat(2,minmax(0,1fr))]",
   3: "grid-cols-3 md:grid-cols-[minmax(0,15rem)_repeat(3,minmax(0,1fr))]",
 };
+/** Con tres columnas, en móvil las cifras del duelo bajan un tamaño para caber sin desbordar (desde 360 px). */
+const cifraDuelo = (columnas: number): string => (columnas >= 3 ? "text-dato md:text-dato-lg" : "text-dato-lg");
 const conSigno = (v: number): string => `${v > 0 ? "+" : ""}${numeroCorto(Math.round(v))}`;
 
 /** Una celda del duelo: al cambiar la selección, las que siguen se recolocan y las nuevas aparecen en su sitio. */
@@ -57,15 +59,15 @@ function Fila({ etiqueta, ayuda, astros, columnas, children }: { etiqueta: strin
 }
 
 /** Barra emparejada: la parte del periodo con el astro sobre el horizonte. Crece una vez y se reajusta al cambiar el dato. */
-function Barra({ astro, valor, nivel, metrica, orden }: { astro: Astro; valor: number; nivel: NivelSemaforo; metrica?: Metrica; orden: number }) {
+function Barra({ astro, valor, nivel, metrica, orden, columnas }: { astro: Astro; valor: number; nivel: NivelSemaforo; metrica?: Metrica; orden: number; columnas: number }) {
   const reducido = useMovimientoReducido();
   const cifra = useCifraAnimada<HTMLSpanElement>(valor, pct);
   const aviso = metrica && avisoDeRelieve(metrica);
   const escala = Math.min(1, Math.max(0, valor / 100));
   return (
     <>
-      <p className="flex items-center gap-2 whitespace-nowrap">
-        <span ref={cifra} className="text-dato-lg text-texto font-mono font-medium" data-dato>{pct(valor)}</span>
+      <p className="flex items-center gap-1.5 whitespace-nowrap md:gap-2">
+        <span ref={cifra} className={unir("text-texto font-mono font-medium", cifraDuelo(columnas))} data-dato>{pct(valor)}</span>
         <GlifoSemaforo nivel={nivel} conTexto={false} nota={Boolean(aviso)} />
       </p>
       <div aria-hidden="true" className="bg-linea mt-2 h-1.5 overflow-hidden rounded-full">
@@ -87,7 +89,7 @@ function Diferencia({ cifra, principal }: { cifra: CifraPodio; principal: boolea
   const t = T.comparar.podio;
   return (
     <CifraHeroe valor={cifra.valor} formato={conSigno} unidad={cifra.unidad} tamano={principal ? "heroe" : "media"}
-      tono={principal && cifra.eje === "sol" ? "sol" : "texto"}
+      tono={principal && cifra.eje === "sol" && cifra.valor > 0 ? "sol" : "texto"}
       rotulo={cifra.valor < 0 ? t.cede : principal ? t.ventaja : t.segundaVentaja}
       contexto={<span className="flex items-center gap-1.5"><GlifoAstro astro={cifra.eje} px={12} />{cifra.eje === "sol" ? t.deSol(cifra.rival) : t.deTierra(cifra.rival)}</span>} />
   );
@@ -105,8 +107,7 @@ function Podio({ filas, modo }: { filas: DatosFila[]; modo: Modo }) {
   const lineas = conDatos.map((d) => ({ nombre: d.etiqueta, ...d.metrica!, sensible: Boolean(avisoDeRelieve(d.metrica!)) }));
   const decision = decidir(lineas);
   const frase = partesDecision(lineas, modo === "sitios" ? periodoLegible(conDatos[0].desde, conDatos[0].hasta) : conDatos[0].detalle);
-  const lider = protagonista(decision);
-  const cifras = lider === null ? [] : cifrasPodio(lineas, lider);
+  const cifras = cifrasPodio(lineas, decision);
   const recomendadas = new Set(decision?.recomendadas);
   const difs = diferencias(lineas);
   const n = conDatos.length;
@@ -127,7 +128,7 @@ function Podio({ filas, modo }: { filas: DatosFila[]; modo: Modo }) {
             <span id="podio-veredicto">{frase.principal}</span>
           </Veredicto>
           {frase.matices.length > 0 && (
-            <ul className="text-apoyo text-texto-2 mt-4 max-w-medida space-y-1">
+            <ul className="text-apoyo text-texto-2 mt-4 space-y-1">
               {frase.matices.map((matiz) => <li key={matiz} className="flex gap-2"><span aria-hidden="true" className="bg-texto-2 mt-[0.6em] size-1 shrink-0 rounded-full" />{matiz}</li>)}
             </ul>
           )}
@@ -149,8 +150,8 @@ function Podio({ filas, modo }: { filas: DatosFila[]; modo: Modo }) {
               {conDatos.map((d, i) => (
                 <Celda key={d.clave} encabezado>
                   {recomendadas.has(i) && (
-                    <p className="border-linea text-texto mb-2 inline-flex max-w-full items-center gap-1 rounded-full border py-0.5 pr-2.5 pl-1.5 text-[0.75rem] font-semibold">
-                      <Award aria-hidden="true" className="text-sol size-3.5 shrink-0" /><span className="truncate">{t.recomendada}</span>
+                    <p className="border-linea text-texto mb-2 inline-flex max-w-full items-center gap-1 rounded-control border py-0.5 pr-2 pl-1.5 text-[0.75rem] leading-tight font-semibold">
+                      <Award aria-hidden="true" className="text-sol size-3.5 shrink-0" /><span>{t.recomendada}</span>
                     </p>
                   )}
                   <p className="text-texto line-clamp-2 font-semibold first-letter:uppercase">{d.etiqueta}</p>
@@ -162,10 +163,10 @@ function Podio({ filas, modo }: { filas: DatosFila[]; modo: Modo }) {
             </AnimatePresence>
           </div>
           <Fila etiqueta={t.podio.energia} astros={["sol"]} columnas={n}>
-            {conDatos.map((d, i) => <Celda key={d.clave}><Barra astro="sol" valor={d.metrica!.pct_sol} nivel={d.metrica!.semaforo.energia} metrica={d.metrica} orden={i} /></Celda>)}
+            {conDatos.map((d, i) => <Celda key={d.clave}><Barra astro="sol" valor={d.metrica!.pct_sol} nivel={d.metrica!.semaforo.energia} metrica={d.metrica} orden={i} columnas={n} /></Celda>)}
           </Fila>
           <Fila etiqueta={t.podio.comunicacion} astros={["tierra"]} columnas={n}>
-            {conDatos.map((d, i) => <Celda key={d.clave}><Barra astro="tierra" valor={d.metrica!.pct_tierra} nivel={d.metrica!.semaforo.comunicacion} orden={i + 1} /></Celda>)}
+            {conDatos.map((d, i) => <Celda key={d.clave}><Barra astro="tierra" valor={d.metrica!.pct_tierra} nivel={d.metrica!.semaforo.comunicacion} orden={i + 1} columnas={n} /></Celda>)}
           </Fila>
           {hayRachas && RACHAS.map((clave) => (
             <Fila key={clave} etiqueta={t.podio.rachas[clave]} ayuda={t.podio.definiciones[clave]} columnas={n}
@@ -175,7 +176,7 @@ function Podio({ filas, modo }: { filas: DatosFila[]; modo: Modo }) {
                 return (
                   <Celda key={d.clave}>
                     {racha ? (
-                      <p className="text-dato-lg text-texto font-mono font-medium whitespace-nowrap" data-dato>
+                      <p className={unir("text-texto font-mono font-medium whitespace-nowrap", cifraDuelo(n))} data-dato>
                         {esTruncada(racha)
                           ? <><span aria-hidden="true">{t.podio.alMenos(horas(racha.horas))}</span><span className="sr-only">{t.podio.alMenosLeido(horas(racha.horas))}</span></>
                           : horas(racha.horas)}

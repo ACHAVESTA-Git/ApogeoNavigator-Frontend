@@ -90,13 +90,19 @@ export interface CifraPodio {
 }
 
 /**
- * Las diferencias de una fila frente a la mejor de las demás, ordenadas para el podio: primero la mayor ventaja
- * relativa (la cifra héroe) y después la otra (lo que cede o su segunda ventaja). Una diferencia nula no se muestra.
+ * Las diferencias del protagonista, ordenadas para el podio: primero la mayor ventaja relativa (la cifra héroe) y
+ * después la otra (lo que cede o su segunda ventaja). Una diferencia nula no se muestra. Con una sola recomendada
+ * se mide frente a la mejor de las demás; en un empate del semáforo, frente a las otras empatadas, que es lo que
+ * las cifras deciden.
  */
-export function cifrasPodio(lineas: readonly LineaComparada[], indice: number): CifraPodio[] {
-  const d = diferencias(lineas)[indice];
+export function cifrasPodio(lineas: readonly LineaComparada[], decision: Decision | null): CifraPodio[] {
+  const lider = protagonista(decision);
+  if (!decision || lider === null) return [];
+  const enLiza = decision.recomendadas.length === 1 ? [...lineas] : decision.recomendadas.map((i) => lineas[i]);
+  const yo = enLiza.indexOf(lineas[lider]);
+  const d = diferencias(enLiza)[yo];
   if (!d) return [];
-  const rivalSol = lineas.find((l, k) => k !== indice && l.nombre === d.rivalSol);
+  const rivalSol = enLiza.find((l, k) => k !== yo && l.nombre === d.rivalSol);
   // Peso relativo solo para ordenar: frente a un rival con 0 h, cualquier diferencia es la mayor posible.
   const relativo = (dif: number, base: number | undefined) => (base ? dif / base : Math.sign(dif) * Infinity);
   const cifras: (CifraPodio & { peso: number })[] = [

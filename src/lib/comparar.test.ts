@@ -126,24 +126,27 @@ describe("veredicto para decidir", () => {
 describe("podio del duelo", () => {
   it("la cifra héroe es la mayor ventaja relativa de la opción más sólida; después, lo que cede", () => {
     const lineas = [SHACKLETON, APOLO11];
-    const lider = protagonista(decidir(lineas));
-    expect(lider).toBe(1);
+    expect(protagonista(decidir(lineas))).toBe(1);
     // Apolo 11 frente a Shackleton (API, diciembre de 2026): +156 % de Tierra (744 h frente a 291 h) y −388 h de sol.
-    expect(cifrasPodio(lineas, lider!)).toEqual([
+    expect(cifrasPodio(lineas, decidir(lineas))).toEqual([
       { eje: "tierra", valor: 156, unidad: "%", rival: "Shackleton" },
       { eje: "sol", valor: -388, unidad: "h", rival: "Shackleton" },
     ]);
   });
   it("una diferencia nula no se muestra y, sin Tierra en el rival, la diferencia va en horas", () => {
     const sinTierra = linea("Cara oculta", 356, 0, { energia: "verde", comunicacion: "rojo", global: "rojo" });
-    expect(cifrasPodio([APOLO11, sinTierra], 0)).toEqual([{ eje: "tierra", valor: 744, unidad: "h", rival: "Cara oculta" }]);
-    expect(cifrasPodio([APOLO11, { ...APOLO11, nombre: "Gemelo" }], 0)).toEqual([]);
+    expect(cifrasPodio([APOLO11, sinTierra], decidir([APOLO11, sinTierra]))).toEqual([{ eje: "tierra", valor: 744, unidad: "h", rival: "Cara oculta" }]);
+    const gemelos = [APOLO11, { ...APOLO11, nombre: "Gemelo" }];
+    expect(cifrasPodio(gemelos, decidir(gemelos))).toEqual([]);
   });
   it("en un empate del semáforo el protagonista es quien decide por cifras; si igualan en todo, nadie", () => {
     const masSol = linea("Más sol", 500, 744, APOLO11.semaforo);
     expect(protagonista(decidir([APOLO11, masSol]))).toBe(1);
     expect(protagonista(decidir([APOLO11, { ...APOLO11, nombre: "Gemelo" }]))).toBeNull();
     expect(protagonista(null)).toBeNull();
+    // En el empate, la cifra se mide frente a la otra empatada (lo que las cifras deciden), no frente a la descartada.
+    const tres = [SHACKLETON, masSol, APOLO11];
+    expect(cifrasPodio(tres, decidir(tres))).toEqual([{ eje: "sol", valor: 144, unidad: "h", rival: "Apolo 11" }]);
   });
 });
 
