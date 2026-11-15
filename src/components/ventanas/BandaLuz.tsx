@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useId } from "react";
 import { mediasNoches, pasoHoras, siluetasVisibles, type PuntoSilueta } from "../../lib/astro";
 import { BANDA, MS_POR_HORA } from "../../lib/constants";
 import { lupa } from "../../lib/escalas";
@@ -9,7 +9,8 @@ import { useAnclaHorizonte } from "../layout/horizonteContexto";
 import { unir } from "../ui/clases";
 
 const ANCHO = 1000; // unidades del viewBox (se estira al ancho real)
-const RELLENO: Record<Astro, string> = { sol: "fill-sol", tierra: "fill-tierra" };
+const TRAZO: Record<Astro, string> = { sol: "stroke-sol", tierra: "stroke-tierra" };
+const COLOR: Record<Astro, string> = { sol: "var(--color-sol)", tierra: "var(--color-tierra)" };
 
 /** true la primera vez que el elemento entra en pantalla (dispara el revelado una sola vez). */
 function useVisto<E extends Element>() {
@@ -32,16 +33,29 @@ const altura = (elevacion: number, alto: number): number => Math.max(BANDA.MIN_A
 function Siluetas({ siluetas, astro, alto, x, pasoMs, haciaAbajo }: {
   siluetas: PuntoSilueta[][]; astro: Astro; alto: number; x: (ms: number) => number; pasoMs: number; haciaAbajo: boolean;
 }) {
+  const id = useId();
   const base = haciaAbajo ? 0 : alto;
   const y = (elevacion: number) => (haciaAbajo ? altura(elevacion, alto) : alto - altura(elevacion, alto));
   return (
     <svg viewBox={`0 0 ${ANCHO} ${alto}`} preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
+      <defs>
+        {/* Luz que se apaga hacia el horizonte: intensa en el perfil (la elevación), tenue en la base. */}
+        <linearGradient id={id} x1="0" x2="0" y1={haciaAbajo ? alto : 0} y2={haciaAbajo ? 0 : alto} gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor={COLOR[astro]} stopOpacity={0.9} />
+          <stop offset="1" stopColor={COLOR[astro]} stopOpacity={0.22} />
+        </linearGradient>
+      </defs>
       {siluetas.map((tramo) => {
         const fin = Math.max(x(tramo[tramo.length - 1].ms + pasoMs), x(tramo[0].ms) + BANDA.MIN_ANCHO);
         const perfil = tramo.map((p) => `L${x(p.ms).toFixed(1)} ${y(p.elevacion).toFixed(1)}`).join("");
         return (
-          <path key={tramo[0].ms} className={RELLENO[astro]} opacity={0.85}
-            d={`M${x(tramo[0].ms).toFixed(1)} ${base}${perfil}L${fin.toFixed(1)} ${y(tramo[tramo.length - 1].elevacion).toFixed(1)}L${fin.toFixed(1)} ${base}Z`} />
+          <g key={tramo[0].ms}>
+            <path fill={`url(#${id})`}
+              d={`M${x(tramo[0].ms).toFixed(1)} ${base}${perfil}L${fin.toFixed(1)} ${y(tramo[tramo.length - 1].elevacion).toFixed(1)}L${fin.toFixed(1)} ${base}Z`} />
+            {/* El perfil (la elevación hora a hora) es el dato: va con trazo propio */}
+            <path className={TRAZO[astro]} fill="none" strokeWidth={1.5} vectorEffect="non-scaling-stroke" strokeLinejoin="round"
+              d={`M${perfil.slice(1)}L${fin.toFixed(1)} ${y(tramo[tramo.length - 1].elevacion).toFixed(1)}`} />
+          </g>
         );
       })}
     </svg>
