@@ -2,7 +2,7 @@ import { cubicBezier } from "motion";
 import { useEffect, useRef } from "react";
 import { useMovimientoReducido } from "../../hooks/useMovimientoReducido";
 import { HERO, HORIZONTE_COPIAS, MOVIMIENTO } from "../../lib/constants";
-import { mezclarTrazos, trazoAPath, trazoAnillo, trazoArco, trazoLinea, type Caja, type Trazo } from "../../lib/horizonte";
+import { fasesFundido, fundeHaciaLienzo, mezclarTrazos, trazoAPath, trazoAnillo, trazoArco, trazoLinea, type Caja, type Trazo } from "../../lib/horizonte";
 import type { FormaHorizonte, RegistroHorizonte } from "./horizonteContexto";
 
 const TRAZAR: Record<FormaHorizonte, (caja: Caja) => Trazo> = { linea: trazoLinea, arco: trazoArco, anillo: trazoAnillo };
@@ -24,6 +24,8 @@ interface Morph {
   desde: Trazo[];
   opacidadDesde: number[];
   inicio: number;
+  /** Hacia el lienzo del Cielo el anillo no cambia de forma: se apaga y la línea aparece después en su sitio. */
+  fundir: boolean;
 }
 
 /**
@@ -75,11 +77,13 @@ export function HorizonteContinuo({ registro, contenedor }: { registro: Registro
 
       if (nuevaFirma !== firma) {
         const primera = firma === "";
+        // El lienzo del Cielo ya pinta su horizonte: un anillo deformándose encima serían dos horizontes a la vez.
+        const fundir = fundeHaciaLienzo(firma, principal.lienzo);
         firma = nuevaFirma;
         if (primera) {
           if (!reducido && principal.forma === "arco" && introPendiente()) intro = ahora;
         } else if (!reducido && dibujado) {
-          morph = { desde: dibujado, opacidadDesde: opacidad, inicio: ahora };
+          morph = { desde: dibujado, opacidadDesde: opacidad, inicio: ahora, fundir };
         }
       }
       let progresoIntro = 1;
@@ -91,6 +95,15 @@ export function HorizonteContinuo({ registro, contenedor }: { registro: Registro
       // Durante el morph la línea pasa POR DEBAJO del contenido (no cruza por encima de los textos); al terminar
       // vuelve arriba, porque en reposo debe verse sobre los fondos de cada pantalla.
       if (svg.current) svg.current.style.zIndex = morph ? "0" : "";
+      if (morph?.fundir) {
+        const { desde, opacidadDesde } = morph;
+        const fase = fasesFundido(ahora - morph.inicio, MOVIMIENTO.FUNDIDO_ANILLO, MOVIMIENTO.CORTA);
+        const f = suavizarSalida(fase.p);
+        if (fase.fin) morph = null;
+        if (fase.saliendo) pintar(desde, opacidadDesde.map((o) => o * (1 - f)), progresoIntro);
+        else pintar(objetivo, opacidadObjetivo.map((o) => o * f), progresoIntro);
+        return;
+      }
       if (morph) {
         const p = Math.min(1, (ahora - morph.inicio) / MOVIMIENTO.LARGA);
         const f = suavizar(p);

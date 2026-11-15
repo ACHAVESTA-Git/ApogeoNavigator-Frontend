@@ -150,6 +150,7 @@ export const MOVIMIENTO = {
   LARGA: 560,
   ESCENA: 900,
   SALIDA_RUTA: 160,
+  FUNDIDO_ANILLO: 160, // el anillo del mapa se apaga al entrar al lienzo del Cielo (no hace morph sobre la escena)
   CONTEO: 700, // conteo de una cifra al aparecer (escena de una sola vez)
   VUELO_VIGENCIA_MS: 1500, // un origen de transición compartida entre rutas caduca si la ruta tarda más
   DESPLAZAMIENTO_ENTRADA_PX: 8,
