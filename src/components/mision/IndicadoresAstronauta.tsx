@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { PARAM_URL, RUTAS } from "../../lib/constants";
 import { fechaHora, horasEntre } from "../../lib/fechas";
 import { grados, horas, numeroCorto } from "../../lib/formato";
-import { esRacha, esRachaCortada, horasHasta, varianteRacha } from "../../lib/indicadores";
+import { esRacha, esRachaCortada, horasHasta, motivoSinPuesta, varianteRacha } from "../../lib/indicadores";
 import { T, periodoLegible } from "../../lib/textos";
 import type { Metrica, Racha } from "../../lib/tipos";
 import { CifraHeroe } from "../lujo";
@@ -70,7 +70,10 @@ export function IndicadoresAstronauta({ metrica, sitio }: { metrica: Metrica; si
     const h = horasHasta(metrica.inicio_utc, utc);
     if (h !== null && utc) return [t.puestas[astro](fechaHora(utc), horas(h))];
     // `null` = sin puesta dentro del periodo pedido; `undefined` = la API no trae el campo (hueco).
-    return utc === null ? [astro === "sol" ? t.sinPuestaSol(fechaHora(metrica.fin_utc)) : t.sinPuestaTierra(fechaHora(metrica.fin_utc))] : [];
+    if (utc !== null) return [];
+    // Sin horas visibles el astro no sale en el periodo: se dice eso, no «sin puesta antes de…» (que lo daría por visible).
+    if (motivoSinPuesta(astro === "sol" ? metrica.horas_sol : metrica.horas_tierra_visible) === "noSale") return [`${astro === "sol" ? t.noSaleSol : t.noSaleTierra}.`];
+    return [astro === "sol" ? t.sinPuestaSol(fechaHora(metrica.fin_utc)) : t.sinPuestaTierra(fechaHora(metrica.fin_utc))];
   });
   return (
     <div>
