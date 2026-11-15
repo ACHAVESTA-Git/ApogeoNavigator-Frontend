@@ -31,7 +31,7 @@ export function Insignia({ siteId, nombre, parche = RANKING.INSIGNIAS.includes(s
     <figure className="m-0 flex shrink-0 flex-col items-center gap-1">
       <img src={RANKING.RUTA_INSIGNIA(siteId)} alt={T.comparar.top.insignia(nombreCorto(nombre))} width={48} height={48} loading="lazy"
         onError={() => setFallo(true)} className={unir("size-12 object-contain", className)} />
-      <figcaption className="text-texto-2 text-[0.75rem] whitespace-nowrap">{T.comparar.top.creditoInsignia}</figcaption>
+      <figcaption className="text-texto-2 max-w-16 text-center text-[0.75rem] leading-tight">{T.comparar.top.creditoInsignia}</figcaption>
     </figure>
   );
 }

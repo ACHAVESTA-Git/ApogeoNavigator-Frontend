@@ -25,6 +25,20 @@ describe("insignia de un sitio", () => {
     expect(container.querySelector("[data-monograma]")?.textContent).toBe("A11");
     expect(screen.queryByText("Insignia: NASA")).toBeNull();
   });
+  it("solo Apolo 11, 15 y 17 llevan parche (archivos de public/insignias); el resto, monograma", () => {
+    expect([...RANKING.INSIGNIAS].sort()).toEqual(["apollo11", "apollo15", "apollo17"]);
+    const { container, unmount } = render(<Insignia siteId="apollo15" nombre="Apolo 15 - Hadley-Apeninos" />);
+    expect(container.querySelector("img")?.getAttribute("src")).toBe("/insignias/apollo15.jpg");
+    expect(container.querySelector("img")?.getAttribute("alt")).toBe("Insignia de la misión Apolo 15");
+    expect(screen.getByText("Insignia: NASA")).toBeTruthy();
+    unmount();
+    for (const [id, nombre] of [["shackleton", "Cráter Shackleton (centro)"], ["im1_odysseus", "IM-1 Odysseus - Malapert A"], ["slim", "SLIM - Cráter Shioli"]]) {
+      const r = render(<Insignia siteId={id} nombre={nombre} />);
+      expect(r.container.querySelector("img")).toBeNull();
+      expect(r.container.querySelector("[data-monograma]")).not.toBeNull();
+      r.unmount();
+    }
+  });
   it("cada parche declarado en RANKING.INSIGNIAS tiene su archivo en public/insignias (no se inventan archivos)", () => {
     expect(RANKING.INSIGNIAS.filter((id) => !existsSync(`public${RANKING.RUTA_INSIGNIA(id)}`))).toEqual([]);
   });

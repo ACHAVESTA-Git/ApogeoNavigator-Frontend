@@ -95,45 +95,52 @@ export const T: Textos = {
   },
   inicio: {
     documento: "Home",
-    rotulo: (coordenada: string, periodo: string) => `Shackleton crater · ${coordenada} · ${periodo}`,
-    // Colour accent only on "the Sun". True for the month of the story: with more months of data the Sun at
-    // Shackleton does set (27 Jan 2027), so the copy never says it "never" sets.
-    titular: { antes: "At Shackleton, by the south\u00a0pole, ", acento: "the Sun", despues: " does not set in December: it rolls along the horizon." },
-    apoyo: "A small change of place or date can decide whether a lander has power and a direct line to Earth. Compare it in minutes.",
+    // Colour accent only on "the Sun". True for the whole data period: by the pole the Sun never strays from the
+    // horizon, and with more months it does set (27 Jan 2027), so the copy never says it "never" sets.
+    titular: { antes: "By the Moon's south\u00a0pole, ", acento: "the Sun", despues: " barely rises: it rolls along the horizon." },
+    apoyo: "A small change of place or date decides whether a lander has power and a direct line to Earth.",
+    cta: "Choose a site",
+    hero: {
+      lugar: (dia: string) => `Shackleton crater · ${dia}`,
+      escena: (dia: string) => `Panorama of the horizon at Shackleton on ${dia} (UTC): the Sun and the Earth move through the day following their ephemeris, hour by hour.`,
+      hoy: "Today's sky, hour by hour.",
+      fuera: {
+        antes: (hoy: string, dia: string) => `Today (${hoy}) has no data yet: showing the first day with data, ${dia}.`,
+        despues: (hoy: string, dia: string) => `Today (${hoy}) is past the data: showing the last day with data, ${dia}.`,
+      },
+      sinEfemeride: "The ephemeris for this day could not be loaded.",
+    },
     actos: {
-      progreso: "Acts of the story",
-      ir: (n: number) => `Go to act ${n}`,
-      uno: { rotulo: "Act 1 · Centre of Shackleton, December 2026, ideal horizon", kpi: "Hours with Sun in December", contexto: (min: string, max: string) => `In December the Sun never climbs above ${max} nor drops below ${min}: it circles the horizon without setting. Real terrain can hide it.` },
-      dos: {
-        rotulo: "Act 2 · The exploration",
-        titular: { antes: "But ", acento: "the Earth", despues: " does hide." },
-        kpi: "Hours with a direct link",
-        contexto: (salida: string, puesta: string, sin: string) => `It rises on ${salida} and sets on ${puesta} (UTC). For the rest of the month, ${sin} with no direct line to Earth.`,
-      },
-      tres: {
-        rotulo: "Act 3 · The decision",
-        titular: "Choose where to land.",
-        kpi: "Sites to compare",
-        contexto: (puesta: string) => `A change of place or date changes everything: on ${puesta} (UTC) the Sun at Shackleton sets too. Compare power and link before you decide.`,
-      },
-      de: (total: string) => `of ${total}`,
+      uno: { contexto: (min: string, max: string) => `In December the Sun never climbs above ${max} nor drops below ${min}: it circles the horizon without setting. Real terrain can hide it.` },
+      dos: { contexto: (salida: string, puesta: string, sin: string) => `It rises on ${salida} and sets on ${puesta} (UTC). For the rest of the month, ${sin} with no direct line to Earth.` },
+      tres: { contexto: (puesta: string) => `A change of place or date changes everything: on ${puesta} (UTC) the Sun at Shackleton sets too. Compare power and link before you decide.` },
       // Day and time of a crossing inside a sentence of the story: "14 Dec at 23:00".
       momento: (utc: Utc) => `${diaCorto(utc)} at ${soloHora(utc)}`,
-      sigue: "Scroll to move through the month",
     },
-    explorar: "Explore sites",
-    verCielo: "See the sky at Shackleton",
-    escena: "360° panorama of the horizon at Shackleton. The Sun travels along the horizon without setting; the Earth rises and sets.",
-    escala: "Vertical scale magnified near the horizon",
-    regla: "Move through the month at Shackleton",
-    datosReales: "Real data from JPL Horizons, one sample every 3 h.",
-    preguntas: {
-      titulo: "Three questions before landing",
-      lista: [
-        { astro: "sol", pregunta: "Is there Sun?", respuesta: "With no Sun above the horizon there is no power. We measure how many hours each site gets it and how high." },
-        { astro: "tierra", pregunta: "Is the Earth in view?", respuesta: "The Earth is the lifeline: if it is not above the horizon, there is no direct communication link." },
-        { astro: "puesta", pregunta: "How long until it sets?", respuesta: "Knowing how many hours remain before either one crosses the line decides the mission plan." },
-      ],
+    cifras: {
+      titulo: "The catalogue in three figures",
+      sitios: { rotulo: "Sites", contexto: "landing sites to explore and compare" },
+      horas: { rotulo: "Ephemeris", contexto: (desde: string, hasta: string) => `of Sun and Earth positions at Shackleton, hour by hour, from ${desde} to ${hasta} (UTC)` },
+      huella: { rotulo: "File fingerprint", contexto: (firma: string) => `SHA3-256 of the Shackleton ephemeris · ${firma}`, completa: (huella: string) => `SHA3-256 fingerprint starting with ${huella}` },
+    },
+    recorrido: {
+      titulo: "Three steps to decide",
+      paso: (n: number, nombre: string) => `Step ${n} · ${nombre}`,
+      cielo: {
+        nombre: "Sky", titulo: "See where the Sun and the Earth are", enlace: "See the sky at Shackleton",
+        instante: (cuando: string) => `Shackleton · ${cuando} UTC`, tierra: "The Earth does hide.",
+        elevacion: (astro: string) => `Elevation · ${astro}`, sobre: "above the horizon", bajo: "below the horizon",
+      },
+      comparar: {
+        nombre: "Compare", titulo: "Compare power and link across sites", enlace: "Open the comparison",
+        periodo: (mes: string) => `Viability in ${mes}`,
+        fila: (sol: string, tierra: string) => `${sol} of Sun · ${tierra} with the Earth in view`,
+      },
+      analisis: {
+        nombre: "Analysis", titulo: "Check where every figure comes from", enlace: "Open the Shackleton analysis",
+        texto: "Every ephemeris file carries its fingerprint and the signature of the manifest. The analysis shows the path of the data, from the CSV to the chart, and the error of the fit.",
+      },
+      sinDatos: "These data could not be loaded. Try again in a moment.",
     },
     polo: {
       titulo: "Why the pole is extreme",
@@ -786,6 +793,7 @@ export const T: Textos = {
       sitio: "Site",
       insignia: (nombre: string) => `${nombre} mission insignia`,
       creditoInsignia: "Insignia: NASA",
+      avalInsignias: "Mission insignias: NASA, unmodified. NASA does not endorse this project.",
     },
     podio: {
       sensible: "Terrain-sensitive",
