@@ -324,10 +324,9 @@ export const T: Textos = {
         mision: "For your mission: expect the projected Sun to sit that much higher or lower, and a bit more the further ahead you look.",
       },
       medidores: {
-        r2Sol: "Fit · Sun elevation",
-        r2Tierra: "Fit · Earth elevation",
+        r2Sol: "R² fit · Sun elevation",
+        r2Tierra: "R² fit · Earth elevation",
         aciertos: "Traffic-light hits",
-        unidadR2: "R²",
         deMeses: (meses: number) => `/ ${meses}`,
         r2Mision: "How closely the model traces the data it already has. It does not say how well it will do later.",
         aciertosMision: "Months in which the projection gave the same traffic light as JPL Horizons.",
@@ -352,6 +351,7 @@ export const T: Textos = {
         proyectado: "Projected",
         desvio: "Model deviation",
         margen: (rmse: string) => `± ${rmse}`,
+        margenRotulo: "Band (RMSE)",
         momentos: {
           titulo: "Key moments",
           ir: "Move the cursor to this moment",
@@ -419,7 +419,8 @@ export const T: Textos = {
         },
       },
       detalle: {
-        entrada: "What lies behind the verdict: what this analysis cannot say, how it was computed and where the data comes from.",
+        titulo: "What lies behind the verdict",
+        entrada: "What this analysis cannot say, how it was computed and where the data comes from.",
         limitaciones: (n: number) => `What this analysis cannot say (${n})`,
         pasos: (n: number) => `The ${n} steps of the calculation`,
         cifras: "Fit and validation, variable by variable",

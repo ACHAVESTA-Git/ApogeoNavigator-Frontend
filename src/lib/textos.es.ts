@@ -322,10 +322,9 @@ export const T = {
         mision: "Para tu misión: cuenta con que el Sol proyectado puede ir ese margen más alto o más bajo, y algo más cuanto más lejos mires.",
       },
       medidores: {
-        r2Sol: "Ajuste · elevación del Sol",
-        r2Tierra: "Ajuste · elevación de la Tierra",
+        r2Sol: "Ajuste R² · elevación del Sol",
+        r2Tierra: "Ajuste R² · elevación de la Tierra",
         aciertos: "Aciertos del semáforo",
-        unidadR2: "R²",
         deMeses: (meses: number) => `/ ${meses}`,
         r2Mision: "Cuánto calca el modelo los datos que ya tiene. No dice cuánto acertará después.",
         aciertosMision: "Meses en los que la proyección dio el mismo semáforo que JPL Horizons.",
@@ -350,6 +349,7 @@ export const T = {
         proyectado: "Proyectado",
         desvio: "Desvío del modelo",
         margen: (rmse: string) => `± ${rmse}`,
+        margenRotulo: "Banda (RMSE)",
         momentos: {
           titulo: "Momentos clave",
           ir: "Llevar el cursor a este momento",
@@ -417,7 +417,8 @@ export const T = {
         },
       },
       detalle: {
-        entrada: "Lo que hay detrás del veredicto: qué no puede decir este análisis, cómo se calculó y de dónde vienen los datos.",
+        titulo: "Lo que hay detrás del veredicto",
+        entrada: "Qué no puede decir este análisis, cómo se calculó y de dónde vienen los datos.",
         limitaciones: (n: number) => `Lo que este análisis no puede decir (${n})`,
         pasos: (n: number) => `Los ${n} pasos del cálculo`,
         cifras: "Ajuste y validación, variable por variable",
