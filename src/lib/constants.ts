@@ -396,7 +396,7 @@ export const PORTADA = {
   CICLO: { AVANCE_MS: 24_000, PAUSA_MS: 1_600, RETORNO_MS: 900 },
   SALTO_MAX_MS: 100, // tras un cuadro largo (pestaña en segundo plano) el día no da un salto
   HOLGURA_VENTANA: 0.7, // el Sol y la Tierra se centran juntos si su separación cabe en esta fracción de la ventana
-  HORIZONTE_FRACCION: { movil: 0.74, escritorio: 0.7 }, // altura del horizonte en la escena
+  HORIZONTE_FRACCION: { movil: 0.66, escritorio: 0.7 }, // altura del horizonte en la escena
   TIERRA_FRACCION_X: { movil: 0.72, escritorio: 0.7 }, // dónde cae la Tierra cuando no se centra con el Sol
   LUPA_MAX_PX: 320,
   ROTULO_MARGEN_PX: 70, // el rótulo de un astro no se sale de la pantalla

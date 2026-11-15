@@ -40,7 +40,7 @@ const Hueco = ({ fallo }: { fallo: boolean }) => (
 
 function Cifra({ rotulo, contexto, listo, fallo, children }: { rotulo: string; contexto: ReactNode; listo: boolean; fallo: boolean; children: () => ReactNode }) {
   return (
-    <li className="min-h-32 min-w-0">
+    <li className="min-w-0">
       {listo ? children() : (
         <>
           <p className="rotulo mb-2">{rotulo}</p>

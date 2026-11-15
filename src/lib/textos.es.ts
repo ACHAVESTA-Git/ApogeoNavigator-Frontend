@@ -120,7 +120,7 @@ export const T = {
       titulo: "El catálogo, en tres cifras",
       sitios: { rotulo: "Sitios", contexto: "lugares de alunizaje para explorar y comparar" },
       horas: { rotulo: "Efemérides", contexto: (desde: string, hasta: string) => `de posiciones del Sol y la Tierra en Shackleton, hora a hora, del ${desde} al ${hasta} (UTC)` },
-      huella: { rotulo: "Huella del archivo", contexto: (firma: string) => `SHA3-256 de las efemérides de Shackleton. ${firma}`, completa: (huella: string) => `Huella SHA3-256 que empieza por ${huella}` },
+      huella: { rotulo: "Huella del archivo", contexto: (firma: string) => `SHA3-256 de las efemérides de Shackleton · ${firma}`, completa: (huella: string) => `Huella SHA3-256 que empieza por ${huella}` },
     },
     recorrido: {
       titulo: "Tres pasos para decidir",

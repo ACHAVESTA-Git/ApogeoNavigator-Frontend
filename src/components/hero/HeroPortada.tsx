@@ -75,7 +75,8 @@ export function HeroPortada({ dia, hoy, titulo, cta }: { dia: DiaPortada; hoy: s
         const yRotulo = elev > 0 ? yDe(elev) - radio - HERO.RELATO.ROTULO.SOBRE_PX : yDe(elev) + radio + HERO.RELATO.ROTULO.BAJO_PX;
         nodo.style.transform = `translate(${limitar(x, PORTADA.ROTULO_MARGEN_PX, ancho - PORTADA.ROTULO_MARGEN_PX)}px, ${yRotulo}px) translateX(-50%)`;
         nodo.style.opacity = x > 0 && x < ancho ? "1" : "0";
-        nodo.textContent = `${NOMBRE_ASTRO[astro].toUpperCase()} ${grados(elev, 1, true)}`;
+        const texto = `${NOMBRE_ASTRO[astro].toUpperCase()} ${grados(elev, 1, true)}`;
+        if (nodo.textContent !== texto) nodo.textContent = texto; // solo se escribe al cambiar: sin layout por cuadro
       }
       const hora = Math.floor(ms / MS_POR_HORA) * MS_POR_HORA;
       if (hora === horaPintada.current) return;
@@ -125,16 +126,18 @@ export function HeroPortada({ dia, hoy, titulo, cta }: { dia: DiaPortada; hoy: s
         <div>
           <p className="rotulo">{t.lugar(diaVisto)}</p>
           {titulo}
-          <p className="text-entrada text-texto-2 mt-4 max-w-[44ch] min-h-[3lh] sm:min-h-[2lh]">{T.inicio.apoyo}</p>
+          {/* Alto reservado como el del titular: 3 líneas hasta 419 px (391 px en inglés) y 2 desde ahí. */}
+          <p className="text-entrada text-texto-2 mt-4 max-w-[44ch] min-h-[3lh] min-[26.25rem]:min-h-[2lh] min-[24.5rem]:[:lang(en)_&]:min-h-[2lh]">{T.inicio.apoyo}</p>
           <div className="mt-6">{cta}</div>
         </div>
 
-        <div>
+        {/* Lectura del instante: sobre un velo opaco (sin desenfoque: debajo hay un lienzo que se repinta). */}
+        <div className="bg-velo border-texto/8 w-fit max-w-full rounded-lg border px-3 py-2">
           <p className="text-dato-sm text-texto font-mono" data-dato>
             <time ref={reloj} dateTime={inicial}>{fechaHora(inicial)}</time> <span className="text-texto-2">{T.utc}</span>
             <span className="text-texto-2"> · <span ref={relojLima}>{horaLocal(horaLima(inicial))}</span></span>
           </p>
-          <p className="text-texto-2 mt-1 max-w-medida text-[0.75rem]">
+          <p className="text-texto-2 max-w-medida mt-1 text-[0.75rem]">
             {fallo ? t.sinEfemeride : dia.fuera ? t.fuera[dia.fuera](hoy, diaVisto) : t.hoy} {T.avisoHorizonteCorto}
           </p>
         </div>

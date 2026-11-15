@@ -18,10 +18,10 @@ const SECCION = "contenedor grid grid-cols-1 gap-x-6 gap-y-6 py-14 md:grid-cols-
 const TITULO_SECCION = "rotulo md:col-span-3";
 const TITULAR_PORTADA = unir(
   "text-display! mt-3 max-w-[26ch] md:mt-5",
-  // Español: 5 líneas hasta 379 px, 4 hasta 596 px y 3 desde 597 px.
-  "min-h-[4lh] max-[23.74rem]:min-h-[5lh] min-[37.3rem]:min-h-[3lh]",
-  // Inglés (titular más largo): 6 hasta 326 px, 5 hasta 431 px, 4 hasta 671 px y 3 desde 672 px.
-  "max-[20.43rem]:[:lang(en)_&]:min-h-[6lh] max-[26.99rem]:[:lang(en)_&]:min-h-[5lh] min-[37.3rem]:max-[41.99rem]:[:lang(en)_&]:min-h-[4lh]",
+  // Alto reservado en líneas, medido con Playwright sobre el build. Español: 5 líneas hasta 369 px, 4 hasta 497 px y 3 desde 498 px.
+  "min-h-[5lh] min-[23.125rem]:min-h-[4lh] min-[31.125rem]:min-h-[3lh]",
+  // Inglés: 5 hasta 329 px, 4 hasta 455 px y 3 desde 456 px.
+  "min-[20.625rem]:[:lang(en)_&]:min-h-[4lh] min-[28.5rem]:[:lang(en)_&]:min-h-[3lh]",
 );
 
 // Bajo la portada: en un trozo aparte para no engordar el JS inicial. Su hueco reserva alto (no hay salto al llegar).

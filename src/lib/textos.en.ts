@@ -121,7 +121,7 @@ export const T: Textos = {
       titulo: "The catalogue in three figures",
       sitios: { rotulo: "Sites", contexto: "landing sites to explore and compare" },
       horas: { rotulo: "Ephemeris", contexto: (desde: string, hasta: string) => `of Sun and Earth positions at Shackleton, hour by hour, from ${desde} to ${hasta} (UTC)` },
-      huella: { rotulo: "File fingerprint", contexto: (firma: string) => `SHA3-256 of the Shackleton ephemeris. ${firma}`, completa: (huella: string) => `SHA3-256 fingerprint starting with ${huella}` },
+      huella: { rotulo: "File fingerprint", contexto: (firma: string) => `SHA3-256 of the Shackleton ephemeris · ${firma}`, completa: (huella: string) => `SHA3-256 fingerprint starting with ${huella}` },
     },
     recorrido: {
       titulo: "Three steps to decide",
