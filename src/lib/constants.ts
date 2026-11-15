@@ -272,6 +272,7 @@ export const MAPA = {
   ANILLO_HORIZONTE: 0, // visto desde el polo sur, el limbo de la Luna es el ecuador
   RADIO_ETIQUETA_IZQ: 30, // los sitios pegados al polo se rotulan a la izquierda
   MERIDIANOS_ROTULADOS: [0, 90, 180, 270],
+  INTERLINEA_ROTULO_MOVIL: 28, // unidades del viewBox entre las dos líneas de un rótulo de anillo en móvil (texto de 24)
   SEPARADOR_NOMBRE: " - ",
   ESQUELETO_FILAS: 6,
 } as const;

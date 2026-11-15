@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { Fragment, useId } from "react";
 import { MAPA, MOVIMIENTO } from "../../lib/constants";
 import { latitud, nombreCorto } from "../../lib/formato";
 import { proyectarPolar, radioLatitud } from "../../lib/geo";
@@ -64,10 +64,22 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
             // El anillo de Artemis es tan pequeño que su rótulo va fuera, abajo a la derecha del polo.
             const dentro = lat === MAPA.ANILLO_ARTEMIS;
             const [x, y] = dentro ? [C + r + 8, C + 18] : [C - r * Math.SQRT1_2 - 4, C - r * Math.SQRT1_2 - 4];
+            const nombre = ROTULO_ANILLO[lat];
+            // En móvil el texto mide el doble: un rótulo con nombre anclado por su final no cabe a la izquierda
+            // del anillo en una línea, así que allí va en dos (latitud arriba, nombre abajo).
+            const partido = Boolean(nombre) && !dentro;
             return (
-              <text key={lat} x={x} y={y} textAnchor={dentro ? "start" : "end"} className={ROTULO_ANILLO[lat] ? undefined : "max-sm:hidden"}>
-                {latitud(lat, 0)}{ROTULO_ANILLO[lat] ? ` · ${ROTULO_ANILLO[lat]}` : ""}
-              </text>
+              <Fragment key={lat}>
+                <text x={x} y={y} textAnchor={dentro ? "start" : "end"} className={nombre && !partido ? undefined : "max-sm:hidden"}>
+                  {latitud(lat, 0)}{nombre ? ` · ${nombre}` : ""}
+                </text>
+                {partido && (
+                  <text x={x} y={y} textAnchor="end" className="sm:hidden">
+                    <tspan x={x} dy={-MAPA.INTERLINEA_ROTULO_MOVIL}>{latitud(lat, 0)}</tspan>
+                    <tspan x={x} dy={MAPA.INTERLINEA_ROTULO_MOVIL}>{nombre}</tspan>
+                  </text>
+                )}
+              </Fragment>
             );
           })}
           {MAPA.MERIDIANOS_ROTULADOS.map((lon) => (
