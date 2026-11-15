@@ -1,4 +1,4 @@
-import { CloudUpload, Settings } from "lucide-react";
+import { CloudUpload, LogIn, Settings } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
 import { Link, NavLink } from "react-router";
 import { useSesion } from "../../hooks/useSesion";
@@ -21,6 +21,9 @@ const cargarConfiguracion = () => import("./DialogoConfiguracion");
 const DialogoConfiguracion = lazy(cargarConfiguracion);
 
 /** Botón de ajustes de la cabecera: abre la configuración (idioma). */
+/** Botón redondo de icono de la cabecera (configuración y, en móvil, acceso). */
+const BOTON_ICONO = "tactil text-texto-2 hover:bg-texto/[0.07] hover:text-texto inline-flex shrink-0 items-center justify-center rounded-full transition-[background-color,color,transform] duration-(--dur-micro) ease-salida active:scale-[0.97]";
+
 function BotonConfiguracion() {
   const [abierta, setAbierta] = useState(false);
   const precargar = () => void cargarConfiguracion();
@@ -34,7 +37,7 @@ function BotonConfiguracion() {
         onClick={() => setAbierta(true)}
         onPointerEnter={precargar}
         onFocus={precargar}
-        className="tactil text-texto-2 hover:bg-texto/[0.07] hover:text-texto inline-flex shrink-0 items-center justify-center rounded-full transition-[background-color,color,transform] duration-(--dur-micro) ease-salida active:scale-[0.97]"
+        className={BOTON_ICONO}
       >
         <Settings aria-hidden="true" className="size-5" />
       </button>
@@ -79,9 +82,16 @@ export function NavPrincipal() {
           <RelojUtc className="hidden lg:flex" />
           <BotonSubirDatos />
           {usuario ? <MenuSesion /> : (
-            <span className="hidden md:block">
-              <NavLink to={RUTAS.ACCESO} className={enlace}>{T.nav.acceso}</NavLink>
-            </span>
+            <>
+              <span className="hidden md:block">
+                <NavLink to={RUTAS.ACCESO} className={enlace}>{T.nav.acceso}</NavLink>
+              </span>
+              {/* En móvil no cabe el texto: sin sesión, el acceso va como icono (antes solo estaba en el pie). */}
+              <Link to={RUTAS.ACCESO} aria-label={T.nav.acceso} title={T.nav.acceso}
+                className={unir(BOTON_ICONO, "md:hidden")}>
+                <LogIn aria-hidden="true" className="size-5" />
+              </Link>
+            </>
           )}
           <BotonConfiguracion />
         </div>
