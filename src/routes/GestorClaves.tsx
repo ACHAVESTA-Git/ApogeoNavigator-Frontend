@@ -10,7 +10,7 @@ import { Popup } from "../components/ui/Popup";
 import { Segmentado } from "../components/ui/Segmentado";
 import { unir } from "../components/ui/clases";
 import { CampoClave } from "../components/upload/CampoClave";
-import { Plegable } from "../components/upload/Plegable";
+import { Plegable } from "../components/ui/Plegable";
 import { SuccessCheck } from "../components/upload/SuccessCheck";
 import { useClaveGuardada } from "../hooks/useClaveCarga";
 import { API, CLAVES_PQC } from "../lib/constants";

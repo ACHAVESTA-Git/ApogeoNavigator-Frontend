@@ -6,7 +6,7 @@ import { T } from "../../lib/textos";
 import type { ArchivoCarga, EstadoArchivo } from "../../lib/upload";
 import { unir } from "../ui/clases";
 import { ErrorTable } from "./ErrorTable";
-import { Plegable } from "./Plegable";
+import { Plegable } from "../ui/Plegable";
 
 // Estado = SOLO un icono pequeño de color antes de la línea secundaria (con aria-label y tooltip). Sin fondos de color.
 const ICONO: Partial<Record<EstadoArchivo, { Icono: LucideIcon; color: string; etiqueta: string; curva?: string }>> = {
