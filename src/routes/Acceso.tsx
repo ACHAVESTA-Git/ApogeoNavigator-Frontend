@@ -1,5 +1,6 @@
 import { LogIn } from "lucide-react";
 import { useId, useState, type FormEvent } from "react";
+import { useLocation } from "react-router";
 import { PantallaSimple } from "../components/layout/PantallaSimple";
 import { Boton, EnlaceBoton, EnlaceExterno } from "../components/ui/Boton";
 import { EstadoCarga } from "../components/ui/Estados";
@@ -30,6 +31,8 @@ export default function Acceso() {
   const [faltan, setFaltan] = useState(false);
   const id = useId();
   const idError = `${id}-error`;
+  // Quien llega rebotado del gestor de claves sin el rol de administración lee por qué está aquí.
+  const rebotado = Boolean((useLocation().state as { soloAdmin?: boolean } | null)?.soloAdmin);
 
   const enviar = (evento: FormEvent) => {
     evento.preventDefault();
@@ -44,6 +47,7 @@ export default function Acceso() {
     return (
       <PantallaSimple documento={t.documento} rotulo={t.rotulo} titulo={usuario.nombre}>
         <p>{t.sesionDe(usuario.nombre, T.sesion.roles[usuario.rol])}</p>
+        {rebotado && usuario.rol !== "admin" && <p role="status" className="text-apoyo text-reservas mt-3">{t.soloAdmin}</p>}
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <EnlaceBoton variante="primario" to={RUTAS.PERFIL}>{T.sesion.perfil}</EnlaceBoton>
           {usuario.rol === "admin" && <EnlaceBoton to={RUTAS.CLAVES}>{t.claves}</EnlaceBoton>}
