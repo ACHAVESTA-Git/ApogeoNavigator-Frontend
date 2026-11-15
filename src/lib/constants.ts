@@ -233,6 +233,30 @@ export const ESCENA = {
   PASO_PERFIL_PX: 4,
   CREPUSCULO_DEG: { desde: -1.2, hasta: 2.5 }, // tramo en que el suelo pasa de noche a día
   HORAS_POR_ANCHO: 96, // arrastrar el suelo de lado a lado recorre 4 días
+  // Escena realista (vista del cielo). La portada no la usa: allí el suelo se pinta como siempre.
+  REALISTA: {
+    // Luz general del suelo: irradiancia de Lambert sobre un plano horizontal, E ∝ sin(elevación), llevada a
+    // brillo percibido con un exponente. `LUZ_MAX` deja legibles los rótulos que van sobre el suelo.
+    LUZ_MAX: 0.44, LUZ_MIN: 0.004, GAMMA: 0.45,
+    CONTRALUZ: 0.55,        // con luz rasante, cuánto se apaga el suelo al mirar hacia el Sol (se ven las caras en sombra)
+    OPOSICION: { BRILLO: 0.1, ANCHO_DEG: 28 }, // realce del suelo con el Sol a la espalda (efecto de oposición)
+    // Laderas según miren o no al Sol: `realce` amplía la pendiente del perfil; la luz alcanza `alcance` alturas
+    // de loma hacia abajo, repartida en `franjas` cada vez más tenues.
+    LADERA: { base: 0.12, rasante: 0.36, sombra: 0.7, realce: 2.2, alcance: 1.6, franjas: 9 },
+    FILO: { OPACIDAD: 0.45, ANCHO_DEG: 20, HASTA_FONDO: 0.3 }, // crestas lejanas a contraluz, junto al azimut del Sol
+    PASO_SOMBREADO_PX: 24,
+    // Ondulaciones intermedias (entre las capas lejana, media y cercana del relieve ilustrativo).
+    ONDAS: [{ px: 18, fondo: 0.17, paralaje: 1 }, { px: 46, fondo: 0.72, paralaje: 2 }],
+    VOLUMEN: 0.42,          // oscurecimiento hacia el pie de cada loma (la siguiente la tapa)
+    CRATERES: 18, MOTAS: 150,
+    // Sombras: largo = alto / tan(elevación), con tope en razón (40 ≈ Sol a 1,4°) y en fracción del ancho.
+    SOMBRA: { RAZON_MAX: 40, FRACCION_ANCHO: 0.26, OPACIDAD: 0.8, PUNTA: 0.4, PUNTA_CERCA: 1.5 },
+    PERSPECTIVA: { horizonte: 0.1, pie: 0.5 }, // cuánto se acortan las distancias en profundidad
+    // Resplandor del horizonte: polvo levitado que dispersa la luz del Sol rasante (ilustrativo).
+    POLVO: { ALTO_PX: 26, ANCHO_DEG: 46, HASTA_DEG: 7, OPACIDAD: 0.42 },
+    GRANO_GRUESO_DESDE: 0.4,                   // desde esta profundidad el grano es el doble de grueso (perspectiva)
+    PARALAJE_PX: { lejos: 0, cerca: 18, rocas: 12 }, // desplazamiento de las capas al mover el puntero
+  },
 } as const;
 
 export const HERO = {
