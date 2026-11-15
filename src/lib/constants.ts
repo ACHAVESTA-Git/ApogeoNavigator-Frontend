@@ -74,6 +74,8 @@ export const PROYECCION = {
   FACTOR_BANDA: 2,
   // Más allá de esta banda ± un azimut ya no orienta (cerca del cénit o del nadir el RMSE llega a 180°): «no acotable».
   BANDA_MAX_DEG: 30,
+  // Código del aviso general de /api/simulacion: la pantalla ya lo dice con su propio aviso fijo.
+  AVISO_GENERAL: "proyeccion_estadistica",
 } as const;
 
 export const DATOS = {
