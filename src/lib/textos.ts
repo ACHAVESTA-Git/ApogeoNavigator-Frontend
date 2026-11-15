@@ -333,6 +333,7 @@ export const T = {
     centrar: (astro: string) => `Centrar la vista en ${astro}`,
     arrastra: "Arrastra el cielo para girar la mirada · arrastra el suelo para mover el tiempo",
     relieve: "Relieve ilustrativo. Las cifras son de horizonte ideal (sin relieve).",
+    relieveCorto: "Relieve ilustrativo",
     tamanos: "Tamaños de los astros ampliados; la Tierra se ve unas 3,6 veces mayor que el Sol.",
     horizonteIdeal: "horizonte ideal",
     faseTierra: (pct: string) => `Tierra iluminada al ${pct}`,
