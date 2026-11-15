@@ -1,10 +1,12 @@
 // Sesión de usuario. El backend la guarda en una cookie httpOnly: el navegador la envía sola y este código nunca
 // ve el token. La contraseña solo vive en el formulario mientras se envía; no se guarda ni se registra en ningún sitio.
 //
-// Contrato (provisional hasta que el backend lo cierre):
-//   POST /api/auth/login {email, password} → pone la cookie de sesión
-//   POST /api/auth/logout
-//   GET  /api/auth/me → {id, nombre, rol, huellas PQC}
+// Contrato (backend `app/schemas/auth.py`, `app/routers/auth.py`):
+//   POST /api/auth/login {email, password} → 200 con el usuario y la cookie de sesión (httpOnly, SameSite=Strict, 8 h);
+//        401 CREDENCIALES_INVALIDAS; 429 DEMASIADOS_INTENTOS con Retry-After
+//   POST /api/auth/logout → 204 (revoca la sesión)
+//   GET  /api/auth/me → {id, nombre, rol, claves: [{id, tipo, algoritmo, estado, huella_sha3_256}]}
+// Todo POST con cookie lleva X-Requested-With (si falta, 403 ORIGEN_NO_PERMITIDO).
 import { API } from "./constants";
 import { ApiError, ErrorDeRed, errorDeRespuesta } from "./errores";
 
@@ -55,8 +57,9 @@ function marcarIndicio(activo: boolean): void {
 
 const esTexto = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
 /**
- * Huellas del usuario. Se admite una lista de {algoritmo, huella} (o `huella_sha3_256`, como en el gestor de claves)
- * o un objeto algoritmo → huella. Cualquier otro campo se ignora: aquí no entra nada que no sea una huella.
+ * Huellas del usuario: el campo `claves` de /api/auth/me, una lista de {algoritmo, huella_sha3_256, …} con las claves
+ * públicas activas. Por tolerancia se admite también {algoritmo, huella} o un objeto algoritmo → huella. Cualquier
+ * otro campo se ignora: aquí no entra nada que no sea una huella.
  */
 export function leerHuellas(valor: unknown): HuellaPqc[] {
   if (Array.isArray(valor)) {
@@ -75,7 +78,7 @@ export function leerHuellas(valor: unknown): HuellaPqc[] {
 export function leerUsuario(cuerpo: unknown): UsuarioSesion | null {
   const u = (cuerpo ?? {}) as Record<string, unknown>;
   if (!(esTexto(u.id) || typeof u.id === "number") || !esTexto(u.nombre) || !(ROLES as readonly unknown[]).includes(u.rol)) return null;
-  return { id: String(u.id), nombre: u.nombre, rol: u.rol as Rol, huellas: leerHuellas(u.huellas ?? u.huellas_pqc) };
+  return { id: String(u.id), nombre: u.nombre, rol: u.rol as Rol, huellas: leerHuellas(u.claves ?? u.huellas) };
 }
 
 async function llamar(ruta: string, init: RequestInit = {}): Promise<unknown> {
@@ -110,8 +113,9 @@ export async function obtenerSesion(url: (ruta: string) => string): Promise<Usua
 }
 /** Inicia sesión y devuelve el usuario. La contraseña va solo en el cuerpo de esta petición. */
 export async function iniciarSesion(url: (ruta: string) => string, email: string, password: string): Promise<UsuarioSesion> {
-  await llamar(url(API.AUTH_LOGIN), { method: "POST", body: JSON.stringify({ email, password }) });
-  const usuario = leerUsuario(await llamar(url(API.AUTH_ME)));
+  // El login ya devuelve el usuario; solo si la respuesta no lo trae se pregunta a /me.
+  const respuesta = await llamar(url(API.AUTH_LOGIN), { method: "POST", body: JSON.stringify({ email, password }) });
+  const usuario = leerUsuario(respuesta) ?? leerUsuario(await llamar(url(API.AUTH_ME)));
   if (!usuario) throw new ApiError(API.NO_AUTORIZADO, "");
   marcarIndicio(true);
   return usuario;
