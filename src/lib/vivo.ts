@@ -42,10 +42,12 @@ export interface ProximoEvento {
 export function proximoEvento(ahora: Utc, filas: readonly FilaEfemeride[], indicadores?: IndicadoresAstronauta | null): ProximoEvento | null {
   if (!esUtc(ahora)) return null;
   const ms = aMs(ahora);
-  const deSerie = filas.length ? proximosEventos(filas, ahora) : null;
+  // La serie solo se recorre si hace falta (la API no trae la puesta o ya pasó): esto se llama una vez por hora simulada.
+  let deSerie: ReturnType<typeof proximosEventos> | undefined;
+  const serie = () => (deSerie === undefined ? (deSerie = filas.length ? proximosEventos(filas, ahora) : null) : deSerie);
   const candidatos = (["sol", "tierra"] as const).flatMap((astro): ProximoEvento[] => {
     const api = indicadores?.[`proxima_puesta_${astro}_utc`];
-    const utc = esUtc(api) && aMs(api) > ms ? api : deSerie?.[astro].proxima_puesta_utc;
+    const utc = esUtc(api) && aMs(api) > ms ? api : serie()?.[astro].proxima_puesta_utc;
     if (!esUtc(utc) || aMs(utc) <= ms) return [];
     return [{ astro, utc: aUtc(aMs(utc)), horas: Math.round((aMs(utc) - ms) / MS_POR_HORA) }];
   });

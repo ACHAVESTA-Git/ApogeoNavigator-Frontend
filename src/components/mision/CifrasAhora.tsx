@@ -48,7 +48,7 @@ export function CifrasAhora({ filas, indicadores, sensible = false, className }:
         {sensible && <span className="text-texto" data-aviso-relieve>* <span className="inline-block first-letter:uppercase">{T.semaforo.sensible}</span> · </span>}
         {t.instante(fechaHora(ahora))} · {T.avisoHorizonteCorto}
       </p>
-      <div className="grid min-h-[8.25rem] grid-cols-3 gap-x-3 sm:min-h-[6.25rem] sm:gap-x-8">
+      <div className="grid min-h-[10.5rem] grid-cols-3 gap-x-3 sm:min-h-[6.25rem] sm:gap-x-8">
         {(["sol", "tierra"] as const).map((astro) => {
           const el = fila?.[`${astro}_el_deg`];
           return (
