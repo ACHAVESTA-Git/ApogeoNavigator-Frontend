@@ -110,7 +110,9 @@ const rangoCompleto = (rango: Rango): Required<Rango> => ({ desde: rango.desde ?
 
 export const obtenerEfemerides = (id: string, rango: Rango = {}, { signal, modo }: Opciones = {}): Promise<Efemerides> => {
   const punto = puntoDeId(id);
-  return punto ? obtenerHorizons(punto, rangoCompleto(rango)) : efemeridesDeSitio(id, rango, { signal, modo });
+  // /api/horizons responde con site_id «personalizado»: aquí se devuelve con el id pedido, como hace cualquier sitio
+  // (las pantallas comprueban que los datos son del sitio en curso antes de pintarlos).
+  return punto ? obtenerHorizons(punto, rangoCompleto(rango)).then((r) => ({ ...r, site_id: id })) : efemeridesDeSitio(id, rango, { signal, modo });
 };
 const efemeridesDeSitio = (id: string, rango: Rango = {}, { signal, modo }: Opciones = {}): Promise<Efemerides> =>
   conRespaldo(() => pedir<Efemerides>(API.EFEMERIDES(id), { ...rango }, signal), () => efemeridesMuestra(id, rango), modo);

@@ -57,6 +57,8 @@ describe("GET /api/horizons", () => {
     const [efemerides, metricas] = await Promise.all([obtenerEfemerides(id, RANGO), obtenerMetricas([id], RANGO)]);
     expect(llamadas).toEqual(["/api/horizons?lat=-45&lon=10&desde=2026-12-01T00%3A00Z&hasta=2027-01-01T00%3A00Z"]);
     expect(efemerides.filas).toHaveLength(1);
+    // La API dice «personalizado»; las pantallas esperan el id del punto (Ventanas no pinta datos de otro sitio).
+    expect(efemerides.site_id).toBe(id);
     expect(metricas.resultados[0]).toMatchObject({ site_id: id, horas_sol: 744, origen: "horizons_en_vivo" });
   });
   it("el periodo por defecto respeta el máximo de 35 días", () => {
