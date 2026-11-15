@@ -296,9 +296,6 @@ export const PUNTO_PROPIO = {
   DECIMALES: 4,
   RANGO_MAX_DIAS: 35,
   CACHE_MAX: 6, // respuestas de /api/horizons que se guardan en memoria (una por punto y periodo)
-  // Respaldo de ejemplo mientras el backend no publique /api/horizons. Para quitarlo: poner false (o borrar el
-  // bloque marcado en api.ts y puntoPropio.ts). Nunca se usa si el endpoint responde, aunque sea con un error.
-  RESPALDO_EJEMPLO: true,
 } as const;
 
 export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", VARIABLE: "variable" } as const;

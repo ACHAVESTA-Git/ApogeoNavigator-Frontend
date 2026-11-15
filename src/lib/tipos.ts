@@ -89,8 +89,6 @@ export interface RespuestaHorizons extends Efemerides {
   consultado_utc: Utc;
   metricas: Metrica;
   puestas: Puestas;
-  /** Solo en el cliente: la respuesta es la muestra de ejemplo, no JPL. */
-  ejemplo?: boolean;
 }
 export interface RespuestaMetricas {
   resultados: Metrica[];

@@ -2,7 +2,6 @@
 // GET /api/horizons. Las coordenadas viajan dentro del identificador de la ruta («punto_s89p66_e129p2»), que
 // cumple el estándar de site_id: así el punto se comporta como cualquier sitio y NO se guarda en ningún
 // almacenamiento del navegador ni se envía a otro servicio.
-import { useSyncExternalStore } from "react";
 import { ENLACES, PUNTO_PROPIO } from "./constants";
 import { T } from "./textos";
 import type { Site } from "./tipos";
@@ -54,16 +53,3 @@ export const sitioDePunto = (id: string, { lat, lon }: Punto): Site => ({
   fuente_url: ENLACES.HORIZONS,
   notas: null,
 });
-
-// ---------------------------------------------------------------- respaldo de ejemplo (QUITAR con PUNTO_PROPIO.RESPALDO_EJEMPLO)
-// Mientras /api/horizons no esté desplegado, el cliente enseña la muestra de un sitio real, MARCADA en pantalla.
-let respaldo = false;
-const oyentes = new Set<() => void>();
-export function marcarRespaldoHorizons(activo: boolean): void {
-  if (respaldo === activo) return;
-  respaldo = activo;
-  oyentes.forEach((o) => o());
-}
-const suscribir = (o: () => void) => { oyentes.add(o); return () => void oyentes.delete(o); };
-/** true si lo que se ve de un punto propio es la muestra de ejemplo y no la respuesta de JPL. */
-export const useRespaldoHorizons = (): boolean => useSyncExternalStore(suscribir, () => respaldo, () => false);

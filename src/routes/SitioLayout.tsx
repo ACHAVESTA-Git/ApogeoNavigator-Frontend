@@ -11,9 +11,7 @@ import { useSitio } from "../hooks/useSitio";
 import { useLlegadaCompartida } from "../hooks/useLlegadaCompartida";
 import { ID_NOMBRE_SITIO, RUTAS } from "../lib/constants";
 import { coordenadas } from "../lib/formato";
-import { esPuntoPropio, useRespaldoHorizons } from "../lib/puntoPropio";
-import { useSites } from "../hooks/useSites";
-import { DATOS } from "../lib/constants";
+import { esPuntoPropio } from "../lib/puntoPropio";
 import { NOMBRE_CATEGORIA, T } from "../lib/textos";
 import type { Site, Utc } from "../lib/tipos";
 
@@ -31,8 +29,6 @@ export default function SitioLayout() {
   const periodo = usePeriodo();
   const t = T.sitio;
   const propio = esPuntoPropio(siteId);
-  const deEjemplo = useRespaldoHorizons() && propio;
-  const sitioEjemplo = useSites().data?.find((s) => s.site_id === DATOS.SITIO_DESTACADO)?.nombre ?? DATOS.SITIO_DESTACADO;
   const nombre = useLlegadaCompartida<HTMLParagraphElement>(ID_NOMBRE_SITIO(siteId ?? ""));
 
   if (estado === "cargando") return <div className="contenedor min-h-[60svh]"><EstadoCarga /></div>;
@@ -59,13 +55,13 @@ export default function SitioLayout() {
         <div className="min-w-0">
           <p className="rotulo flex items-center gap-2 max-md:hidden">
             <GlifoCategoria categoria={sitio.categoria} className="size-3" />
-            {propio ? (deEjemplo ? T.puntoPropio.marcaEjemplo : T.puntoPropio.marca) : `${NOMBRE_CATEGORIA[sitio.categoria]} · ${sitio.agencia}`}
+            {propio ? T.puntoPropio.marca : `${NOMBRE_CATEGORIA[sitio.categoria]} · ${sitio.agencia}`}
           </p>
           <p ref={nombre} className="titulo-instrumento text-texto truncate text-[1.0625rem] md:mt-1.5 md:text-[1.5rem]">{sitio.nombre}</p>
           <p className="text-dato-sm text-texto-2 font-mono md:mt-1" data-dato>
             {coordenadas(sitio.lat_deg, sitio.lon_este_deg)}
             {/* En móvil el rótulo de arriba no se ve: la marca del punto propio va junto a las coordenadas. */}
-            {propio && <span className="text-texto-3 font-sans md:hidden"> · {deEjemplo ? T.puntoPropio.marcaEjemplo : T.puntoPropio.fuente}</span>}
+            {propio && <span className="text-texto-3 font-sans md:hidden"> · {T.puntoPropio.fuente}</span>}
           </p>
         </div>
         <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-between sm:gap-3">
@@ -80,11 +76,6 @@ export default function SitioLayout() {
           <div className="-mt-0.5"><BarraTiempo /></div>
         </div>
       </div>
-      {deEjemplo && (
-        <div className="contenedor mt-4">
-          <p role="status" className="panel border-l-reservas text-apoyo text-texto max-w-[80ch] border-l-2 p-3">{T.puntoPropio.ejemplo(sitioEjemplo)}</p>
-        </div>
-      )}
       <Outlet context={{ sitio, desde: periodo.desde, hasta: periodo.hasta } satisfies ContextoSitio} />
     </>
   );

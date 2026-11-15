@@ -155,7 +155,8 @@ export default function Cielo() {
   const data = esProyeccion ? (simulacion.data && { filas: simulacion.data.puntos }) : efemerides.data;
   if (isPending) return <div className="contenedor min-h-[70svh]">{propio ? <CargaHorizons /> : <EstadoCarga texto={T.cielo.cargando} />}</div>;
   if (error || !data?.filas.length) {
-    const sinEfemerides = !esProyeccion && error instanceof ApiError && error.esNoEncontrado;
+    // Un punto propio no tiene archivo que subir: su 404 es del servicio, no «sitio sin efemérides».
+    const sinEfemerides = !esProyeccion && !propio && error instanceof ApiError && error.esNoEncontrado;
     return (
       <div className="contenedor py-10">
         <EstadoError error={esProyeccion ? undefined : (error ?? undefined)} titulo={esProyeccion ? T.cielo.proyeccionSinApi : sinEfemerides ? T.errores.sinEfemerides : !error ? T.errores.sinDatosRango : undefined}
