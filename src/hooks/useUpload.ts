@@ -93,6 +93,7 @@ export function useUpload(anunciar: (mensaje: string) => void) {
     void queryClient.invalidateQueries({ queryKey: CLAVES.sites });
     void queryClient.invalidateQueries({ queryKey: CLAVES.metricasTodas });
     void queryClient.invalidateQueries({ queryKey: ["puestas"] });
+    void queryClient.invalidateQueries({ queryKey: CLAVES.analisisTodos }); // el análisis se recalcula con el archivo nuevo
     afectados.current.forEach((id) => void queryClient.invalidateQueries({ queryKey: CLAVES.efemeridesDe(id) }));
     afectados.current.clear();
   }, [queryClient]);

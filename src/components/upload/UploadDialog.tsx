@@ -77,7 +77,8 @@ export default function UploadDialog({ alCerrar }: { alCerrar: () => void }) {
       )}
 
       {u.paso === "hecho" ? (
-        <SuccessCheck guardados={u.conteo.guardados} noGuardados={u.conteo.noGuardados} />
+        <SuccessCheck guardados={u.conteo.guardados} noGuardados={u.conteo.noGuardados}
+          sitioAnalizado={u.archivos.find((a) => a.estado === "guardado" && a.siteId)?.siteId ?? undefined} alIr={() => { u.alCerrar(); alCerrar(); }} />
       ) : (
         <>
           {/* La zona de arrastre se pliega y el bloque de progreso se despliega: nunca aparece de golpe */}

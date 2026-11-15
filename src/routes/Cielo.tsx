@@ -1,6 +1,6 @@
 import { useTransform } from "motion/react";
 import { Suspense, lazy, useCallback, useEffect, useId, useMemo, useRef, type KeyboardEvent } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { PanelLectura } from "../components/cielo/PanelLectura";
 import { PanoramaCielo, type Escala } from "../components/cielo/PanoramaCielo";
 import { TablaCielo } from "../components/cielo/TablaCielo";
@@ -22,7 +22,7 @@ import { useRelojSimulacion } from "../hooks/useRelojSimulacion";
 import { useTeclasTiempo } from "../hooks/useTeclasTiempo";
 import { useValorMotion } from "../hooks/useValorMotion";
 import { eventosEn, proximosEventos, sobreHorizonte } from "../lib/astro";
-import { MOVIMIENTO, PANORAMA, PARAM_URL } from "../lib/constants";
+import { MOVIMIENTO, PANORAMA, PARAM_URL, RUTAS } from "../lib/constants";
 import { ApiError } from "../lib/errores";
 import { aMs } from "../lib/fechas";
 import { interpolarFila } from "../lib/interpolar";
@@ -110,6 +110,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
         <p role="status" className="text-apoyo text-reservas mt-2 flex items-center gap-2">
           <span className="border-reservas rounded-full border border-dashed px-2 py-0.5 text-[0.75rem] font-semibold tracking-wide uppercase">{t.proyeccion}</span>
           {t.proyeccionAviso} {t.proyeccionNota(grados(incertidumbre, 2))}
+          <Link to={RUTAS.ANALISIS(sitio.site_id)} className="text-texto underline decoration-linea underline-offset-4">{T.analisis.enlaceProyeccion}</Link>
         </p>
       )}
       {reloj.ajustado && <p role="status" className="text-apoyo text-reservas mt-2">{t.rangoAjustado}</p>}
