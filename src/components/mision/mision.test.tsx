@@ -133,6 +133,25 @@ describe("MedidoresMision", () => {
   });
 });
 
+describe("ajustes de la validación de QA", () => {
+  it("el medidor usa el nivel de la API si llega, aunque los umbrales del cliente dijeran otra cosa", () => {
+    render(<MedidoresMision metrica={{ pct_sol: 44.6, pct_tierra: 100, semaforo: { energia: "verde", comunicacion: "rojo", global: "rojo" } }} />);
+    expect(screen.getByRole("meter", { name: "Energía" })).toHaveAttribute("aria-valuetext", "44 % · Viable");
+    expect(screen.getByRole("meter", { name: "Comunicación" })).toHaveAttribute("aria-valuetext", "100 % · Crítico");
+  });
+  it("«Referencia (JPL Horizons)» se traduce en inglés; los nombres propios y el español se dejan como llegan", () => {
+    expect(en.AGENCIAS_CONOCIDAS["Referencia (JPL Horizons)"]).toBe("Reference (JPL Horizons)");
+    expect(en.AGENCIAS_CONOCIDAS["NASA"]).toBeUndefined();
+    expect(es.AGENCIAS_CONOCIDAS).toEqual({});
+  });
+  it("cada ventana tiene una zona pulsable de 44 px como mínimo, aunque dure una hora", () => {
+    const T0 = "2026-12-01T00:00Z";
+    const filas: FilaEfemeride[] = Array.from({ length: 700 }, (_, i) => ({ utc: sumarHoras(T0, i), sol_az_deg: 90, sol_el_deg: i === 300 ? 2 : -2, tierra_az_deg: 180, tierra_el_deg: 5 }));
+    render(<MemoryRouter><LineaVentanas filas={filas} desde={T0} hasta={sumarHoras(T0, 700)} siteId="apollo11" /></MemoryRouter>);
+    expect(screen.getByRole("link", { name: /Sol y Tierra a la vez: desde 2026-12-13 12:00 UTC, 1 h\./ })).toHaveStyle({ minWidth: "44px" });
+  });
+});
+
 describe("LineaVentanas", () => {
   const T0 = "2026-12-01T00:00Z";
   const filas: FilaEfemeride[] = [1, 2, -1, 3, 4, 5].map((sol, i) => ({ utc: sumarHoras(T0, i), sol_az_deg: 90, sol_el_deg: sol, tierra_az_deg: 180, tierra_el_deg: i >= 3 && i < 5 ? 2 : -2 }));

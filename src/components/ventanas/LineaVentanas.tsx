@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties } from "react";
+import { Fragment, useMemo, type CSSProperties } from "react";
 import { Link } from "react-router";
 import { ENTRADA_LUJO, LINEA_VENTANAS, PARAM_URL, RUTAS } from "../../lib/constants";
 import { aMs, aUtc, diaCorto, fechaHora } from "../../lib/fechas";
@@ -50,14 +50,19 @@ export function LineaVentanas({ filas, desde, hasta, siteId, className }: {
               {ventanas.length === 0 && <p className="text-texto-2 absolute inset-y-0 left-0 flex items-center text-[0.75rem]"><span className="bg-vacio pr-2">{t.ninguna}</span></p>}
               {ventanas.map((v) => {
                 const retraso = Math.min(orden++, ENTRADA_LUJO.MAX_ESCALONADAS) * ENTRADA_LUJO.PASO_MS;
+                const [izquierda, ancho] = [`${((v.inicioMs - a) / (b - a)) * 100}%`, `${((v.finMs - v.inicioMs) / (b - a)) * 100}%`];
                 return (
-                  <Link key={v.inicioMs} to={enlace(v.inicioMs)} data-ventana={fila}
-                    aria-label={t.ventana(t.detalle[fila], fechaHora(aUtc(v.inicioMs)), horas(v.horas), v.cortada)}
-                    title={`${fechaHora(aUtc(v.inicioMs))} UTC · ${v.cortada ? "≥ " : ""}${horas(v.horas)}`}
-                    className="entrada-lujo absolute inset-y-0 rounded-xs"
-                    style={{ left: `${((v.inicioMs - a) / (b - a)) * 100}%`, width: `${((v.finMs - v.inicioMs) / (b - a)) * 100}%`, minWidth: LINEA_VENTANAS.MIN_ANCHO_PX, "--retraso": `${retraso}ms` } as CSSProperties}>
-                    <span aria-hidden="true" data-tenue={fila !== "ambos" || undefined} className={unir("banda-ventana absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full", BANDA[fila])} />
-                  </Link>
+                  <Fragment key={v.inicioMs}>
+                    {/* El enlace es la zona pulsable (44 px como mínimo); la banda de debajo dibuja la duración real. */}
+                    <Link to={enlace(v.inicioMs)} data-ventana={fila}
+                      aria-label={t.ventana(t.detalle[fila], fechaHora(aUtc(v.inicioMs)), horas(v.horas), v.cortada)}
+                      title={`${fechaHora(aUtc(v.inicioMs))} UTC · ${v.cortada ? "≥ " : ""}${horas(v.horas)}`}
+                      className="absolute inset-y-0 z-10 rounded-xs"
+                      style={{ left: izquierda, width: ancho, minWidth: LINEA_VENTANAS.MIN_PULSABLE_PX }} />
+                    <span aria-hidden="true" data-tenue={fila !== "ambos" || undefined}
+                      className={unir("banda-ventana entrada-lujo pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full", BANDA[fila])}
+                      style={{ left: izquierda, width: ancho, minWidth: LINEA_VENTANAS.MIN_ANCHO_PX, "--retraso": `${retraso}ms` } as CSSProperties} />
+                  </Fragment>
                 );
               })}
             </div>

@@ -7,7 +7,7 @@ import { ID_MEDIDORES_SITIO, ID_NOMBRE_SITIO, MOVIMIENTO, RANGO_POR_DEFECTO, RUT
 import { horasEntre } from "../../lib/fechas";
 import { coordenadas, horas } from "../../lib/formato";
 import { recordarOrigen } from "../../lib/motion/vuelo";
-import { NOMBRE_CATEGORIA, T, periodoLegible } from "../../lib/textos";
+import { NOMBRE_CATEGORIA, T, periodoLegible, agenciaLegible } from "../../lib/textos";
 import type { Metrica, Site } from "../../lib/tipos";
 import { GlifoCategoria } from "../glifos/GlifoCategoria";
 import { Boton, EnlaceBoton, EnlaceExterno } from "../ui/Boton";
@@ -79,7 +79,7 @@ export function FichaSitio({ sitio, metrica, alVolver, idTitulo, compartir = fal
       <Desplegable titulo={t.detalles} className="mt-6 border-b">
         <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
           <Lectura rotulo={t.mision}><span className="font-sans">{sitio.mision}</span></Lectura>
-          <Lectura rotulo={t.agencia}><span className="font-sans">{sitio.agencia}</span></Lectura>
+          <Lectura rotulo={t.agencia}><span className="font-sans">{agenciaLegible(sitio.agencia)}</span></Lectura>
           <Lectura rotulo={t.coordenadas} className="col-span-2">{coordenadas(sitio.lat_deg, sitio.lon_este_deg)}</Lectura>
         </dl>
         {sitio.notas && <p className="text-apoyo text-texto-2 mt-4 max-w-medida">{sitio.notas}</p>}

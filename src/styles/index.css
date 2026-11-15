@@ -281,12 +281,12 @@ html[data-inmersivo] #contenido { z-index: 60; }
 /* Banda luminosa de una ventana: el brillo es un halo fijo (no se anima); al pasar el puntero o enfocar, se aviva. */
 .banda-ventana { transition: opacity var(--dur-micro) var(--ease-salida), transform var(--dur-micro) var(--ease-salida); opacity: 0.86; }
 .banda-ventana[data-tenue] { opacity: 0.5; } /* Sol y Tierra por separado: contexto apagado de la ventana conjunta */
-a:focus-visible > .banda-ventana { opacity: 1; }
+a:focus-visible + .banda-ventana { opacity: 1; }
 @media (hover: hover) and (pointer: fine) {
-  a:hover > .banda-ventana { opacity: 1; transform: scaleY(1.25); }
+  a:hover + .banda-ventana { opacity: 1; transform: scaleY(1.25); }
 }
 @media (prefers-reduced-motion: reduce) {
-  a:hover > .banda-ventana { transform: none; }
+  a:hover + .banda-ventana { transform: none; }
 }
 /* Medidor (lujo): el arco se traza UNA vez al aparecer (stroke-dashoffset, 600 ms). `--medidor-desde` lo fija el
    propio arco. Con movimiento reducido la regla global lo deja en su valor final al instante. */

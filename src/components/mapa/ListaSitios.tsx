@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import { CATEGORIAS, ENTRADA_LUJO, ID_MEDIDORES_SITIO, ID_NOMBRE_SITIO, MOVIMIENTO, RUTAS } from "../../lib/constants";
 import { recordarOrigen } from "../../lib/motion/vuelo";
 import { latitud } from "../../lib/formato";
-import { NOMBRE_CATEGORIA, T } from "../../lib/textos";
+import { NOMBRE_CATEGORIA, T, agenciaLegible } from "../../lib/textos";
 import type { FilaEfemeride, Metrica, Site } from "../../lib/tipos";
 import { GlifoCategoria } from "../glifos/GlifoCategoria";
 import { PanelVidrio } from "../lujo";
@@ -58,7 +58,7 @@ export function ListaSitios({ sitios, metricas, series, reloj, periodo, activo, 
                         <m.span layoutId={compartir ? ID_NOMBRE_SITIO(s.site_id) : undefined} layout="position" transition={MOVIMIENTO.SPRING_SUAVE} className="block truncate">{s.nombre}</m.span>
                       </Link>
                       <p className="text-apoyo text-texto-2 truncate">
-                        {s.agencia} · <span className="font-mono" data-dato>{latitud(s.lat_deg)}</span>
+                        {agenciaLegible(s.agencia)} · <span className="font-mono" data-dato>{latitud(s.lat_deg)}</span>
                       </p>
                     </div>
                     {/* Secundario: la ficha (datos del catálogo y fuente). Por encima del enlace estirado; 48 px. */}

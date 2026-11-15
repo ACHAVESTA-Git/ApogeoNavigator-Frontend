@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { AvisoHorizonteIdeal } from "../components/layout/AvisoHorizonteIdeal";
 import { TituloPagina } from "../components/layout/TituloPagina";
+import { GlifoAstro } from "../components/glifos/Astros";
 import { GlifoSemaforo } from "../components/glifos/GlifoSemaforo";
 import { Desplegable } from "../components/ui/Desplegable";
 import { CargaHorizons, EstadoCarga, EstadoError } from "../components/ui/Estados";
@@ -73,13 +74,18 @@ export default function Ventanas() {
         <>
           <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-12" aria-live="polite">
 <div className="min-w-0 lg:col-span-8">
+              {/* Leyenda de las dos bandas: arriba el Sol, debajo la Tierra; el horizonte ideal es la línea que las separa. */}
+              <p className="text-texto-2 mb-2 flex flex-wrap gap-x-5 gap-y-1 text-[0.75rem]">
+                <span className="flex items-center gap-1.5"><GlifoAstro astro="sol" px={12} />{t.energiaDetalle}</span>
+                <span className="flex items-center gap-1.5"><GlifoAstro astro="tierra" px={12} />{t.comunicacionDetalle}</span>
+              </p>
               <figure className="m-0" role="img"
               aria-label={t.banda(t.deHoras(horas(m.horas_sol), horas(total)), t.deHoras(horas(m.horas_tierra_visible), horas(total)))}>
               <BandaLuz key={m.inicio_utc + m.fin_utc} filas={efemerides.data.filas} desde={m.inicio_utc} hasta={m.fin_utc} rayado={Boolean(aviso)} tamano={esTableta ? "grande" : "media"} />
             </figure>
               <LineaVentanas filas={efemerides.data.filas} desde={m.inicio_utc} hasta={m.fin_utc} siteId={sitio.site_id} className="mt-6" />
             </div>
-            <div className="grid grid-cols-2 gap-6 max-lg:order-first lg:col-span-4 lg:grid-cols-1 lg:content-between lg:pb-6">
+            <div className="grid grid-cols-1 gap-4 min-[30rem]:grid-cols-2 min-[30rem]:gap-6 max-lg:order-first lg:col-span-4 lg:grid-cols-1 lg:content-between lg:pb-6">
               <CifraMetrica astro="sol" porcentaje={m.pct_sol} horasVisibles={m.horas_sol} horasTotales={total} nivel={m.semaforo.energia} sensible={Boolean(aviso)} media={media && { valor: media.pct_sol, n: media.n }} />
               <CifraMetrica astro="tierra" porcentaje={m.pct_tierra} horasVisibles={m.horas_tierra_visible} horasTotales={total} nivel={m.semaforo.comunicacion} media={media && { valor: media.pct_tierra, n: media.n }} />
             </div>

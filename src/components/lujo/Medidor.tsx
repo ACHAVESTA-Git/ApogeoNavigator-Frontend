@@ -27,6 +27,8 @@ export interface MedidorProps {
   valor: number | null;
   /** Dónde empiezan «con reservas» y «viable». Si `viable` < `reservas`, menos es mejor (errores). */
   umbrales: UmbralesMedidor;
+  /** Nivel ya decidido por la fuente del dato (p. ej. el semáforo de la API): manda sobre el cálculo con `umbrales`. */
+  nivel?: NivelSemaforo;
   /** Qué mide: nombre accesible del medidor y rótulo visible. */
   rotulo: string;
   unidad?: string;
@@ -65,12 +67,12 @@ function Marca({ en }: { en: number }) {
  * Arco radial de 270° con los dos umbrales marcados y la cifra en el centro. El nivel se dice con glifo + palabra
  * (no solo con el color del arco). `role="meter"`: el lector de pantalla oye rótulo, valor con unidad y nivel.
  */
-export function Medidor({ valor, umbrales, rotulo, unidad, min = 0, max = 100, formato = numeroCorto, tamano = "md", leyenda = false, animar = true, nombresNivel = NOMBRE_NIVEL, children, className }: MedidorProps) {
+export function Medidor({ valor, umbrales, nivel: nivelDado, rotulo, unidad, min = 0, max = 100, formato = numeroCorto, tamano = "md", leyenda = false, animar = true, nombresNivel = NOMBRE_NIVEL, children, className }: MedidorProps) {
   const fmt = useFormatoEstable(formato);
   const idLeyenda = useId();
   const hayDato = valor !== null && Number.isFinite(valor);
   const cifra = useCifraAnimada<HTMLSpanElement>(hayDato ? valor : 0, fmt, animar && hayDato, LUJO.CONTEO_MS);
-  const nivel = hayDato ? nivelPorUmbrales(valor, umbrales) : null;
+  const nivel = hayDato ? (nivelDado ?? nivelPorUmbrales(valor, umbrales)) : null;
   const f = hayDato ? fraccion(valor, min, max) : 0;
   const conUnidad = (v: number) => `${fmt(v)}${unidad ? ` ${unidad}` : ""}`;
   const textoUmbrales = masEsMejor(umbrales)
