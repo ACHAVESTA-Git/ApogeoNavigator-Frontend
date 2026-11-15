@@ -13,7 +13,7 @@ const C = L / 2;
 const R = C - MAPA.MARGEN;
 const RAD = Math.PI / 180;
 const pct = (v: number) => `${(v / L) * 100}%`;
-const ROTULO_ANILLO: Partial<Record<number, string>> = { [MAPA.ANILLO_ARTEMIS]: T.sitios.zonaArtemis, 0: T.sitios.ecuador };
+const ROTULO_ANILLO: Partial<Record<number, string>> = { [MAPA.ANILLO_POLAR_SUR]: T.sitios.regionPolarSur, 0: T.sitios.ecuador };
 const ROTULO_MERIDIANO: Record<number, string> = { 0: T.sitios.haciaTierra, 90: "90° E", 180: "180°", 270: `90° ${T.oeste}` };
 
 /**
@@ -40,7 +40,7 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
         <g clipPath={`url(#${id}-disco)`}>
           <rect x={0} y={C} width={L} height={C} className="fill-regolito" />
         </g>
-        <circle cx={C} cy={C} r={radioLatitud(MAPA.ANILLO_ARTEMIS, R)} className="fill-sol-tenue" />
+        <circle cx={C} cy={C} r={radioLatitud(MAPA.ANILLO_POLAR_SUR, R)} className="fill-sol-tenue" />
         {/* Meridianos */}
         {meridianos.map((lon) => (
           <line key={lon} x1={C} y1={C} x2={C + R * Math.sin(lon * RAD)} y2={C - R * Math.cos(lon * RAD)}
@@ -61,8 +61,8 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
         <g aria-hidden="true" className="fill-texto-3 font-mono text-[12px] max-sm:text-[24px]">
           {MAPA.ANILLOS.map((lat) => {
             const r = radioLatitud(lat, R);
-            // El anillo de Artemis es tan pequeño que su rótulo va fuera, abajo a la derecha del polo.
-            const dentro = lat === MAPA.ANILLO_ARTEMIS;
+            // El anillo de la región polar sur es tan pequeño que su rótulo va fuera, abajo a la derecha del polo.
+            const dentro = lat === MAPA.ANILLO_POLAR_SUR;
             const [x, y] = dentro ? [C + r + 8, C + 18] : [C - r * Math.SQRT1_2 - 4, C - r * Math.SQRT1_2 - 4];
             const nombre = ROTULO_ANILLO[lat];
             // En móvil el texto mide el doble: un rótulo con nombre anclado por su final no cabe a la izquierda
