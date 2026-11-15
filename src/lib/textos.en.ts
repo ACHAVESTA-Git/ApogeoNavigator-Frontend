@@ -103,6 +103,7 @@ export const T: Textos = {
     hero: {
       lugar: (dia: string) => `Shackleton crater · ${dia}`,
       escena: (dia: string) => `Panorama of the horizon at Shackleton on ${dia} (UTC): the Sun and the Earth move through the day following their ephemeris, hour by hour.`,
+      instante: "Scene instant",
       hoy: "Today's sky, hour by hour.",
       fuera: {
         antes: (hoy: string, dia: string) => `Today (${hoy}) has no data yet: showing the first day with data, ${dia}.`,
@@ -125,6 +126,7 @@ export const T: Textos = {
     },
     recorrido: {
       titulo: "Three steps to decide",
+      indice: "Tour steps",
       paso: (n: number, nombre: string) => `Step ${n} · ${nombre}`,
       cielo: {
         nombre: "Sky", titulo: "See where the Sun and the Earth are", enlace: "See the sky at Shackleton",

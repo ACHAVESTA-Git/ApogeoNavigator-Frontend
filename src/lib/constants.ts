@@ -430,12 +430,13 @@ export const PORTADA = {
   CICLO: { AVANCE_MS: 24_000, PAUSA_MS: 1_600, RETORNO_MS: 900 },
   SALTO_MAX_MS: 100, // tras un cuadro largo (pestaña en segundo plano) el día no da un salto
   HOLGURA_VENTANA: 0.7, // el Sol y la Tierra se centran juntos si su separación cabe en esta fracción de la ventana
-  HORIZONTE_FRACCION: { movil: 0.66, escritorio: 0.7 }, // altura del horizonte en la escena
+  HORIZONTE_FRACCION: { movil: 0.62, escritorio: 0.7 }, // altura del horizonte en la escena
   TIERRA_FRACCION_X: { movil: 0.72, escritorio: 0.7 }, // dónde cae la Tierra cuando no se centra con el Sol
   LUPA_MAX_PX: 320,
   ROTULO_MARGEN_PX: 70, // el rótulo de un astro no se sale de la pantalla
   HUELLA_CARACTERES: 8, // caracteres de la huella SHA3-256 que se muestran como cifra
   REVELADO_MARGEN: "0px 0px -12% 0px", // un bloque se revela cuando ha entrado un 12 % en pantalla
+  PASO_ACTIVO_MARGEN: "-25% 0px -60% 0px", // el paso activo del recorrido es el que cruza la franja del 25 % al 40 % del alto de la pantalla
 } as const;
 
 /** Pantalla de Acceso (login). */
