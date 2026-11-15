@@ -258,6 +258,13 @@
 html[data-inmersivo] { overflow: hidden; }
 html[data-inmersivo] #contenido { z-index: 60; }
 
+/* Acceso: «sesión iniciada» entra por tiempos (opacidad + 8 px), y la Tierra de la escena sube UNA vez desde detrás
+   del horizonte. Solo transform y opacity; con movimiento reducido la regla global las deja en su estado final. */
+.acceso-entra { animation: acceso-entrar var(--dur-media) var(--ease-salida) var(--retraso, 0ms) both; }
+@keyframes acceso-entrar { from { opacity: 0; transform: translateY(8px); } }
+.acceso-tierra { animation: acceso-tierra var(--dur-escena) var(--ease-salida) both; }
+@keyframes acceso-tierra { from { opacity: 0; transform: translateY(70%); } }
+
 /* Check de confirmación: primero el círculo y luego el trazo (stroke-dashoffset). */
 .check-circulo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 350ms var(--ease-salida) forwards; }
 .check-trazo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 250ms var(--ease-salida) 350ms forwards; }

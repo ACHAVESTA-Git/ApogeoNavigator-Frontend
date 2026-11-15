@@ -574,6 +574,13 @@ export const T: Textos = {
     soloAdmin: "The key manager is only for the administration role.",
     claves: "Key manager",
     documentoSeguridad: "Security plan: OAuth 2.0 and post-quantum cryptography",
+    mostrarPassword: "Show password",
+    bloqMayus: "Caps Lock is on.",
+    seguridad: "Protected session · ML-KEM-1024 post-quantum keys",
+    sesionIniciada: "Signed in",
+    rol: "Role",
+    huellas: "Public fingerprints of your keys",
+    escena: "Illustration: the Earth rising over the lunar horizon. It does not represent data.",
   },
   sesion: {
     menu: (nombre: string) => `Account of ${nombre}`,
