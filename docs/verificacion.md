@@ -1,6 +1,6 @@
 # Verificación del frontend · dom 15/11/2026 (cierre de la entrega)
 
-Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 49, una rama y un worktree por bloque).
+Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 53, una rama y un worktree por bloque).
 
 | Comprobación | Resultado |
 |---|---|
@@ -14,7 +14,7 @@ Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 49, una rama 
 | Desplazamiento horizontal a 360 px | 0 px en todas las rutas capturadas |
 | Errores de consola | 0 en todas las capturas. En un mes sin datos el navegador anota el 422 de la propia petición (la interfaz lo muestra como estado vacío) |
 
-## Qué entró en esta pasada (PR 38 a 49)
+## Qué entró en esta pasada (PR 38 a 53)
 | PR | Contenido |
 |---|---|
 | 38 | Simulación más alta en móvil y escena lunar más realista |
@@ -28,6 +28,9 @@ Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 49, una rama 
 | 47 | Ningún texto por debajo de 12 px; gráficos del análisis al ancho real del contenedor (sin desplazamiento a 360 px); contraste en el build; subconjuntos de las fuentes |
 | 48 | Etiqueta de un astro casi en el cénit y pie del relato del inicio a 360 px, que se pisaban |
 | 49 | El análisis usa `/api/analisis` real en los diez sitios; se retira el ejemplo guardado; la firma del manifiesto que no valida se muestra como aviso con la nota de la API |
+| 51 | Ventanas no pide la media del catálogo de un mes sin datos: de seis respuestas 422 a dos |
+| 52 | La muestra de respaldo describe Shackleton como la API (C8) |
+| 53 | El 404 «Usuario no encontrado» del gestor de claves ya no ofrece «Elegir otro sitio» |
 
 ## Recorridos del 15/11 (Playwright, API real en localhost:8080)
 - **Carga válida:** `efemerides_slim.csv` (la semilla) con la clave de carga leída del entorno en ejecución: validar, guardar, «Tus datos (2026-11-15 UTC) alimentan este análisis» y «Ver el análisis» cierra el popup y abre el análisis del sitio con `/api/analisis/slim` en 200.
@@ -59,9 +62,8 @@ Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 49, una rama 
 ## Pendiente
 - **Pulido sin hacer:** muestra de respaldo partida por mes (hoy un JSON de unos 180 kB por sitio con los seis meses) y relato del inicio diferido. Se dejaron fuera por riesgo de regresión en la primera pantalla y en el respaldo.
 - **Backend #28** (`azimut_solar_fiable` e incertidumbre por punto): el frontend ya lo tolera y lo pinta; falta verlo con la respuesta real.
-- **Generación, rotación y revocación de claves** contra la API real: solo se comprobó el acceso y el listado (no se crearon claves).
-- **Validación de coherencia:** C5 (pie con la declaración final, a la espera del usuario) y C8 en los datos (`mision` y `agencia` de Shackleton, en `sites.csv` del backend).
-- En Ventanas, un mes sin datos lanza varias peticiones que responden 422 (métricas, media del catálogo y efemérides); no se reintentan, pero se podrían evitar.
+- **Generación, rotación y revocación de claves** contra la API real: bloqueado. `POST /api/admin/claves` exige un usuario existente y la base de desarrollo no tiene ninguno ni hay API para crearlo; con un UUID inventado responde 404 «Usuario no encontrado», que la interfaz muestra en el popup (captura `claves-usuario-no-encontrado`). No se creó ninguna clave. Acceso y listado, sí comprobados (200 con la clave de administración, 401 con la de carga).
+- **Validación de coherencia:** C5 (pie con la declaración final, a la espera del usuario). C8 resuelto: la cabecera de Shackleton dice «Región polo sur · Referencia (JPL Horizons)» con la API real y la muestra de respaldo ya coincide (PR 52).
 
 ## No verificado
 - Dispositivo físico, Lighthouse, lector de pantalla y medición de fps.
