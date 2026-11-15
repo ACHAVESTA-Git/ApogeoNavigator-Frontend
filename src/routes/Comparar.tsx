@@ -1,10 +1,12 @@
-import { ChevronsLeft, ChevronsRight } from "lucide-react";
-import { useMemo, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { ChevronsLeft, ChevronsRight, Pause, Play } from "lucide-react";
+import { AnimatePresence, m } from "motion/react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useSearchParams } from "react-router";
-import { CifrasLider } from "../components/comparar/CifrasLider";
 import { FilaHorizonte } from "../components/comparar/FilaHorizonte";
+import { HorizontesSincronizados } from "../components/comparar/HorizontesSincronizados";
 import { SelectorMultiple, type Opcion } from "../components/comparar/SelectorSitios";
 import { TablaComparacion } from "../components/comparar/TablaComparacion";
+import { GlifoSemaforo } from "../components/glifos/GlifoSemaforo";
 import { AvisoHorizonteIdeal } from "../components/layout/AvisoHorizonteIdeal";
 import { TituloPagina } from "../components/layout/TituloPagina";
 import { Boton } from "../components/ui/Boton";
@@ -12,16 +14,18 @@ import { Desplegable } from "../components/ui/Desplegable";
 import { EstadoCarga, EstadoError } from "../components/ui/Estados";
 import { Segmentado } from "../components/ui/Segmentado";
 import { SelectorMes } from "../components/ui/SelectorMes";
-import { clasesBoton } from "../components/ui/clases";
+import { clasesBoton, unir } from "../components/ui/clases";
 import { comparacion, useComparacion } from "../hooks/useComparacion";
-import { useFilasComparacion, type FilaComparacion } from "../hooks/useFilasComparacion";
+import { useFilasComparacion, type DatosFila, type FilaComparacion } from "../hooks/useFilasComparacion";
+import { useMovimientoReducido } from "../hooks/useMovimientoReducido";
 import { useEscribirUrl, usePeriodo, useSitiosUrl } from "../hooks/useParametrosUrl";
 import { useSites } from "../hooks/useSites";
 import { esSensibleAlRelieve } from "../lib/astro";
-import { DATOS, HORAS_POR_DIA, PARAM_URL } from "../lib/constants";
-import { aMs, fechaHora, horasEntre, limitar, mesLargo, sumarHoras, sumarMeses } from "../lib/fechas";
+import { decidir, diferencias } from "../lib/comparar";
+import { COMPARAR, DATOS, HORAS_POR_DIA, MOVIMIENTO, PARAM_URL } from "../lib/constants";
+import { aMs, fechaHora, horaLima, horasEntre, limitar, mesLargo, sumarHoras, sumarMeses } from "../lib/fechas";
 import { latitud, nombreCorto } from "../lib/formato";
-import { T, partesVeredicto, partesVeredictoFechas, periodoLegible } from "../lib/textos";
+import { T, horaLocal, partesDecision, periodoLegible, relatoDiferencia } from "../lib/textos";
 import type { Site, Utc } from "../lib/tipos";
 
 type Modo = "sitios" | "fechas";
@@ -36,17 +40,24 @@ const idMes = (mes: Utc) => mes.slice(0, 7);
 
 function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) {
   const t = T.comparar;
+  const reducido = useMovimientoReducido();
   const { datos, listo, error, reintentar } = useFilasComparacion(filas);
-  const [hora, setHora] = useState<number | null>(null);
-  const horasMax = Math.max(...filas.map((f) => horasEntre(f.desde, f.hasta))) - 1;
+  // Mientras llegan los datos de una selección nueva se sigue viendo la anterior, atenuada: las tarjetas se
+  // recolocan cuando llegan en lugar de desaparecer tras un indicador de carga.
+  const ultimos = useRef<DatosFila[] | null>(null);
+  if (listo) ultimos.current = datos;
+  const visibles = listo ? datos : ultimos.current;
+  const horasMax = Math.max(2, ...(visibles ?? filas).map((f) => horasEntre(f.desde, f.hasta))) - 1;
+  const [horaElegida, setHora] = useState<number | null>(null);
+  const hora = Math.min(horaElegida ?? Math.round(horasMax / 2), horasMax); // por defecto, la mitad del periodo
+  const [reproduciendo, setReproduciendo] = useState(false);
+  useEffect(() => {
+    if (!reproduciendo) return;
+    const reloj = setInterval(() => setHora((h) => ((h ?? 0) >= horasMax ? 0 : (h ?? 0) + 1)), reducido ? MOVIMIENTO.PASO_REDUCIDO_MS : COMPARAR.PASO_MS);
+    return () => clearInterval(reloj);
+  }, [reproduciendo, horasMax, reducido]);
 
-  const frase = useMemo(() => {
-    if (!listo) return null;
-    const lineas = datos.map((d) => ({ nombre: d.etiqueta, ...d.metrica!, sensible: esSensibleAlRelieve(d.metrica!) }));
-    return modo === "sitios" ? partesVeredicto(lineas, periodoLegible(filas[0].desde, filas[0].hasta)) : partesVeredictoFechas(lineas, filas[0].detalle);
-  }, [listo, datos, filas, modo]);
-
-  const mover = (delta: number) => setHora((h) => limitar((h ?? 0) + delta, 0, horasMax));
+  const mover = (delta: number) => setHora(limitar(hora + delta, 0, horasMax));
   const alPulsar = (e: KeyboardEvent) => {
     const paso = e.shiftKey ? HORAS_POR_DIA : 1;
     if (e.key === "ArrowLeft") mover(-paso);
@@ -58,47 +69,94 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
   };
   /** El cursor sigue al puntero sin retardo, medido sobre la columna de bandas de la primera fila. */
   const alMover = (e: PointerEvent<HTMLOListElement>) => {
+    if (reproduciendo && e.type !== "pointerdown") return; // reproduciendo, solo un toque mueve el cursor
     const banda = e.currentTarget.querySelector("[data-banda]")?.getBoundingClientRect();
     if (!banda || e.clientX < banda.left || e.clientX > banda.right) return;
+    setReproduciendo(false);
     setHora(Math.round(((e.clientX - banda.left) / banda.width) * horasMax));
   };
 
   if (error) return <EstadoError error={error} alReintentar={reintentar} className="mt-8" />;
-  if (!listo) return <EstadoCarga texto={t.cargando} className="min-h-[40svh]" />;
-  const instante = hora === null ? null : modo === "sitios" ? `${fechaHora(sumarHoras(filas[0].desde, hora))} ${T.utc}` : t.hora(hora + 1);
+  if (!visibles) return <EstadoCarga texto={t.cargando} className="min-h-[40svh]" />;
+  const lineas = visibles.map((d) => ({ nombre: d.etiqueta, ...d.metrica!, sensible: esSensibleAlRelieve(d.metrica!) }));
+  const frase = partesDecision(lineas, modo === "sitios" ? periodoLegible(visibles[0].desde, visibles[0].hasta) : visibles[0].detalle);
+  const recomendadas = new Set(decidir(lineas)?.recomendadas.map((i) => visibles[i].clave));
+  const difs = diferencias(lineas);
+  const utc = sumarHoras(visibles[0].desde, hora);
+  const instante = modo === "sitios" ? `${fechaHora(utc)} ${T.utc} · ${horaLocal(horaLima(utc))}` : t.hora(hora + 1);
+  const IconoReproducir = reproduciendo ? Pause : Play;
   return (
-    <>
-      {/* Una frase principal (el Sol) y, en menor jerarquía, los matices (la Tierra y la cautela del relieve). */}
-      <div key={frase?.principal} aria-live="polite" className="animate-aparecer mt-5 max-w-medida">
-        <p className="text-subtitulo text-texto text-balance">{frase?.principal}</p>
-        {frase && frase.matices.length > 0 && (
-          <ul className="text-apoyo text-texto-2 mt-2 space-y-1">
+    <div aria-busy={!listo} className={unir("transition-opacity duration-(--dur-corta)", !listo && "opacity-60")}>
+      {!listo && <p role="status" className="sr-only">{t.actualizando}</p>}
+      {/* 1 · Veredicto: una frase que decide (según el semáforo de la API) y dos matices: lo que cuesta y la cautela. */}
+      <section key={frase.principal} aria-live="polite" className="animate-aparecer mt-6 max-w-medida">
+        <h2 className="rotulo">{t.veredicto}</h2>
+        <p className="titulo-instrumento text-seccion text-texto mt-2 text-balance">{frase.principal}</p>
+        {frase.matices.length > 0 && (
+          <ul className="text-apoyo text-texto-2 mt-3 space-y-1">
             {frase.matices.map((m) => <li key={m} className="flex gap-2"><span aria-hidden="true" className="bg-texto-3 mt-[0.6em] size-1 shrink-0 rounded-full" />{m}</li>)}
           </ul>
         )}
-      </div>
-      <CifrasLider filas={datos} />
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-        <p className="text-dato-sm text-texto-2 min-h-[1.3em] font-mono" data-dato>
-          {instante ? <><span className="rotulo">{t.cursor}</span> <span className="text-texto">{instante}</span></> : <span className="text-apoyo text-texto-3 font-sans">{t.sinCursor}</span>}
-        </p>
-        <div className="flex gap-2">
+      </section>
+
+      {/* 2 · La diferencia como relato: lo que cada fila gana o pierde frente a la mejor de las demás, con cifras de la API. */}
+      <section className="mt-8">
+        <h2 className="rotulo">{t.diferencias}</h2>
+        <ul className="mt-2 grid gap-x-8 gap-y-3 md:grid-cols-2 lg:grid-cols-3">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {visibles.map((d, i) => (
+              <m.li key={d.clave} layout={!reducido} transition={{ layout: MOVIMIENTO.SPRING_SUAVE }}
+                initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: MOVIMIENTO.CORTA / 1000 } }} exit={{ opacity: 0, transition: { duration: MOVIMIENTO.MICRO / 1000 } }}
+                className="border-linea min-w-0 border-l pl-4">
+                <p className="text-texto-2 flex items-center gap-2 text-apoyo first-letter:uppercase">
+                  <GlifoSemaforo nivel={d.metrica!.semaforo.global} conTexto={false} />
+                  <span className="truncate first-letter:uppercase">{d.etiqueta}</span>
+                </p>
+                <p className="text-texto text-entrada mt-1 font-medium text-balance first-letter:uppercase" data-dato>{relatoDiferencia(difs[i])}</p>
+                <p className="text-texto-3 mt-0.5 text-[0.75rem]">
+                  {difs[i].rivalSol === difs[i].rivalTierra ? t.frenteAlMejor(difs[i].rivalSol) : t.frenteADos(difs[i].rivalSol, difs[i].rivalTierra)}
+                </p>
+              </m.li>
+            ))}
+          </AnimatePresence>
+        </ul>
+      </section>
+
+      {/* 3 · El mismo instante en cada horizonte, con un único control de tiempo. */}
+      <section className="mt-9">
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
+          <h2 className="rotulo">{t.mismoInstante(visibles.length)}</h2>
+          <p className="text-texto-3 text-[0.75rem]">{t.mismoInstanteAyuda}</p>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <button type="button" className={clasesBoton("primario", "px-0")} aria-label={reproduciendo ? t.pausar : t.reproducir} onClick={() => setReproduciendo((v) => !v)}>
+            <IconoReproducir aria-hidden="true" className="size-4" />
+          </button>
           <button type="button" className={clasesBoton("secundario", "border-linea px-0")} aria-label={t.menosDia} onClick={() => mover(-HORAS_POR_DIA)}>
             <ChevronsLeft aria-hidden="true" className="size-4" />
           </button>
           <button type="button" className={clasesBoton("secundario", "border-linea px-0")} aria-label={t.masDia} onClick={() => mover(HORAS_POR_DIA)}>
             <ChevronsRight aria-hidden="true" className="size-4" />
           </button>
+          <div className="relative min-w-40 flex-1">
+            <div aria-hidden="true" className="bg-linea absolute inset-x-0 top-1/2 h-px" />
+            <input type="range" className="regla-tiempo relative block" aria-label={t.tiempo} aria-valuetext={instante} min={0} max={horasMax} step={1} value={hora}
+              onChange={(e) => { setReproduciendo(false); setHora(Number(e.target.value)); }} />
+          </div>
+          <p className="text-dato-sm text-texto font-mono max-md:w-full" data-dato><span className="rotulo">{t.instante}</span> {instante}</p>
         </div>
-      </div>
+        <HorizontesSincronizados filas={visibles} hora={hora} recomendadas={recomendadas} />
+        <p className="text-texto-3 mt-2 text-[0.75rem]">{T.cielo.relieve}</p>
+      </section>
+
       <ol tabIndex={0} aria-label={t.grafico} onKeyDown={alPulsar} onPointerMove={alMover} onPointerDown={alMover}
-        className="mt-2 touch-pan-y [&_[data-banda]]:cursor-crosshair">
-        {datos.map((d, i) => <FilaHorizonte key={d.clave} fila={d} indice={i} horaCursor={hora} />)}
+        className="mt-6 touch-pan-y [&_[data-banda]]:cursor-crosshair">
+        {visibles.map((d, i) => <FilaHorizonte key={d.clave} fila={d} indice={i} horaCursor={hora} />)}
       </ol>
       <p className="text-texto-3 mt-2 text-[0.75rem]">{T.semaforo.leyenda}</p>
       <AvisoHorizonteIdeal className="mt-2" />
-      <Desplegable titulo={t.tabla} className="mt-8 border-b"><TablaComparacion filas={datos} /></Desplegable>
-    </>
+      <Desplegable titulo={t.tabla} className="mt-8 border-b"><TablaComparacion filas={visibles} /></Desplegable>
+    </div>
   );
 }
 

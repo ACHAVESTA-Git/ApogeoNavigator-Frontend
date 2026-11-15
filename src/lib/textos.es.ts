@@ -3,6 +3,7 @@
 import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
 import { esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
+import { decidir, diferencias, type Diferencia, type LineaComparada } from "./comparar";
 import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
 
 export const NOMBRE_ASTRO: Record<Astro, string> = { sol: "Sol", tierra: "Tierra" };
@@ -512,8 +513,6 @@ export const T = {
     comparar: (n: number) => `Comparar ${n}`,
     cambiar: "Cambiar selección",
     grafico: "Horizontes apilados. Con el foco aquí, las flechas mueven el cursor compartido 1 hora (con Mayús, 1 día).",
-    cursor: "Cursor",
-    sinCursor: "Pasa el puntero por las bandas o usa las flechas para leer cada sitio a la misma hora.",
     hora: (n: number) => `hora ${n} del periodo`,
     menosDia: "Mover el cursor 1 día atrás",
     masDia: "Mover el cursor 1 día adelante",
@@ -522,18 +521,21 @@ export const T = {
     metrica: "Métrica",
     filas: { horas_sol: "Horas de sol", pct_sol: "% de horas con sol", sol_el_max_deg: "Altura máxima del Sol", horas_tierra_visible: "Horas con la Tierra visible", pct_tierra: "% de horas con la Tierra", energia: "Energía", comunicacion: "Comunicación", global: "Viabilidad global" },
     mejor: "mejor",
-    cifras: "Quién lidera y por cuánto",
-    lidera: (nombre: string, horas: string) => `${nombre} · ${horas}`,
-    frenteA: (nombre: string, pct: string) => `${nombre}: ${pct}`,
-    // Relato del líder de cada eje: con quién se compara (el menor de la selección) y qué supone la diferencia.
-    relato: {
-      sol: (mejor: string, peor: string, horas: string, dias: string, empate: boolean) =>
-        empate ? "Empate en horas de sol: la energía no decide entre estas opciones."
-          : `${mejor} suma ${horas} más de sol que ${peor}: ${dias} días menos de noche.`,
-      tierra: (mejor: string, peor: string, horas: string, dias: string, empate: boolean) =>
-        empate ? "Empate en horas de enlace: la comunicación no decide entre estas opciones."
-          : `${mejor} suma ${horas} más de enlace directo que ${peor}: ${dias} días menos dependiendo de un repetidor.`,
-    },
+    veredicto: "Veredicto",
+    diferencias: "La diferencia, en cifras",
+    frenteAlMejor: (rival: string) => `frente a ${rival}`,
+    frenteADos: (sol: string, tierra: string) => `sol frente a ${sol}; Tierra frente a ${tierra}`,
+    recomendada: "Opción más sólida",
+    mismoInstante: (n: number) => `El mismo instante en ${n} horizontes`,
+    mismoInstanteAyuda: "Un solo control de tiempo mueve todos los horizontes a la vez.",
+    horizonteDe: (nombre: string) => `Horizonte de ${nombre}`,
+    instante: "Instante",
+    tiempo: "Instante de la comparación",
+    reproducir: "Reproducir los horizontes",
+    pausar: "Pausar los horizontes",
+    bajo: "bajo el horizonte",
+    actualizando: "Actualizando la comparación…",
+    verCielo: (nombre: string) => `Abrir el cielo de ${nombre} en este instante`,
     verSitio: (nombre: string) => `Ver las ventanas de ${nombre}`,
     cargando: "Comparando…",
   },
@@ -832,6 +834,42 @@ export function partesVeredicto(filas: FilaVeredicto[], periodo: string): Partes
   parciales.forEach((f) => tierra.push(`${f.nombre} la ve ${horas(f.horas_tierra_visible)} (${pct(f.pct_tierra)})`));
   if (sinTierra.length) tierra.push(`${listar(sinTierra.map((f) => f.nombre))} no ${sinTierra.length > 1 ? "la ven" : "la ve"} en el periodo`);
   return partes(sol, tierra.join("; "), cautela(filas));
+}
+
+const SIGNO_MENOS = "−";
+const conSigno = (valor: number, texto: string): string => `${valor > 0 ? "+" : SIGNO_MENOS}${texto}`;
+/** «+388 h de sol, pero −61 % de Tierra»: lo que una fila gana o pierde frente a la mejor de las demás. */
+export function relatoDiferencia(d: Diferencia): string {
+  const sol = d.sol_h === 0 ? "las mismas horas de sol" : `${conSigno(d.sol_h, horas(Math.abs(d.sol_h)))} de sol`;
+  const tierra =
+    d.tierra_h === 0 ? "la misma Tierra"
+      : `${conSigno(d.tierra_h, d.tierra_pct === null ? horas(Math.abs(d.tierra_h)) : pct(Math.round(Math.abs(d.tierra_pct))))} de Tierra`;
+  return `${sol}${d.sol_h * d.tierra_h < 0 ? ", pero " : " y "}${tierra}`;
+}
+const nivelesDe = (l: LineaComparada): string => {
+  const [energia, comunicacion] = [NOMBRE_NIVEL[l.semaforo.energia].toLowerCase(), NOMBRE_NIVEL[l.semaforo.comunicacion].toLowerCase()];
+  return energia === comunicacion ? `${energia} en energía y en comunicación` : `energía ${energia} y comunicación ${comunicacion}`;
+};
+/**
+ * Veredicto para decidir entre filas: la frase principal dice cuál es la opción más sólida según el semáforo de
+ * la API y por qué; los matices, lo que se deja de ganar con ella (en cifras) y la cautela del relieve.
+ */
+export function partesDecision(filas: LineaComparada[], contexto: string): PartesVeredicto {
+  const d = decidir(filas);
+  if (!d) return SIN_VEREDICTO;
+  const nombre = (i: number) => filas[i].nombre;
+  let principal: string;
+  if (d.recomendadas.length === 1) {
+    principal = `${nombre(d.recomendadas[0])} es la opción más sólida en ${contexto}: ${nivelesDe(filas[d.recomendadas[0]])}`;
+  } else {
+    const empatadas = `${listar(d.recomendadas.map(nombre))} empatan en el semáforo en ${contexto}`;
+    principal =
+      d.liderSol === null && d.liderTierra === null ? `${empatadas} y en las cifras`
+        : d.liderSol === d.liderTierra ? `${empatadas}; ${nombre(d.liderSol!)} tiene más sol y ve más la Tierra`
+          : `${empatadas}: ${[d.liderSol !== null && `${nombre(d.liderSol)} tiene más sol`, d.liderTierra !== null && `${nombre(d.liderTierra)} ve más la Tierra`].filter(Boolean).join(" y ")}`;
+  }
+  const contra = d.contrapartida === null ? "" : `${nombre(d.contrapartida)}: ${relatoDiferencia(diferencias(filas)[d.contrapartida])}`;
+  return partes(principal, contra, cautela(filas));
 }
 
 /** Un mismo sitio en fechas distintas (`nombre` es el periodo de cada fila). */

@@ -33,4 +33,6 @@ export const veredicto = activo.veredicto;
 export const partesVeredicto = activo.partesVeredicto;
 export const veredictoFechas = activo.veredictoFechas;
 export const partesVeredictoFechas = activo.partesVeredictoFechas;
+export const partesDecision = activo.partesDecision;
+export const relatoDiferencia = activo.relatoDiferencia;
 export const periodoLegible = activo.periodoLegible;
