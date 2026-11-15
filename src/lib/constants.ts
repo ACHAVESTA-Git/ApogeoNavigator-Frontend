@@ -183,14 +183,26 @@ export const PANORAMA = {
 /** Escena inmersiva del cielo (lienzo). Los tamaños de los astros están ampliados; se conserva la proporción real. */
 export const ESCENA = {
   DPR_MAX: 2,
-  ALTO: { movil: { min: 280, max: 380, fraccion: 0.42 }, escritorio: { min: 440, max: 760, fraccion: 0.7 } },
+  ALTO: { movil: { min: 360, max: 560, fraccion: 0.62 }, escritorio: { min: 440, max: 760, fraccion: 0.7 } },
   HORIZONTE_FRACCION: 0.56,
   // Tamaño aparente real: Sol ≈ 0,53°, Tierra ≈ 1,9° desde la Luna (unas 3,6 veces mayor).
-  RADIO_SOL_PX: 5.5,
+  RADIO_SOL_PX: 8.5,
+  // Resplandor del Sol: [radio en px, opacidad]. El halo ancho no crece con el disco; el bloom de dos capas sí.
+  HALO_SOL: { RADIO_PX: 250, OPACIDAD: 0.1, OPACIDAD_RASANTE: 0.1 },
+  BLOOM_SOL: [[7, 0.3], [2.6, 0.8]], // [radios del disco, opacidad]
   RAZON_TIERRA_SOL: 3.6,
   ESTRELLAS: 260,
   ROCAS: 46,
-  RELIEVE_PX: { lejano: 14, cercano: 18 }, // relieve ILUSTRATIVO: no sale de datos de topografía
+  // Relieve ILUSTRATIVO (no sale de datos de topografía): tres capas, de la más lejana a la más cercana.
+  // `asoma` = px que la cresta puede subir sobre el horizonte ideal (poco, para no tapar un Sol rasante);
+  // `fondo` = dónde cae su base en el suelo (0 horizonte … 1 borde inferior); `paralaje` = cuánto más deprisa
+  // que el cielo se desplaza al girar (entero: el perfil sigue siendo periódico en 360°).
+  RELIEVE: {
+    lejano: { px: 28, asoma: 10, paralaje: 1 },
+    medio: { px: 34, fondo: 0.42, paralaje: 2, opacidad: 0.5 },
+    cercano: { px: 40, fondo: 1.08, paralaje: 3, opacidad: 0.88 },
+  },
+  GRANO: { TESELA_PX: 128, OPACIDAD: 0.07 }, // grano de regolito precalculado una vez
   SOMBRA_MAX_PX: 150,
   PASO_PERFIL_PX: 4,
   CREPUSCULO_DEG: { desde: -1.2, hasta: 2.5 }, // tramo en que el suelo pasa de noche a día

@@ -32,7 +32,7 @@ export const controlDeReloj = (reloj: RelojSimulacion, filas: readonly FilaEfeme
   setVelocidad: reloj.setVelocidad,
 });
 
-const PASO = clasesBoton("secundario", "px-0 border-linea");
+const PASO = clasesBoton("secundario", "px-0 border-linea shrink-0 max-sm:w-11 max-sm:px-0!");
 const VELOCIDADES = VELOCIDADES_HORAS_POR_SEG.map((v) => ({ valor: String(v), etiqueta: T.tiempo.porSegundo(v) }));
 
 /**
@@ -59,7 +59,7 @@ export function Transporte({ filas, control, variante = "completa", etiqueta = T
   const reproducir = (
     <button type="button" onClick={control.alternar} aria-label={control.reproduciendo ? t.pausar : t.reproducir}
       title={control.reproduciendo ? t.pausar : t.reproducir}
-      className={completa ? clasesBoton("primario", "w-14 shrink-0 px-0") : unir(PASO, "border-horizonte! shrink-0")}>
+      className={completa ? clasesBoton("primario", "w-11 shrink-0 px-0 max-sm:px-0! sm:w-14") : unir(PASO, "border-horizonte! shrink-0")}>
       {control.reproduciendo ? <Pause aria-hidden="true" className="size-4" /> : <Play aria-hidden="true" className="size-4" />}
     </button>
   );
@@ -89,19 +89,26 @@ export function Transporte({ filas, control, variante = "completa", etiqueta = T
   return (
     <div className={className}>
       {regla}
-      <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2">
-        <div className="flex gap-1.5 sm:gap-2">
+      <div className="mt-2 flex items-center gap-x-2 gap-y-2 sm:flex-wrap sm:gap-x-5">
+        <div className="flex gap-1 sm:gap-2">
           {pasos.map((p) => p === null ? <span key="play" className="contents">{reproducir}</span> : (
             <button key={p.etiqueta} type="button" aria-label={p.etiqueta} title={p.etiqueta} onClick={p.alPulsar}
-              className={unir(PASO, p.Icono === RotateCcw && "max-[380px]:hidden")}>
+              className={unir(PASO, p.Icono === RotateCcw && "max-sm:hidden")}>
               <p.Icono aria-hidden="true" className="size-4" />
             </button>
           ))}
         </div>
-        {contador}
+        <div className="max-sm:hidden">{contador}</div>
         {control.velocidad !== undefined && control.setVelocidad && (
-          <Segmentado comoRadio etiqueta={t.velocidad} opciones={VELOCIDADES} valor={String(control.velocidad)}
-            alCambiar={(v) => control.setVelocidad?.(Number(v))} className="ml-auto" />
+          <>
+            <Segmentado comoRadio etiqueta={t.velocidad} opciones={VELOCIDADES} valor={String(control.velocidad)}
+              alCambiar={(v) => control.setVelocidad?.(Number(v))} className="ml-auto max-sm:hidden" />
+            {/* En móvil las velocidades van a un menú nativo: una sola fila de controles. */}
+            <select aria-label={t.velocidad} value={String(control.velocidad)} onChange={(e) => control.setVelocidad?.(Number(e.target.value))}
+              className="tactil bg-superficie border-linea text-texto ml-auto min-w-0 flex-1 rounded-control border px-2 text-base font-semibold sm:hidden">
+              {VELOCIDADES.map((v) => <option key={v.valor} value={v.valor}>{v.etiqueta}</option>)}
+            </select>
+          </>
         )}
       </div>
     </div>

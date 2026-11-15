@@ -112,7 +112,8 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
       {reloj.ajustado && <p role="status" className="text-apoyo text-reservas mt-2">{t.rangoAjustado}</p>}
 
       {/* La simulación es la protagonista: ocupa todo el ancho y casi toda la altura. El control de tiempo flota
-          sobre el suelo de la escena en pantallas anchas y va justo debajo en móvil. */}
+          sobre el suelo de la escena en pantallas anchas; en móvil es una barra compacta que se queda pegada
+          encima de la barra inferior mientras la escena está a la vista. */}
       <div className="relative mt-2">
         {vista === "panorama" ? (
           <PanoramaCielo filas={filas} t={reloj.t} tUtc={reloj.tUtc} escala={escala} alPulsarTecla={alPulsarTecla} idTitulo={idTitulo}
@@ -124,7 +125,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
             </div>
           </Suspense>
         )}
-        <div data-transporte className="max-md:mt-3 md:material md:absolute md:inset-x-4 md:bottom-12 md:rounded-panel md:border md:border-texto/10 md:px-4 md:pt-3 md:pb-2 md:shadow-flotante">
+        <div data-transporte className="max-md:material-denso max-md:sticky max-md:bottom-[calc(var(--barra-inferior-alto)+var(--bandeja-alto)+env(safe-area-inset-bottom))] max-md:z-20 max-md:-mx-(--margen) max-md:border-t max-md:border-texto/10 max-md:px-(--margen) max-md:pt-1 max-md:pb-2 md:material md:absolute md:inset-x-4 md:bottom-12 md:rounded-panel md:border md:border-texto/10 md:px-4 md:pt-3 md:pb-2 md:shadow-flotante">
           <Transporte filas={filas} control={controlDeReloj(reloj, filas)} conHoras={esEscritorio} />
         </div>
       </div>
