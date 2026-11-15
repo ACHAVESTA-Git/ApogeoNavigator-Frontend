@@ -69,8 +69,6 @@ export interface Analisis {
   validacion: ValidacionAnalisis;
   limitaciones: Limitacion[];
   serie: { variable: VariableAnalisis; nombre: string; paso_horas: number; fin_datos_utc: Utc; puntos: PuntoSerie[] };
-  /** Solo en el cliente: la respuesta es la muestra guardada, no la API. */
-  ejemplo?: boolean;
 }
 
 // ---------------------------------------------------------------- reglas de presentación (fijadas con pruebas)

@@ -143,20 +143,9 @@ export const obtenerPuestas = (id: string, desde?: Utc, { signal, modo }: Opcion
 export const obtenerSimulacion = (id: string, rango: Rango = {}, { signal }: Opciones = {}): Promise<Simulacion> =>
   pedir<Simulacion>(API.SIMULACION(id), { ...rango }, signal);
 
-/**
- * Transparencia del análisis de un sitio. Mientras el servidor no tenga el endpoint (404 de ruta o sin red), el
- * sitio de la muestra enseña una respuesta real guardada, MARCADA como ejemplo; los demás sitios dan el error.
- */
-export async function obtenerAnalisis(id: string, variable?: VariableAnalisis, { signal }: Opciones = {}): Promise<Analisis> {
-  try {
-    return await pedir<Analisis>(API.ANALISIS(id), { [API.PARAM_VARIABLE]: variable }, signal);
-  } catch (error) {
-    if (MODO_MUESTRA === "false" || !esApiAusente(error) || id !== MUESTRA.ANALISIS.SITIO) throw error;
-    const respuesta = await fetch(MUESTRA.ANALISIS.RUTA, { signal });
-    if (!respuesta.ok) throw error;
-    return { ...((await respuesta.json()) as Analisis), ejemplo: true };
-  }
-}
+/** Transparencia del análisis de un sitio: siempre la API real, sin muestra (un fallo es un error con su acción). */
+export const obtenerAnalisis = (id: string, variable?: VariableAnalisis, { signal }: Opciones = {}): Promise<Analisis> =>
+  pedir<Analisis>(API.ANALISIS(id), { [API.PARAM_VARIABLE]: variable }, signal);
 
 // ---------------------------------------------------------------- carga de CSV (nunca usa la muestra)
 async function subir<T>(ruta: string, archivo: File, clave: string): Promise<T> {
