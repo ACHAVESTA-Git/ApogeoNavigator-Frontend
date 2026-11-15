@@ -13,7 +13,7 @@ describe("insignia de un sitio", () => {
   it("con parche disponible lo muestra sin modificar (sin recorte ni filtros) y con el crédito visible", () => {
     render(<Insignia siteId="apollo11" nombre="Apolo 11 - Mar de la Tranquilidad" parche />);
     const img = screen.getByRole("img");
-    expect(img.getAttribute("src")).toBe("/insignias/apollo11.png");
+    expect(img.getAttribute("src")).toBe("/insignias/apollo11.jpg");
     expect(img.className).toContain("object-contain");
     expect(img.className).not.toMatch(/filter|grayscale|invert|object-cover|rounded-full|opacity/);
     expect(screen.getByText("Insignia: NASA")).toBeTruthy();
