@@ -14,6 +14,22 @@ export function EstadoCarga({ texto = T.cargando, className }: { texto?: string;
   );
 }
 
+/**
+ * Espera honesta de la consulta en vivo a JPL Horizons (varios segundos la primera vez): dice qué se está
+ * haciendo y por qué tarda. El pulso es solo de opacidad, así que vale también con movimiento reducido.
+ */
+export function CargaHorizons({ className }: { className?: string }) {
+  return (
+    <div role="status" aria-busy="true" className={unir("py-10", className)}>
+      <p className="rotulo flex items-center gap-2.5">
+        <span aria-hidden="true" className="bg-sol size-1.5 animate-pulse rounded-full" />
+        {T.puntoPropio.cargando}
+      </p>
+      <p className="text-apoyo text-texto-2 mt-2 max-w-[52ch]">{T.puntoPropio.cargandoNota}</p>
+    </div>
+  );
+}
+
 const sinCodigo = { titulo: T.errores.sinServicio, mensaje: "", sugerencia: "", accion: "reintentar" as const, requestId: undefined };
 
 /**

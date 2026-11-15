@@ -4,6 +4,7 @@ import { useCallback, useId, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { useApp } from "../components/layout/contexto";
 import { TituloPagina } from "../components/layout/TituloPagina";
+import { CoordenadasPropias } from "../components/mapa/CoordenadasPropias";
 import { FichaSitio } from "../components/mapa/FichaSitio";
 import { LeyendaCategorias } from "../components/mapa/LeyendaCategorias";
 import { ListaSitios } from "../components/mapa/ListaSitios";
@@ -72,6 +73,7 @@ export default function Sitios() {
             alActivar={activar} alSeleccionar={seleccionar} cargando={isPending} />
         </div>
         <div className="mt-5"><LeyendaCategorias categorias={presentes} /></div>
+        <CoordenadasPropias className="mt-6 border-y" />
       </div>
 
       <div className="relative min-w-0 lg:col-span-5 lg:col-start-8 lg:pt-2">
