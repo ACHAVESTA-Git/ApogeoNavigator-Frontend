@@ -95,6 +95,17 @@ describe("validación en secuencia", () => {
     await validarEnSecuencia(lista.slice(0, 1), "k", s.alCambiar, envio(async () => { throw new ApiError(413, "Máximo 5 MB"); }));
     expect(s.final()[0]).toMatchObject({ estado: "errores", mensaje: "Máximo 5 MB" });
   });
+  it("si el backend trae título y mensaje en `error`, se muestran tal cual, con o sin informe", async () => {
+    const error = { codigo: "CSV_INVALIDO", estado: 422, titulo: "El CSV tiene errores", mensaje: "Hay 1 fila con errores; el informe completo va en detail.", accion: "Corrige las filas y vuelve a subirlo." };
+    const uno = lista.slice(0, 1);
+    const conInforme = seguir(uno);
+    await validarEnSecuencia(uno, "k", conInforme.alCambiar, envio(async (_t, archivo: File) => { throw new ApiError(422, informe(archivo.name, { valido: false, total_errores: 1 }), error); }));
+    expect(conInforme.final()[0]).toMatchObject({ estado: "errores", mensaje: "El CSV tiene errores. Hay 1 fila con errores; el informe completo va en detail." });
+    expect(conInforme.final()[0].informe?.total_errores).toBe(1); // el informe por fila y columna no se toca
+    const sinInforme = seguir(uno);
+    await validarEnSecuencia(uno, "k", sinInforme.alCambiar, envio(async () => { throw new ApiError(413, "otro texto", { ...error, codigo: "ARCHIVO_DEMASIADO_GRANDE", estado: 413, titulo: "Archivo demasiado grande", mensaje: "Archivo demasiado grande: supera los 5 MB.", accion: "Divide el archivo." }); }));
+    expect(sinInforme.final()[0].mensaje).toBe("Archivo demasiado grande: supera los 5 MB. Divide el archivo."); // sin repetir el título
+  });
   it("un 401 corta la tanda para volver a pedir la clave", async () => {
     const validar = vi.fn(async () => { throw new ApiError(401, "API key inválida o ausente"); });
     const s = seguir(lista);

@@ -2,7 +2,7 @@ import { CalendarOff, Copy, TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { usePeriodo } from "../../hooks/useParametrosUrl";
 import { DATOS, RUTAS } from "../../lib/constants";
-import { traducirError, type ErrorTraducido } from "../../lib/errores";
+import { ApiError, traducirError, type ErrorTraducido } from "../../lib/errores";
 import { mesLargo, sumarMeses } from "../../lib/fechas";
 import { T } from "../../lib/textos";
 import { Boton, EnlaceBoton } from "./Boton";
@@ -65,6 +65,8 @@ export function EstadoError({ error, titulo, alReintentar, alIntroducirClave, co
   error?: unknown; titulo?: string; alReintentar?: () => void; alIntroducirClave?: () => void; compacto?: boolean; children?: ReactNode; className?: string;
 }) {
   const e = error === undefined || error === null ? sinCodigo : traducirError(error);
+  // El título que trae el backend en su objeto `error` manda sobre el que proponga la pantalla.
+  const tituloVisible = error instanceof ApiError && error.error ? e.titulo : (titulo ?? e.titulo);
   const [copiado, setCopiado] = useState(false);
   const copiar = () => {
     if (!e.requestId) return;
@@ -75,7 +77,7 @@ export function EstadoError({ error, titulo, alReintentar, alIntroducirClave, co
     <div role="alert" className={unir("panel border-l-critico max-w-xl border-l-2", compacto ? "p-3" : "p-4 md:p-5", className)}>
       <p className="text-texto flex items-start gap-2 font-semibold">
         <TriangleAlert aria-hidden="true" className="text-critico mt-1 size-4 shrink-0" />
-        {titulo ?? e.titulo}
+        {tituloVisible}
       </p>
       {(e.mensaje || e.sugerencia) && (
         <p className="text-apoyo text-texto-2 mt-1.5">{e.mensaje} {e.sugerencia && <span className="text-texto">{e.sugerencia}</span>}</p>
