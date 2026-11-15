@@ -1,7 +1,7 @@
 // Cliente tipado del Gestor de claves post-cuánticas (contrato: docs/plan/seguridad-oauth-pqc.md §7.3).
 import { urlApi } from "./api";
 import { API } from "./constants";
-import { ApiError, ErrorDeRed, esApiAusente } from "./errores";
+import { ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
 
 export type TipoClave = "kem" | "firma";
 export type EstadoClave = "activa" | "revocada";
@@ -59,7 +59,7 @@ async function llamar<T>(ruta: string, claveAdmin: string, init: RequestInit = {
     throw new ErrorDeRed(error);
   }
   const cuerpo: unknown = await respuesta.json().catch(() => null);
-  if (!respuesta.ok) throw new ApiError(respuesta.status, (cuerpo as { detail?: string } | null)?.detail ?? respuesta.statusText);
+  if (!respuesta.ok) throw errorDeRespuesta(respuesta, cuerpo, ruta);
   return cuerpo as T;
 }
 const publicar = (cuerpo: unknown): RequestInit => ({ method: "POST", body: JSON.stringify(cuerpo) });
@@ -88,7 +88,7 @@ export async function obtenerPublicaPem(claveAdmin: string, id: string): Promise
   } catch (error) {
     throw new ErrorDeRed(error);
   }
-  if (!respuesta.ok) throw new ApiError(respuesta.status, respuesta.statusText);
+  if (!respuesta.ok) throw errorDeRespuesta(respuesta, null, API.CLAVE_PUBLICA(id));
   return respuesta.text();
 }
 
