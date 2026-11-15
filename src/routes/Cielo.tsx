@@ -22,7 +22,7 @@ import { useRelojSimulacion } from "../hooks/useRelojSimulacion";
 import { useTeclasTiempo } from "../hooks/useTeclasTiempo";
 import { useValorMotion } from "../hooks/useValorMotion";
 import { eventosEn, proximosEventos, sobreHorizonte } from "../lib/astro";
-import { MOVIMIENTO, PANORAMA, PARAM_URL, RUTAS } from "../lib/constants";
+import { MOVIMIENTO, PANORAMA, PARAM_URL, PROYECCION, RUTAS } from "../lib/constants";
 import { ApiError } from "../lib/errores";
 import { aMs } from "../lib/fechas";
 import { interpolarFila } from "../lib/interpolar";
@@ -39,7 +39,7 @@ const VISTAS = [{ valor: "panorama" as Vista, etiqueta: T.cielo.panorama }, { va
 
 const ASTROS_LECTURA: readonly Astro[] = ["sol", "tierra"];
 
-function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemeride[]; periodo: { desde: Utc; hasta: Utc } }) {
+function Instrumento({ sitio, filas, periodo, avisos = [] }: { sitio: Site; filas: FilaEfemeride[]; periodo: { desde: Utc; hasta: Utc }; avisos?: readonly string[] }) {
   const t = T.cielo;
   const idTitulo = useId();
   const [params] = useSearchParams();
@@ -114,6 +114,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
           <Link to={RUTAS.ANALISIS(sitio.site_id)} className="text-texto underline decoration-linea underline-offset-4">{T.analisis.enlaceProyeccion}</Link>
         </p>
       )}
+      {fiabilidad.esProyeccion && avisos.map((mensaje) => <p key={mensaje} className="text-apoyo text-texto-2 mt-1 max-w-[90ch]">{mensaje}</p>)}
       {reloj.ajustado && <p role="status" className="text-apoyo text-reservas mt-2">{t.rangoAjustado}</p>}
 
       {/* La simulación es la protagonista: ocupa todo el ancho y casi toda la altura. El control de tiempo flota
@@ -167,5 +168,8 @@ export default function Cielo() {
       </div>
     );
   }
-  return <Instrumento key={`${sitio.site_id}-${desde}`} sitio={sitio} filas={data.filas} periodo={{ desde, hasta }} />;
+  // Avisos del periodo que da la API (p. ej. Sol cerca del cénit): se enseña su frase, nunca su código. El general
+  // de «proyección estadística» ya lo dice el aviso fijo de la pantalla.
+  const avisos = esProyeccion ? (simulacion.data?.avisos ?? []).filter((a) => a.codigo !== PROYECCION.AVISO_GENERAL && a.mensaje?.trim()).map((a) => a.mensaje) : [];
+  return <Instrumento key={`${sitio.site_id}-${desde}`} sitio={sitio} filas={data.filas} periodo={{ desde, hasta }} avisos={avisos} />;
 }

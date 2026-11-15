@@ -340,7 +340,7 @@ export const T = {
     proyeccionAviso: "Mes proyectado: no son datos de Horizons. Cada punto lleva su incertidumbre.",
     proyeccionNota: (g: string) => `Banda de ± ${g}, el doble del error típico.`,
     proyeccionSinBanda: "La incertidumbre de este punto no es acotable.",
-    azimutPocoFiable: (astro: Astro) => `El azimut ${astro === "sol" ? "del Sol" : "de la Tierra"} es poco fiable aquí: cerca del cénit o del nadir su incertidumbre no es acotable.`,
+    azimutPocoFiable: (astro: Astro) => `El azimut ${astro === "sol" ? "del Sol" : "de la Tierra"} es poco fiable aquí: tan cerca del cénit o del nadir, su incertidumbre es demasiado grande para dibujarla como banda.`,
     pocoFiable: "poco fiable",
     fueraDeVista: (astro: string, g: string, lado: "izquierda" | "derecha") => `${astro} está a ${g} a la ${lado}, fuera de la vista. Pulsa para centrar.`,
     etiqueta: (nombre: string, az: string, el: string) => `${nombre} ${az} / ${el}`,
