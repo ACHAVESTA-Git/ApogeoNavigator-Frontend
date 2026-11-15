@@ -255,7 +255,8 @@ export const HERO = {
   RELATO: {
     // MARGEN: fracción del scroll que dura cada entrada o salida de un acto
     ACTO: { MARGEN: 0.06, DESPLAZAMIENTO_PX: 16, DESENFOQUE_PX: 4 },
-    ALTO_SVH: 340, CORTES: [0.34, 0.7], FECHAS: ["2026-12-13T00:00Z", "2026-12-28T00:00Z"], CONTEO_MS: 900, VENTANA_DEG: { movil: 150, escritorio: 360 } },
+    ALTO_SVH: 340, CORTES: [0.34, 0.7], FECHAS: ["2026-12-13T00:00Z", "2026-12-28T00:00Z"], CONTEO_MS: 900, VENTANA_DEG: { movil: 150, escritorio: 360 },
+    ROTULO: { SOBRE_PX: 30, BAJO_PX: 8 } }, // separación del rótulo de cada astro: encima si está visible, bajo su fantasma si no
 } as const;
 
 export const MAPA = {
