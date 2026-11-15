@@ -81,11 +81,11 @@ export default function Ventanas() {
             </div>
           </div>
           {aviso && (
-            <p className="text-apoyo text-texto border-reservas mt-6 max-w-[80ch] border-l-2 pl-3">
+            <p className="text-apoyo text-texto border-reservas mt-6 max-w-medida border-l-2 pl-3">
               <span aria-hidden="true" className="rayado-artefacto border-reservas mr-2 inline-block size-3 border align-[-1px]" />* {aviso.mensaje}.
             </p>
           )}
-          <p className="text-texto-3 mt-4 max-w-[90ch] text-[0.75rem]">{T.semaforo.leyenda}</p>
+          <p className="text-texto-3 mt-4 max-w-medida text-[0.75rem]">{T.semaforo.leyenda}</p>
           <AvisoHorizonteIdeal className="mt-2" />
           <div className="mt-8"><ReferenciaMetricas metrica={m} /></div>
         </>

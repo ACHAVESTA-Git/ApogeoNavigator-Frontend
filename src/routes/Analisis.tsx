@@ -59,7 +59,7 @@ function Origen({ a }: { a: DatosAnalisis }) {
     <section aria-label={t.rotulo} className={unir("panel mt-6 max-w-3xl border-l-2 p-4 md:p-5", esNasa && !firmaInvalida ? "border-l-viable" : "border-l-reservas")}>
       <p className="rotulo">{t.rotulo}</p>
       <p className="text-subtitulo text-texto mt-2 font-semibold">{titulo}</p>
-      <p className="text-texto-2 mt-1.5 max-w-[64ch]">{texto}</p>
+      <p className="text-texto-2 mt-1.5 max-w-medida">{texto}</p>
       <dl className="text-apoyo mt-4 grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
         {([
           [t.archivo, a.entrada.archivo],
@@ -96,7 +96,7 @@ function Modelo({ a }: { a: DatosAnalisis }) {
   const t = T.analisis.modelo;
   return (
     <>
-      <p className="text-apoyo text-texto-2 mt-4 max-w-[64ch]">{a.modelo.nota_ajuste || t.r2Nota}</p>
+      <p className="text-apoyo text-texto-2 mt-4 max-w-medida">{a.modelo.nota_ajuste || t.r2Nota}</p>
       <dl className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {VARIABLES_ANALISIS.filter((v) => a.modelo.r2[v] !== undefined).map((v) => (
           <Cifra key={v} rotulo={T.analisis.serie.variables[v]} valor={numero(a.modelo.r2[v] as number, 4)}
@@ -116,7 +116,7 @@ function Validacion({ a }: { a: DatosAnalisis }) {
   const semaforo = v.semaforo_aciertos;
   return (
     <>
-      <p className={unir("mt-4 max-w-[64ch]", referencia ? "panel border-l-reservas text-texto border-l-2 p-3" : "text-apoyo text-texto-2")}>
+      <p className={unir("mt-4 max-w-medida", referencia ? "panel border-l-reservas text-texto border-l-2 p-3" : "text-apoyo text-texto-2")}>
         {referencia && <strong className="text-reservas mr-2 font-semibold tracking-wide uppercase">{t.referencia}</strong>}
         {referencia ? t.referenciaNota : t.propia}
       </p>
@@ -137,11 +137,11 @@ function detalleDe(id: string, a: DatosAnalisis, variable: VariableAnalisis, alC
   if (id === "fft") {
     return (
       <>
-        <p className="text-apoyo text-texto-2 mt-4 max-w-[64ch]">{T.analisis.espectro.entrada}</p>
+        <p className="text-apoyo text-texto-2 mt-4 max-w-medida">{T.analisis.espectro.entrada}</p>
         <div className="grid gap-x-8 lg:grid-cols-2">
           {a.espectro.series.map((s) => <GraficoEspectro key={s.variable} serie={s} sinodico={a.espectro.sinodico_teorico_dias} />)}
         </div>
-        <p className="text-apoyo text-texto-2 mt-3 max-w-[64ch]">{a.espectro.nota}</p>
+        <p className="text-apoyo text-texto-2 mt-3 max-w-medida">{a.espectro.nota}</p>
       </>
     );
   }
@@ -198,8 +198,8 @@ function Contenido({ a, variable, alCambiarVariable }: { a: DatosAnalisis; varia
                   <span>{t.pasos.paso(i + 1, a.pasos.length)}</span>
                   <span className={unir("flex items-center gap-1.5", clase)}><Icono aria-hidden="true" className="size-3.5" />{t.pasos.estados[p.estado] ?? p.estado}</span>
                 </p>
-                <h3 className="titulo-instrumento text-titulo text-texto mt-2">{p.nombre}</h3>
-                <p className="text-texto-2 mt-2 max-w-[64ch]">{p.descripcion}</p>
+                <h3 className="titulo-instrumento text-seccion text-texto mt-2">{p.nombre}</h3>
+                <p className="text-texto-2 mt-2 max-w-medida">{p.descripcion}</p>
                 <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 xl:grid-cols-4">
                   {p.resultado.map((m) => (
                     <div key={m.nombre} className="min-w-0">
@@ -215,7 +215,7 @@ function Contenido({ a, variable, alCambiarVariable }: { a: DatosAnalisis; varia
         </ol>
       </div>
       <section aria-labelledby="limitaciones" className="border-linea mt-4 max-w-3xl border-t pt-8">
-        <h3 id="limitaciones" className="titulo-instrumento text-titulo text-texto">{t.limitaciones.titulo}</h3>
+        <h3 id="limitaciones" className="titulo-instrumento text-seccion text-texto">{t.limitaciones.titulo}</h3>
         <ul className="mt-4 space-y-3">
           {aplican.map((l) => (
             <li key={l.codigo} className="text-texto flex gap-3"><TriangleAlert aria-hidden="true" className="text-reservas mt-1 size-4 shrink-0" />{l.mensaje}</li>
@@ -244,7 +244,7 @@ function AnalisisSitio() {
     <div className="contenedor py-8 lg:py-10">
       <p className="rotulo">{t.rotulo}</p>
       <TituloPagina documento={t.documento(sitio.nombre)} className="text-titulo! mt-2">{t.titulo}</TituloPagina>
-      <p className="text-texto-2 mt-3 max-w-[64ch]">{t.entrada}</p>
+      <p className="text-texto-2 mt-3 max-w-medida">{t.entrada}</p>
       {isPending && <EstadoCarga texto={t.cargando} className="min-h-[40svh]" />}
       {error && !data && <EstadoError error={error} className="mt-8" alReintentar={() => void refetch()} />}
       {data && <Contenido a={data} variable={variable} alCambiarVariable={(v) => escribir({ [PARAM_URL.VARIABLE]: v === "sol_el_deg" ? null : v })} />}

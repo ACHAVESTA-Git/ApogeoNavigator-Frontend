@@ -11,10 +11,18 @@ import { soloFecha } from "../lib/fechas";
 import { grados } from "../lib/formato";
 import { T } from "../lib/textos";
 import { cargarSitios } from "../rutas";
+import { unir } from "../components/ui/clases";
 
 const ICONO = { sol: <GlifoSol px={22} />, tierra: <GlifoTierra px={22} />, puesta: <Sunset aria-hidden="true" className="text-texto size-[22px]" strokeWidth={1.5} /> };
 const SECCION = "contenedor grid grid-cols-1 gap-x-6 gap-y-6 py-14 md:grid-cols-12 md:py-20";
 const TITULO_SECCION = "rotulo md:col-span-3";
+const TITULAR_PORTADA = unir(
+  "text-display! mt-3 max-w-[26ch] md:mt-5",
+  // Español: 5 líneas hasta 379 px, 4 hasta 596 px y 3 desde 597 px.
+  "min-h-[4lh] max-[23.74rem]:min-h-[5lh] min-[37.3rem]:min-h-[3lh]",
+  // Inglés (titular más largo): 6 hasta 326 px, 5 hasta 431 px, 4 hasta 671 px y 3 desde 672 px.
+  "max-[20.43rem]:[:lang(en)_&]:min-h-[6lh] max-[26.99rem]:[:lang(en)_&]:min-h-[5lh] min-[37.3rem]:max-[41.99rem]:[:lang(en)_&]:min-h-[4lh]",
+);
 
 export default function Inicio() {
   const t = T.inicio;
@@ -25,7 +33,8 @@ export default function Inicio() {
         titulo={
           // Alto reservado en líneas: la fuente de respaldo parte el titular en menos líneas y, al llegar la
           // definitiva, empujaba la tarjeta de la cifra (CLS 0,10-0,14). La fuente además se precarga (vite.config.ts).
-          <TituloPagina documento={t.documento} className="text-display! mt-3 min-h-[5lh] max-w-[15ch] max-[23rem]:min-h-[6lh] md:mt-5">
+          // Las líneas por ancho e idioma están medidas con Playwright sobre el build (docs/verificacion.md).
+          <TituloPagina documento={t.documento} className={TITULAR_PORTADA}>
             {t.titular.antes}<span className="text-sol">{t.titular.acento}</span>{t.titular.despues}
           </TituloPagina>
         }
@@ -57,13 +66,13 @@ export default function Inicio() {
         <section aria-labelledby="polo" className={`${SECCION} border-linea border-t`}>
           <h2 id="polo" className={TITULO_SECCION}>{t.polo.titulo}</h2>
           <div className="md:col-span-5">
-            <p className="text-texto max-w-[60ch] text-[1.0625rem]">{t.polo.texto(inclinacion)}</p>
+            <p className="text-texto max-w-medida text-entrada">{t.polo.texto(inclinacion)}</p>
             <Desplegable titulo={t.polo.glosario} className="mt-8">
               <dl className="space-y-4">
                 {t.polo.terminos.map((g) => (
                   <div key={g.termino}>
                     <dt className="text-texto font-semibold">{g.termino}</dt>
-                    <dd className="text-texto-2 text-apoyo mt-0.5 max-w-[60ch]">{g.definicion}</dd>
+                    <dd className="text-texto-2 text-apoyo mt-0.5 max-w-medida">{g.definicion}</dd>
                   </div>
                 ))}
               </dl>
@@ -75,7 +84,7 @@ export default function Inicio() {
         <section aria-labelledby="datos" className={`${SECCION} border-linea border-t`}>
           <h2 id="datos" className={TITULO_SECCION}>{t.datos.titulo}</h2>
           <div className="md:col-span-9">
-            <p className="text-texto max-w-[60ch] text-[1.0625rem]">{t.datos.texto}</p>
+            <p className="text-texto max-w-medida text-entrada">{t.datos.texto}</p>
             <ul className="mt-6">
               {t.datos.fuentes.map((f) => (
                 <li key={f.clave} className="border-linea grid gap-1 border-t py-3 md:grid-cols-[14rem_1fr]">
@@ -93,7 +102,7 @@ export default function Inicio() {
         <section aria-labelledby="equipo" className={`${SECCION} border-linea border-t`}>
           <h2 id="equipo" className={TITULO_SECCION}>{t.equipo.titulo}</h2>
           <div className="md:col-span-9">
-            <p className="text-texto text-[1.0625rem]">{t.equipo.texto}</p>
+            <p className="text-texto text-entrada">{t.equipo.texto}</p>
             {t.equipo.roles.length > 0 && (
               <ul className="text-texto-2 mt-4 space-y-1">
                 {t.equipo.roles.map((rol) => <li key={rol}>{rol}</li>)}

@@ -209,7 +209,7 @@ export default function GestorClaves() {
     <div className="contenedor py-8 lg:py-10">
       <p className="rotulo">{t.rotulo}</p>
       <TituloPagina documento={t.documento} className="mt-2">{t.titulo}</TituloPagina>
-      <p className="text-texto-2 mt-3 max-w-[70ch]">{t.entrada}</p>
+      <p className="text-texto-2 mt-3 max-w-medida">{t.entrada}</p>
       {ejemplo && (
         <p role="status" className="border-reservas text-texto mt-5 flex gap-3 rounded-control border border-dashed p-3">
           <TriangleAlert aria-hidden="true" className="text-reservas mt-0.5 size-5 shrink-0" />

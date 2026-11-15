@@ -45,7 +45,26 @@ Los tokens viven en el bloque `@theme` de `src/styles/index.css`. `npm run build
 | Texto, títulos y logotipo | Archivo Variable (pesos 100 a 900, ancho 62 a 125) |
 | Cifras y datos | JetBrains Mono Variable, con cifras tabulares |
 
-**Interletraje y peso por tamaño** (tokens de `src/styles/index.css`): titular de portada −0,03 em; títulos −0,015 em; texto 0; rótulos en mayúsculas +0,1 em, peso 600 y ancho 125; logotipo −0,01 em. El interletraje se cierra al crecer el texto y se abre en los rótulos pequeños; no hay un valor único para todos los tamaños.
+**Escala tipográfica (15/11).** Se mantiene Archivo: es la fuente del logotipo, ya está precargada (el CLS del inicio depende de ello) y su eje de ancho permite distinguir titulares, texto y rótulos con una sola familia. Lo que cambia es la escala, que se veía demasiado grande. Cada tamaño crece en línea recta entre 360 y 1440 px de ancho (`clamp()`, sin saltos por punto de corte) y nada baja de 12 px. Tokens en `src/styles/index.css`; los fija `src/styles/escala.test.ts`.
+
+| Nivel | Token | 360 px | 1440 px | Antes (360 / 1440) | Interlínea | Interletraje | Peso · ancho |
+|---|---|---|---|---|---|---|---|
+| Portada | `text-display` | 32 | 54 | 36 / 72 | 1,04 | −0,032 em | 560 · 112 |
+| Título de pantalla | `text-titulo` | 22 | 30 | 24 / 36 | 1,14 | −0,02 em | 600 · 112 |
+| Sección o paso | `text-seccion` | 19 | 22 | (no existía: usaba el título) | 1,22 | −0,012 em | 600 · 112 |
+| Subtítulo | `text-subtitulo` | 18 | 18 | 20 / 20 | 1,35 | −0,006 em | 500 |
+| Entrada de sección | `text-entrada` | 17 | 17 | 17 (valor suelto) | 1,55 | 0 | 400 |
+| Texto | `text-cuerpo` | 16 | 16 | 16 | 1,55 | 0 | 400 |
+| Apoyo | `text-apoyo` | 14 | 14 | 14 | 1,5 | 0 | 400 |
+| Rótulo | `rotulo` | 12 | 12 | 12 | 1,2 | +0,085 em | 600 · 116 |
+| Cifra grande | `text-dato-xl` | 32 | 52 | 32 → 40 (salto a 480 px) / 64 | 1 | −0,02 em | 500 (mono) |
+| Cifra media | `text-dato-lg` | 24 | 28 | 24 / 28 (valores sueltos) | 1,15 | 0 | 500 (mono) |
+
+**Interletraje y peso por tamaño.** El interletraje se cierra al crecer el texto y se abre en los rótulos pequeños; no hay un valor único para todos los tamaños. Los titulares van en ancho 112 (antes 118) y los rótulos en 116 (antes 125): más contenidos, con la misma voz. El logotipo no cambia (−0,01 em, ancho 125).
+
+**Medida de línea.** En Archivo, `1ch` (el ancho del «0») equivale a 1,43 caracteres de texto corrido, así que los `60ch` a `90ch` anteriores daban líneas de 86 a 128 caracteres. El texto corrido usa ahora `max-w-medida` (46ch, unos 66 caracteres por línea); `max-w-medida-corta` (34ch) queda para notas. Los párrafos, las listas y las definiciones llevan `text-wrap: pretty` para no dejar palabras huérfanas.
+
+**Titular de la portada.** Tres líneas desde 768 px, cuatro por debajo y cinco en los anchos más estrechos; el alto se reserva en líneas (`min-h` en `lh`) para que la tarjeta de la cifra no se mueva al llegar la fuente.
 
 **Rótulos de los astros en la portada.** JetBrains Mono de 12 px en peso 500, con el color pleno del astro (`sol` o `tierra`) y un halo del color `vacio`. Si el astro está bajo el horizonte, el rótulo va debajo de su contorno discontinuo; nunca se atenúa.
 

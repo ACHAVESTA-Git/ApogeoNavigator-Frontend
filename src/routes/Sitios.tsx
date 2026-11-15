@@ -67,7 +67,7 @@ export default function Sitios() {
       <div className="min-w-0 lg:col-span-7">
         <p className="rotulo">{t.rotulo}</p>
         <TituloPagina documento={t.documento} className="mt-2">{t.titulo}</TituloPagina>
-        <p className="text-texto-2 mt-3 max-w-[52ch]">{t.entrada}</p>
+        <p className="text-texto-2 mt-3 max-w-medida">{t.entrada}</p>
         <div className="mt-6 lg:mt-8 lg:pr-10">
           <MapaPolar sitios={visibles} activo={activo} seleccionado={seleccionado?.site_id ?? null}
             alActivar={activar} alSeleccionar={seleccionar} cargando={isPending} />
