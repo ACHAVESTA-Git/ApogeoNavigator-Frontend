@@ -185,7 +185,7 @@ export const ESCENA = {
   DPR_MAX: 2,
   ALTO: { movil: { min: 280, max: 380, fraccion: 0.42 }, escritorio: { min: 440, max: 760, fraccion: 0.7 } },
   HORIZONTE_FRACCION: 0.56,
-  // Tamaño aparente real: Sol ≈ 0,53°, Tierra ≈ 1,9° desde la Luna (casi 4 veces mayor).
+  // Tamaño aparente real: Sol ≈ 0,53°, Tierra ≈ 1,9° desde la Luna (unas 3,6 veces mayor).
   RADIO_SOL_PX: 5.5,
   RAZON_TIERRA_SOL: 3.6,
   ESTRELLAS: 260,
@@ -274,7 +274,7 @@ export const ENLACES = {
   HORIZONS: "https://ssd.jpl.nasa.gov/horizons/",
   NSSDC: "https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html",
   LROC: "https://lroc.im-ldi.com/",
-  MOON_TREK: "https://trek.nasa.gov/moon/",
+  LRO: "https://www.nasa.gov/missions/lro/nasas-lro-images-intuitive-machines-odysseus-lander/",
   REPO_FRONTEND: "https://github.com/ACHAVESTA-Git/ApogeoNavigator-Frontend",
   REPO_BACKEND: "https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend",
   SEGURIDAD: "https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend/tree/dev/docs",

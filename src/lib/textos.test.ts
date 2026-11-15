@@ -35,7 +35,7 @@ describe("textos generados", () => {
     );
     expect(texto).toContain("IM-1 Odysseus tiene 61 h más de sol que Apolo 11 en diciembre de 2026");
     expect(texto).toContain("Apolo 11 y IM-1 Odysseus ven la Tierra todo el periodo");
-    expect(texto).toContain("Chang'e 4 no la ve nunca");
+    expect(texto).toContain("Chang'e 4 no la ve en el periodo");
     expect(veredicto([], "x")).toBe("");
     const conAviso = veredicto(
       [
@@ -62,5 +62,41 @@ describe("textos generados", () => {
     expect(periodoLegible("2026-12-01T00:00Z", "2026-12-08T00:00Z")).toBe("2026-12-01 → 2026-12-08");
     expect(umbralNivel("rojo", { VERDE_MIN: 70, AMARILLO_MIN: 40 })).toBe("< 40 %");
     expect(umbralNivel("amarillo", { VERDE_MIN: 70, AMARILLO_MIN: 40 })).toBe("40–70 %");
+  });
+});
+
+// Validación de coherencia (docs/entrega/validacion-coherencia.md §6): frases que afirmaban algo falso o sin
+// respaldo. Si alguna vuelve a aparecer en cualquier texto de la interfaz, esta prueba falla.
+describe("frases prohibidas por la validación de coherencia", () => {
+  const PROHIBIDAS = [
+    /moon trek/i, /nada se inventa/i, /se estima a ojo/i, /son del equipo/i, /equipo apogeo/i, /respecto a su órbita/i,
+    /casi 4 veces/i, /no la ven? nunca/i, /un polo"/i, /unos kilómetros/i, /hay que pasarlo con baterías/i, /depende por completo de baterías/i,
+    /cubrir con baterías/i, /en el polo sur, el sol no se pone en todo el mes/i,
+  ];
+  /** Todos los textos: las cadenas tal cual y las funciones evaluadas con argumentos de relleno. */
+  function recoger(valor: unknown, salida: string[] = []): string[] {
+    if (typeof valor === "string") salida.push(valor);
+    else if (typeof valor === "function") {
+      try {
+        recoger((valor as (...a: unknown[]) => unknown)("x", "y", "z", false, false), salida);
+        recoger((valor as (...a: unknown[]) => unknown)("x", "y", "z", true, true), salida);
+      } catch { /* funciones con argumentos estructurados: se cubren en sus propias pruebas */ }
+    } else if (valor && typeof valor === "object") Object.values(valor).forEach((v) => recoger(v, salida));
+    return salida;
+  }
+  it("ningún texto de la interfaz las contiene", async () => {
+    const modulo = await import("./textos");
+    const textos = recoger(modulo.T).concat(recoger(modulo.NOMBRE_CATEGORIA)).join("\n");
+    expect(textos.length).toBeGreaterThan(5000);
+    for (const frase of PROHIBIDAS) expect(textos).not.toMatch(frase);
+    expect(modulo.veredicto([
+      { nombre: "A", horas_sol: 10, pct_sol: 1, horas_tierra_visible: 0, pct_tierra: 0, sensible: false },
+      { nombre: "B", horas_sol: 5, pct_sol: 1, horas_tierra_visible: 5, pct_tierra: 1, sensible: false },
+    ] as never, "diciembre de 2026")).not.toMatch(/nunca/);
+  });
+  it("el equipo no lleva nombres ni roles sin confirmar y Shackleton no figura como misión Artemis", async () => {
+    const { T, NOMBRE_CATEGORIA } = await import("./textos");
+    expect(T.inicio.equipo.roles).toHaveLength(0);
+    expect(NOMBRE_CATEGORIA.artemis).not.toMatch(/^artemis$/i);
   });
 });
