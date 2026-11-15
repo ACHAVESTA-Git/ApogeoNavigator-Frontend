@@ -298,11 +298,8 @@ export const T = {
     nombre: "Punto personalizado",
     fuente: "JPL en vivo",
     marca: "Punto personalizado · JPL en vivo",
-    marcaEjemplo: "Punto personalizado · datos de ejemplo",
     cargando: "Consultando JPL Horizons…",
     cargandoNota: "La primera consulta de un punto puede tardar varios segundos; después sale de la caché.",
-    ejemplo: (sitio: string) =>
-      `Ejemplo, no son tus coordenadas: este servidor todavía no tiene la consulta en vivo a JPL Horizons. Lo que ves abajo son los datos de ${sitio}.`,
   },
   sitio: {
     pestanas: "Vistas del sitio",

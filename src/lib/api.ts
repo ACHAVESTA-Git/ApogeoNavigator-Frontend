@@ -2,9 +2,9 @@
 import { avisosDe, esSemaforo, semaforo } from "./astro";
 import type { Analisis, VariableAnalisis } from "./analisis";
 import { API, API_BASE_URL, DATOS, MODO_MUESTRA, MUESTRA, PUNTO_PROPIO } from "./constants";
-import { ApiError, ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
+import { ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
 import { efemeridesMuestra, marcarMuestraActiva, metricasMuestra, puestasMuestra, sitiosMuestra } from "./muestra";
-import { idDePunto, marcarRespaldoHorizons, puntoDeId, type Punto } from "./puntoPropio";
+import { idDePunto, puntoDeId, type Punto } from "./puntoPropio";
 import type { Efemerides, InformeCsv, Metrica, Puestas, Rango, RespuestaHorizons, RespuestaMetricas, ResultadoGuardado, Simulacion, Site, TipoArchivo, Utc } from "./tipos";
 
 type Params = Record<string, string | readonly string[] | undefined>;
@@ -85,22 +85,6 @@ export const obtenerSitios = ({ signal, modo }: Opciones = {}): Promise<Site[]> 
 
 // ---------------------------------------------------------------- coordenadas propias (HU-13)
 const horizonsEnCurso = new Map<string, Promise<RespuestaHorizons>>();
-/** Ruta sin registrar o sin red: el endpoint no existe en este servidor. Un 502/504 SÍ es una respuesta (JPL falló). */
-const horizonsAusente = (error: unknown): boolean =>
-  error instanceof ErrorDeRed || (error instanceof ApiError && error.esNoEncontrado && error.detail === API.DETALLE_RUTA_INEXISTENTE);
-
-// RESPALDO DE EJEMPLO (quitar cuando /api/horizons esté desplegado; ver PUNTO_PROPIO.RESPALDO_EJEMPLO): la muestra
-// del sitio destacado, con el identificador del punto y marcada como ejemplo en la pantalla.
-async function horizonsDeEjemplo(punto: Punto, rango: Rango): Promise<RespuestaHorizons> {
-  const id = DATOS.SITIO_DESTACADO;
-  const [efemerides, metricas, puestas] = await Promise.all([efemeridesMuestra(id, rango), metricasMuestra([id], rango), puestasMuestra(id, rango.desde)]);
-  const site_id = idDePunto(punto);
-  return {
-    ...efemerides, site_id, fuente: "ejemplo", lat_deg: punto.lat, lon_este_deg: punto.lon, en_cache: false, consultado_utc: efemerides.inicio_utc,
-    metricas: { ...metricas.resultados[0], site_id, origen: "ejemplo", referencia: null }, puestas: { ...puestas, site_id }, ejemplo: true,
-  };
-}
-
 /**
  * Efemérides, métricas y puestas de un punto cualquiera, en vivo desde JPL Horizons (la primera consulta tarda
  * varios segundos; después el servidor la sirve de caché). Una sola petición por punto y periodo: Cielo y
@@ -112,12 +96,7 @@ export function obtenerHorizons(punto: Punto, rango: Required<Rango>): Promise<R
   if (enCurso) return enCurso;
   const { LAT, LON } = API.PARAM_HORIZONS;
   const promesa = pedir<RespuestaHorizons>(API.HORIZONS, { [LAT]: String(punto.lat), [LON]: String(punto.lon), ...rango })
-    .then((r) => { marcarRespaldoHorizons(false); return r; })
     .catch((error: unknown) => {
-      if (PUNTO_PROPIO.RESPALDO_EJEMPLO && horizonsAusente(error)) {
-        marcarRespaldoHorizons(true);
-        return horizonsDeEjemplo(punto, rango);
-      }
       horizonsEnCurso.delete(clave); // un error no se queda en la caché: «Reintentar» vuelve a preguntar
       throw error;
     });

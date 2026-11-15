@@ -82,3 +82,12 @@ describe("GET /api/horizons", () => {
     expect(t.esperaS).toBeUndefined();
   });
 });
+
+describe("sin respaldo de ejemplo", () => {
+  afterEach(() => { vi.unstubAllGlobals(); olvidarHorizons(); });
+  it("si el servidor no tiene /api/horizons, el punto da el error: nunca datos de otro sitio", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ detail: "Not Found" }), { status: 404, headers: { "Content-Type": "application/json" } })));
+    const error = await obtenerHorizons({ lat: 1, lon: 2 }, { desde: "2026-12-01T00:00Z", hasta: "2027-01-01T00:00Z" }).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ApiError);
+  });
+});
