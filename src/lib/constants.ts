@@ -117,6 +117,17 @@ export const SEMAFORO = {
   COMUNICACION: { VERDE_MIN: 70, AMARILLO_MIN: 40 }, // por % de horas con la Tierra visible
   ORDEN: ["rojo", "amarillo", "verde"],
 } as const;
+/** Umbrales de los medidores de misión (misma fuente que el semáforo; coinciden con la API). */
+export const UMBRALES_MISION = {
+  ENERGIA: { reservas: SEMAFORO.ENERGIA.AMARILLO_MIN, viable: SEMAFORO.ENERGIA.VERDE_MIN },
+  COMUNICACION: { reservas: SEMAFORO.COMUNICACION.AMARILLO_MIN, viable: SEMAFORO.COMUNICACION.VERDE_MIN },
+} as const;
+/** Entrada escalonada «lujo»: solo las primeras tarjetas se escalonan; el resto llega con la última (≤ 300 ms en total). */
+export const ENTRADA_LUJO = { PASO_MS: 50, MAX_ESCALONADAS: 5 } as const;
+/** Identidad compartida de la pareja de medidores de un sitio: tarjeta ↔ ficha (`layoutId`). */
+export const ID_MEDIDORES_SITIO = (siteId: string) => `medidores-sitio-${siteId}`;
+/** Línea de tiempo de ventanas: ancho mínimo de una banda en pantalla (una ventana de 1 h sigue siendo pulsable). */
+export const LINEA_VENTANAS = { MIN_ANCHO_PX: 10 } as const;
 // El semáforo y los avisos los calcula la API. Estos umbrales existen SOLO para el respaldo con datos de
 // ejemplo y la prueba de oro (deben coincidir con app/core/config.py); los componentes no los aplican.
 export const UMBRAL_RASANTE_DEG = 3; // sol_el_max < 3° ⇒ aviso «sensible al relieve»
