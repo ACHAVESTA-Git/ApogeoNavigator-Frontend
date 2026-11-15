@@ -107,7 +107,7 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
             {visibles.map((d, i) => (
               <m.li key={d.clave} layout={!reducido} transition={{ layout: MOVIMIENTO.SPRING_SUAVE }}
                 initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: MOVIMIENTO.CORTA / 1000 } }} exit={{ opacity: 0, transition: { duration: MOVIMIENTO.MICRO / 1000 } }}
-                className="border-linea min-w-0 border-l pl-4">
+                className="min-w-0">
                 <p className="text-texto-2 flex items-center gap-2 text-apoyo first-letter:uppercase">
                   <GlifoSemaforo nivel={d.metrica!.semaforo.global} conTexto={false} />
                   <span className="truncate first-letter:uppercase">{d.etiqueta}</span>

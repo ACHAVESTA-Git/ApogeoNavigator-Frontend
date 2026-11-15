@@ -55,10 +55,17 @@ function Origen({ a }: { a: DatosAnalisis }) {
   // Una firma que no valida es un aviso de primer orden: se dice con icono y texto, y la tarjeta deja de ir en verde.
   const firmaInvalida = origen.manifiesto?.firmado === false;
   const partido = "whitespace-nowrap";
+  const conforme = esNasa && !firmaInvalida;
   return (
-    <section aria-label={t.rotulo} className={unir("panel mt-6 max-w-3xl border-l-2 p-4 md:p-5", esNasa && !firmaInvalida ? "border-l-viable" : "border-l-reservas")}>
+    <section aria-label={t.rotulo} className="panel mt-6 max-w-3xl p-4 md:p-5">
       <p className="rotulo">{t.rotulo}</p>
-      <p className="text-subtitulo text-texto mt-2 font-semibold">{titulo}</p>
+      {/* El estado se dice con icono en un halo + el título (texto), nunca con una franja lateral. */}
+      <p className="text-subtitulo text-texto mt-2 flex items-start gap-2.5 font-semibold">
+        <span aria-hidden="true" className={unir("mt-0.5 grid size-6 shrink-0 place-items-center rounded-full", conforme ? "bg-viable/12 text-viable" : "bg-reservas/12 text-reservas")}>
+          {conforme ? <Check className="size-3.5" /> : <TriangleAlert className="size-3.5" />}
+        </span>
+        {titulo}
+      </p>
       <p className="text-texto-2 mt-1.5 max-w-medida">{texto}</p>
       <dl className="text-apoyo mt-4 grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
         {([
@@ -116,8 +123,12 @@ function Validacion({ a }: { a: DatosAnalisis }) {
   const semaforo = v.semaforo_aciertos;
   return (
     <>
-      <p className={unir("mt-4 max-w-medida", referencia ? "panel border-l-reservas text-texto border-l-2 p-3" : "text-apoyo text-texto-2")}>
-        {referencia && <strong className="text-reservas mr-2 font-semibold tracking-wide uppercase">{t.referencia}</strong>}
+      <p className={unir("mt-4 max-w-medida", referencia ? "panel text-texto p-3" : "text-apoyo text-texto-2")}>
+        {referencia && (
+          <strong className="bg-reservas/12 text-reservas text-apoyo mr-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-semibold tracking-wide uppercase">
+            <TriangleAlert aria-hidden="true" className="size-3.5 shrink-0" />{t.referencia}
+          </strong>
+        )}
         {referencia ? t.referenciaNota : t.propia}
       </p>
       <p className="rotulo mt-5">{t.rmse}</p>
@@ -183,8 +194,8 @@ function Contenido({ a, variable, alCambiarVariable }: { a: DatosAnalisis; varia
             {pasos.map((p, i) => (
               <li key={p.id}>
                 <a href={`#paso-${p.id}`} aria-current={activo === p.id ? "step" : undefined}
-                  className={unir("text-apoyo flex items-baseline gap-3 border-l-2 py-1.5 pl-3 transition-[color,border-color] duration-(--dur-micro)",
-                    activo === p.id ? "border-sol text-texto font-semibold" : "border-linea text-texto-2 hover:text-texto")}>
+                  className={unir("text-apoyo rounded-control flex items-baseline gap-3 px-3 py-1.5 transition-[color,background-color] duration-(--dur-micro)",
+                    activo === p.id ? "bg-sol-tenue text-texto font-semibold" : "text-texto-2 hover:text-texto")}>
                   <span className="font-mono text-[0.75rem]" data-dato>{i + 1}</span>{p.nombre}
                 </a>
               </li>

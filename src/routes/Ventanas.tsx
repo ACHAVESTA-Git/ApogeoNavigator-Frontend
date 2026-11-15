@@ -81,7 +81,7 @@ export default function Ventanas() {
             </div>
           </div>
           {aviso && (
-            <p className="text-apoyo text-texto border-reservas mt-6 max-w-medida border-l-2 pl-3">
+            <p className="text-apoyo text-texto bg-reservas/10 rounded-control mt-6 max-w-medida px-3 py-2">
               <span aria-hidden="true" className="rayado-artefacto border-reservas mr-2 inline-block size-3 border align-[-1px]" />* {aviso.mensaje}.
             </p>
           )}

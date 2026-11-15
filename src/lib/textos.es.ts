@@ -645,6 +645,24 @@ export const T = {
     texto: "Esta ruta no existe en nuestro mapa lunar.",
     volver: "Volver a Sitios",
   },
+  // Primitivas del rediseño «Lujo inmersivo» (src/components/lujo).
+  lujo: {
+    sinDato: "Sin dato",
+    medidor: {
+      lectura: (valor: string, nivel: string) => `${valor} · ${nivel}`,
+      umbralesMayor: (reservas: string, viable: string) => `Con reservas desde ${reservas}; viable desde ${viable}.`,
+      umbralesMenor: (viable: string, reservas: string) => `Viable hasta ${viable}; con reservas hasta ${reservas}.`,
+    },
+    sello: {
+      rotulo: "Certificado de procedencia",
+      estados: { conforme: "Verificado", invalida: "Firma no válida", sinConfirmar: "Sin verificar" },
+      firma: "Firma ML-DSA-65",
+      sinManifiesto: "No hay manifiesto firmado para este archivo.",
+      manifiestoAjeno: "El manifiesto firmado no corresponde a este archivo.",
+      copiar: "Copiar la huella completa",
+      copiado: "Huella copiada",
+    },
+  },
   errores: {
     sinConexion: { titulo: "No hay conexión con el servidor", mensaje: "No pudimos llegar al servidor de datos.", sugerencia: "Comprueba tu conexión y vuelve a intentarlo." },
     inesperado: { titulo: "Algo no salió como esperábamos", mensaje: "La aplicación encontró un problema al mostrar estos datos.", sugerencia: "Vuelve a intentarlo; si se repite, recarga la página." },

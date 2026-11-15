@@ -391,3 +391,11 @@ export const ANALISIS_GRAFICO = {
   PERIODO_MIN_DIAS: 5,
   DECIMALES_HUELLA: 12, // caracteres de la huella SHA3-256 que se enseñan antes de la elipsis
 } as const;
+
+/** Primitivas del rediseño «Lujo inmersivo» (src/components/lujo). Duraciones en ms; espejo de --dur-lujo-* en index.css. */
+export const LUJO = {
+  CONTEO_MS: 600, // una cifra héroe cuenta hacia su valor UNA vez; techo del plan (≤ 600 ms)
+  COPIADO_MS: 2000, // cuánto se mantiene el aviso «Huella copiada»
+  // Medidor: unidades del viewBox. El arco abre 270° y deja el hueco abajo (empieza a las 7:30 y acaba a las 4:30).
+  MEDIDOR: { LADO: 120, RADIO: 50, GROSOR: 8, ARCO_DEG: 270, INICIO_DEG: 135, MARCA: 7 },
+} as const;
