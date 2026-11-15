@@ -156,7 +156,7 @@ export const PANORAMA = {
   // Alto = fracción del alto de la ventana, acotado: el panorama y su control de tiempo caben en el primer pliegue.
   ALTO_PX: { movil: { min: 220, max: 300, fraccion: 0.36 }, escritorio: { min: 300, max: 440, fraccion: 0.42 } },
   ETIQUETA: { ANCHO_CARACTER_PX: 7.3, MARGEN_PX: 8, MARGEN_IZQ_PX: 48, SEPARACION_PX: 10, ALTO_PX: 16 },
-  ZONA_BOTONES: { ANCHO_PX: 0, ALTO_PX: 0 }, // los botones de giro van arriba: abajo no hay zona reservada
+  ZONA_TRANSPORTE_PX: 172, // franja inferior que tapa el control de tiempo flotante (≥ md): sin etiquetas ni cotas
   ZONA_SUPERIOR: { ANCHO_PX: 290, ALTO_PX: 64 }, // esquina de los botones de centrar y girar: ni etiquetas ni tarjetas
   // Tarjeta de datos en contexto de un astro; ALTO_PX es una cota para decidir si cabe arriba, no su alto real.
   CONTEXTO: { ANCHO_PX: 248, ALTO_PX: 150, SEPARACION_PX: 12, BLANCO_PX: 44, MARGEN_PX: 8 },
@@ -212,7 +212,10 @@ export const HERO = {
   ROTULO_ALTO_PX: 26,
   CLAVE_SESION_INTRO: "apogeo.introVista",
   // Relato con scroll: tramo del desplazamiento (0…1) de cada acto y fecha en la que termina.
-  RELATO: { ALTO_SVH: 340, CORTES: [0.34, 0.7], FECHAS: ["2026-12-13T00:00Z", "2026-12-28T00:00Z"], CONTEO_MS: 900, VENTANA_DEG: { movil: 150, escritorio: 360 } },
+  RELATO: {
+    // MARGEN: fracción del scroll que dura cada entrada o salida de un acto
+    ACTO: { MARGEN: 0.06, DESPLAZAMIENTO_PX: 16, DESENFOQUE_PX: 4 },
+    ALTO_SVH: 340, CORTES: [0.34, 0.7], FECHAS: ["2026-12-13T00:00Z", "2026-12-28T00:00Z"], CONTEO_MS: 900, VENTANA_DEG: { movil: 150, escritorio: 360 } },
 } as const;
 
 export const MAPA = {

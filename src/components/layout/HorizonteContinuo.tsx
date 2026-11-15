@@ -110,7 +110,7 @@ export function HorizonteContinuo({ registro, contenedor }: { registro: Registro
   }, [registro, contenedor, reducido]);
 
   return (
-    <svg ref={svg} aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 size-full overflow-visible">
+    <svg ref={svg} aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 size-full overflow-visible">
       {COPIAS.map((i) => (
         <path
           key={i}

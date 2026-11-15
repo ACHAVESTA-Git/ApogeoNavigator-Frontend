@@ -34,7 +34,7 @@ export function BotonSubirDatos() {
 
 export function NavPrincipal() {
   return (
-    <header className="material capilar-b sticky top-0 z-30">
+    <header className="material-denso capilar-b sticky top-0 z-30">
       <div className="contenedor flex h-(--nav-alto-movil) items-center gap-4 md:h-(--nav-alto)">
         <Link to={RUTAS.INICIO} className="rotulo text-texto! tactil inline-flex items-center gap-2 whitespace-nowrap">
           {T.marca}

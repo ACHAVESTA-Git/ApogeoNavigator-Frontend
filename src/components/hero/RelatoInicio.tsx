@@ -34,15 +34,17 @@ const AZ_TIERRA = FILAS.reduce((s, f) => s + f.tierra_az_deg, 0) / FILAS.length;
 
 /** Bloque de un acto: entra y sale con el scroll (opacidad y un desplazamiento corto), nunca con un temporizador. */
 function Acto({ progreso, desde, hasta, children }: { progreso: MotionValue<number>; desde: number; hasta: number; children: ReactNode }) {
-  const margen = 0.045;
-  // Tramos dentro de 0…1 (el primero ya está dentro al cargar y el último no sale): la línea de tiempo de scroll
-  // no admite desplazamientos fuera de ese intervalo.
+  // Entrada y salida en tramos DISJUNTOS: el acto anterior termina de irse justo cuando empieza a entrar el
+  // siguiente, así nunca se leen dos a la vez. El que sale se desenfoca: se funde, no se superpone.
+  const { MARGEN, DESPLAZAMIENTO_PX, DESENFOQUE_PX } = HERO.RELATO.ACTO;
   const [entra, sale] = [desde > 0, hasta < 1];
-  const puntos = [...(entra ? [desde - margen, desde + margen] : [0]), ...(sale ? [hasta - margen, hasta + margen] : [1])];
+  const puntos = [...(entra ? [desde, desde + MARGEN] : [0]), ...(sale ? [hasta - MARGEN, hasta] : [1])];
   const opacity = useTransform(progreso, puntos, [...(entra ? [0, 1] : [1]), ...(sale ? [1, 0] : [1])]);
-  const y = useTransform(progreso, puntos, [...(entra ? [28, 0] : [0]), ...(sale ? [0, -28] : [0])]);
+  const y = useTransform(progreso, puntos, [...(entra ? [DESPLAZAMIENTO_PX, 0] : [0]), ...(sale ? [0, -DESPLAZAMIENTO_PX] : [0])]);
+  const desenfoque = useTransform(progreso, puntos, [...(entra ? [0, 0] : [0]), ...(sale ? [0, DESENFOQUE_PX] : [0])]);
+  const filter = useTransform(desenfoque, (px) => (px > 0.05 ? `blur(${px.toFixed(2)}px)` : "none"));
   const pointerEvents = useTransform(opacity, (o) => (o > 0.5 ? "auto" : "none"));
-  return <m.div style={{ opacity, y, pointerEvents }} className="absolute inset-x-0 top-0 motion-reduce:transform-none!">{children}</m.div>;
+  return <m.div style={{ opacity, y, filter, pointerEvents }} className="absolute inset-x-0 top-0 motion-reduce:transform-none!">{children}</m.div>;
 }
 
 /** KPI con relato: la cifra cuenta al entrar su acto y debajo lleva con qué se compara y por qué importa. */
