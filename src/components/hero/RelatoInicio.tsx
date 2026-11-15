@@ -168,7 +168,7 @@ export function RelatoInicio({ titulo, cta }: { titulo: ReactNode; cta: ReactNod
             </Acto>
             <Acto progreso={scrollYProgress} desde={CORTES[0]} hasta={CORTES[1]}>
               <p className="rotulo">{t.dos.rotulo}</p>
-              <h2 className="titulo-instrumento text-display text-texto mt-3 max-w-[14ch] text-balance md:mt-5">
+              <h2 className="titulo-instrumento text-display text-texto mt-3 max-w-[26ch] text-balance md:mt-5">
                 {t.dos.titular.antes}<span className="text-tierra">{t.dos.titular.acento}</span>{t.dos.titular.despues}
               </h2>
               <Kpi rotulo={t.dos.kpi} valor={R.horas_tierra} total={R.horas_total} activa={acto === 1} color="text-tierra"
@@ -176,7 +176,7 @@ export function RelatoInicio({ titulo, cta }: { titulo: ReactNode; cta: ReactNod
             </Acto>
             <Acto progreso={scrollYProgress} desde={CORTES[1]} hasta={1}>
               <p className="rotulo">{t.tres.rotulo}</p>
-              <h2 className="titulo-instrumento text-display text-texto mt-3 max-w-[14ch] text-balance md:mt-5">{t.tres.titular}</h2>
+              <h2 className="titulo-instrumento text-display text-texto mt-3 max-w-[26ch] text-balance md:mt-5">{t.tres.titular}</h2>
               <Kpi rotulo={t.tres.kpi} valor={R.sitios} activa={acto === 2} contexto={t.tres.contexto(dia(R.sol_puesta_utc))} />
               <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">{cta}</div>
             </Acto>

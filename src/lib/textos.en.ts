@@ -97,7 +97,7 @@ export const T: Textos = {
     rotulo: (coordenada: string, periodo: string) => `Shackleton crater · ${coordenada} · ${periodo}`,
     // Colour accent only on "the Sun". True for the month of the story: with more months of data the Sun at
     // Shackleton does set (27 Jan 2027), so the copy never says it "never" sets.
-    titular: { antes: "At Shackleton, by the south pole, ", acento: "the Sun", despues: " does not set in December: it rolls along the horizon." },
+    titular: { antes: "At Shackleton, by the south\u00a0pole, ", acento: "the Sun", despues: " does not set in December: it rolls along the horizon." },
     apoyo: "A small change of place or date can decide whether a lander has power and a direct line to Earth. Compare it in minutes.",
     actos: {
       progreso: "Acts of the story",

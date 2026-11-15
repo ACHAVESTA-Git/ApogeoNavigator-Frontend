@@ -94,7 +94,7 @@ export const T = {
     rotulo: (coordenada: string, periodo: string) => `Cráter Shackleton · ${coordenada} · ${periodo}`,
     // El acento de color va solo en «el Sol». La frase vale para el mes del relato: con más meses de datos, el Sol
     // de Shackleton sí llega a ponerse (27/01/2027), así que no se afirma que no se ponga «nunca».
-    titular: { antes: "En Shackleton, junto al polo sur, ", acento: "el Sol", despues: " no se pone en diciembre: rueda por el horizonte." },
+    titular: { antes: "En Shackleton, junto al polo\u00a0sur, ", acento: "el Sol", despues: " no se pone en diciembre: rueda por el horizonte." },
     apoyo: "Un cambio pequeño de lugar o de fecha puede decidir si un módulo tiene energía y línea directa con la Tierra. Compáralo en minutos.",
     // Relato con scroll en tres actos. Todas las cifras salen de hero-shackleton.json (CSV reales).
     actos: {
