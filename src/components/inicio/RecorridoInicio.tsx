@@ -21,6 +21,8 @@ import { unir } from "../ui/clases";
 const R = resumenMes.resumen; // hechos de diciembre de 2026 calculados con las filas horarias del CSV
 const ELEVACION = (v: number) => grados(v, 2, true);
 const ENTERO = (v: number) => String(Math.round(v));
+// Mientras cuenta, la cifra ocupa ya el ancho de su valor final (espacios de cifra a la izquierda): la unidad no se mueve.
+const enteroDeAncho = (final: number) => (v: number) => ENTERO(v).padStart(ENTERO(final).length, "\u2007");
 const REVELADO = "opacity-0 translate-y-3 transition-[opacity,translate] duration-(--dur-media) ease-salida data-visto:translate-y-0 data-visto:opacity-100 motion-reduce:translate-y-0";
 
 /** Bloque que entra una sola vez al llegar a pantalla (opacidad y 12 px de subida; con movimiento reducido, solo opacidad). */
@@ -71,7 +73,7 @@ function Cifras() {
                 {() => <CifraHeroe tamano="media" valor={sitios.data?.length ?? 0} formato={ENTERO} rotulo={t.sitios.rotulo} contexto={t.sitios.contexto} />}
               </Cifra>
               <Cifra rotulo={t.horas.rotulo} contexto={periodo} listo={visto && Boolean(entrada)} fallo={analisis.isError}>
-                {() => <CifraHeroe tamano="media" tono="sol" valor={entrada ? horasCubiertas(entrada) : 0} formato={ENTERO} unidad="h" rotulo={t.horas.rotulo} contexto={periodo} />}
+                {() => <CifraHeroe tamano="media" tono="sol" valor={entrada ? horasCubiertas(entrada) : 0} formato={enteroDeAncho(entrada ? horasCubiertas(entrada) : 0)} unidad="h" rotulo={t.horas.rotulo} contexto={periodo} />}
               </Cifra>
               <Cifra rotulo={t.huella.rotulo} contexto={firma} listo={Boolean(entrada)} fallo={analisis.isError}>
                 {() => {

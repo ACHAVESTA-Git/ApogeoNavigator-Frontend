@@ -136,7 +136,7 @@ export function HeroPortada({ dia, hoy, titulo, cta }: { dia: DiaPortada; hoy: s
           <p className="rotulo">{t.instante}</p>
           <p className="text-dato text-texto mt-1.5 font-mono font-medium" data-dato>
             <time ref={reloj} dateTime={inicial}>{fechaHora(inicial)}</time> <span className="text-texto-2">{T.utc}</span>
-            <span className="text-dato-sm text-texto-2 font-normal"> · <span ref={relojLima}>{horaLocal(horaLima(inicial))}</span></span>
+            <span ref={relojLima} className="text-dato-sm text-texto-2 block font-normal">{horaLocal(horaLima(inicial))}</span>
           </p>
           <p className="text-texto-2 max-w-medida mt-1.5 text-[0.75rem]">
             {fallo ? t.sinEfemeride : dia.fuera ? t.fuera[dia.fuera](hoy, diaVisto) : t.hoy} {T.avisoHorizonteCorto}
