@@ -1,6 +1,6 @@
 import { Check, Minus, TriangleAlert } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
-import { useSearchParams } from "react-router";
+import { Navigate, useSearchParams } from "react-router";
 import { GraficoEspectro } from "../components/analisis/GraficoEspectro";
 import { GraficoSerie } from "../components/analisis/GraficoSerie";
 import { TituloPagina } from "../components/layout/TituloPagina";
@@ -14,9 +14,10 @@ import {
   VARIABLES_ANALISIS, esVariableAnalisis, estadoValidacion, limitacionesQueAplican, textoFirma, textoOrigen,
   type Analisis as DatosAnalisis, type EstadoPaso, type MedidaPaso, type VariableAnalisis,
 } from "../lib/analisis";
-import { ANALISIS_GRAFICO, PARAM_URL } from "../lib/constants";
+import { ANALISIS_GRAFICO, PARAM_URL, RUTAS } from "../lib/constants";
 import { fechaLarga, soloFecha } from "../lib/fechas";
 import { grados, numero, numeroCorto, tamanoArchivo } from "../lib/formato";
+import { esPuntoPropio } from "../lib/puntoPropio";
 import { T } from "../lib/textos";
 import { useContextoSitio } from "./SitioLayout";
 
@@ -221,7 +222,7 @@ function Contenido({ a, variable, alCambiarVariable }: { a: DatosAnalisis; varia
 }
 
 /** «Cómo analizamos los datos»: el pipeline del análisis predictivo de un sitio, paso a paso y con sus reservas. */
-export default function Analisis() {
+function AnalisisSitio() {
   const t = T.analisis;
   const { sitio } = useContextoSitio();
   const [params] = useSearchParams();
@@ -240,4 +241,10 @@ export default function Analisis() {
       {data && <Contenido a={data} variable={variable} alCambiarVariable={(v) => escribir({ [PARAM_URL.VARIABLE]: v === "sol_el_deg" ? null : v })} />}
     </div>
   );
+}
+
+/** Un punto propio no tiene archivo que analizar (sus datos se piden en vivo a JPL): su dirección de análisis lleva al cielo. */
+export default function Analisis() {
+  const { sitio } = useContextoSitio();
+  return esPuntoPropio(sitio.site_id) ? <Navigate to={RUTAS.CIELO(sitio.site_id)} replace /> : <AnalisisSitio />;
 }
