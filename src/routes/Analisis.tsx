@@ -11,8 +11,8 @@ import { unir } from "../components/ui/clases";
 import { useAnalisis } from "../hooks/useAnalisis";
 import { useEscribirUrl } from "../hooks/useParametrosUrl";
 import {
-  VARIABLES_ANALISIS, esVariableAnalisis, estadoValidacion, limitacionesQueAplican, textoFirma, textoOrigen,
-  type Analisis as DatosAnalisis, type EstadoPaso, type MedidaPaso, type VariableAnalisis,
+  VARIABLES_ANALISIS, esVariableAnalisis, estadoValidacion, limitacionesQueAplican, nombreMedida, textoFirma, textoOrigen, textoPaso,
+  unidadMedida, valorTextoMedida, type Analisis as DatosAnalisis, type EstadoPaso, type MedidaPaso, type VariableAnalisis,
 } from "../lib/analisis";
 import { ANALISIS_GRAFICO, PARAM_URL, RUTAS } from "../lib/constants";
 import { fechaLarga, soloFecha } from "../lib/fechas";
@@ -31,9 +31,9 @@ const VARIABLES = VARIABLES_ANALISIS.map((v) => ({ valor: v, etiqueta: T.analisi
 function valorMedida(m: MedidaPaso): string {
   if (m.valor === null) return "—";
   if (typeof m.valor === "boolean") return m.valor ? T.analisis.si : T.analisis.no;
-  if (typeof m.valor === "string") return m.valor;
+  if (typeof m.valor === "string") return valorTextoMedida(m.valor);
   if (m.unidad === "bytes") return tamanoArchivo(m.valor);
-  return `${numeroCorto(m.valor)}${m.unidad === "°" ? "°" : m.unidad ? ` ${m.unidad}` : ""}`;
+  return `${numeroCorto(m.valor)}${m.unidad === "°" ? "°" : m.unidad ? ` ${unidadMedida(m.unidad)}` : ""}`;
 }
 
 /** Tarjeta de una cifra con su contexto: qué es, cuánto vale y con qué se compara. */
@@ -170,6 +170,8 @@ function Contenido({ a, variable, alCambiarVariable }: { a: DatosAnalisis; varia
     document.querySelectorAll<HTMLElement>("[data-paso]").forEach((el) => observador.observe(el));
     return () => observador.disconnect();
   }, [a.pasos.length]);
+  // Los nombres y descripciones de los pasos llegan de la API en español: se muestran en el idioma de la interfaz.
+  const pasos = a.pasos.map((p) => ({ ...p, ...textoPaso(p, a.validacion) }));
   const aplican = limitacionesQueAplican(a);
   const otras = a.limitaciones.filter((l) => !aplican.includes(l));
   return (
@@ -178,7 +180,7 @@ function Contenido({ a, variable, alCambiarVariable }: { a: DatosAnalisis; varia
       <div className="mt-10 lg:grid lg:grid-cols-12 lg:gap-x-8">
         <nav aria-label={t.pasos.titulo} className="max-lg:hidden lg:col-span-3">
           <ol className="sticky top-[calc(var(--nav-alto)+7rem)] space-y-1">
-            {a.pasos.map((p, i) => (
+            {pasos.map((p, i) => (
               <li key={p.id}>
                 <a href={`#paso-${p.id}`} aria-current={activo === p.id ? "step" : undefined}
                   className={unir("text-apoyo flex items-baseline gap-3 border-l-2 py-1.5 pl-3 transition-[color,border-color] duration-(--dur-micro)",
@@ -190,7 +192,7 @@ function Contenido({ a, variable, alCambiarVariable }: { a: DatosAnalisis; varia
           </ol>
         </nav>
         <ol className="min-w-0 lg:col-span-9">
-          {a.pasos.map((p, i) => {
+          {pasos.map((p, i) => {
             const { Icono, clase } = ICONO_ESTADO[p.estado] ?? ICONO_ESTADO.no_disponible;
             return (
               <li key={p.id} id={`paso-${p.id}`} data-paso={p.id} className="border-linea scroll-mt-40 border-t py-8 first:border-t-0 first:pt-0">
@@ -203,7 +205,7 @@ function Contenido({ a, variable, alCambiarVariable }: { a: DatosAnalisis; varia
                 <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 xl:grid-cols-4">
                   {p.resultado.map((m) => (
                     <div key={m.nombre} className="min-w-0">
-                      <dt className="text-apoyo text-texto-3">{m.nombre}</dt>
+                      <dt className="text-apoyo text-texto-3">{nombreMedida(m.nombre)}</dt>
                       <dd className="text-dato text-texto font-mono" data-dato>{valorMedida(m)}</dd>
                     </div>
                   ))}

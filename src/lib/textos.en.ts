@@ -6,7 +6,7 @@ import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "
 import { esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
 import { decidir, diferencias, type Diferencia, type LineaComparada } from "./comparar";
-import type { FilaVeredicto, PartesVeredicto, Textos } from "./textos.es";
+import type { FilaVeredicto, PartesVeredicto, Textos, TextosApiAnalisis } from "./textos.es";
 import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
 
 export const NOMBRE_ASTRO: Record<Astro, string> = { sol: "Sun", tierra: "Earth" };
@@ -731,6 +731,73 @@ export const ERRORES_DE_DOMINIO: Record<string, { titulo: string; mensaje: strin
 const redondo = (v: number): string => numero(v, 0);
 
 /** 'in 291 h' */
+/**
+ * The analysis API writes in Spanish. Its step names and descriptions are translated by `pasos[].id`, and each
+ * measure by the name and the unit the API gives it. Anything not listed here is shown as the API sent it.
+ * Only labels are translated: the figures are never touched.
+ */
+export const ANALISIS_API: TextosApiAnalisis = {
+  pasos: {
+    carga: { nombre: "Loading the file", descripcion: "The site's ephemeris CSV is read with the same safe reader the data upload uses." },
+    validacion_csv: { nombre: "Checking the file", descripcion: "The file is checked against the CSV standard: header, types, ranges, dates in UTC, constant step and physical jumps." },
+    features: { nombre: "Computing features with Polars", descripcion: "The windows of sunlight and of visible Earth, the hours of Sun per lunar day and the libration are measured." },
+    fft: { nombre: "Searching for periodicities (FFT)", descripcion: "A Fourier transform looks for the rhythms in the series; the strongest is the synodic month, about 29.5 days long." },
+    ajuste: {
+      nombre: "Fitting the harmonic model",
+      descripcion: "A sum of sines and cosines with the lunar periods is fitted. Its R² measures how much of this data it explains; it does not measure how well it does beyond them (validation measures that).",
+    },
+    // Rule 1: the validation is only presented as the site's own when it was made with this very data.
+    validacion_horizons: {
+      nombre: "Validation against Horizons",
+      descripcion: {
+        propia: "The model, trained only on this data, predicted 12 months that were then compared with those from JPL Horizons.",
+        referencia: "These figures come from another validation: the model was trained on the project's seed data, not on yours. With your data, the model has not yet been compared with JPL Horizons.",
+        ausente: "There is no validation against JPL Horizons for this site.",
+      },
+    },
+    proyeccion: {
+      nombre: "Projection",
+      descripcion: {
+        propia: "The model is extended beyond the last data point, with the uncertainty measured in that validation.",
+        referencia: "The model is extended beyond the last data point. The uncertainty shown is for reference (from the validation with other data): with your data it may be larger.",
+        ausente: "The model is extended beyond the last data point, but with no measured uncertainty for this site.",
+      },
+    },
+  },
+  medidas: {
+    "Filas leídas": "Rows read",
+    "Tamaño del archivo": "File size",
+    "Rango cubierto": "Range covered",
+    "Paso entre filas": "Step between rows",
+    "Filas válidas": "Valid rows",
+    "Filas con error": "Rows with errors",
+    "Huecos de tiempo": "Time gaps",
+    "Ventanas de Sol completas": "Complete Sun windows",
+    "Duración media de una ventana de Sol": "Mean length of a Sun window",
+    "Días lunares completos": "Complete lunar days",
+    "Horas de Sol por día lunar (media)": "Hours of Sun per lunar day (mean)",
+    "Oscilación de la Tierra en azimut": "Earth's swing in azimuth",
+    "Oscilación de la Tierra en elevación": "Earth's swing in elevation",
+    "Pico del mes sinódico (elevación del Sol)": "Synodic month peak (Sun elevation)",
+    "Periodo del pico más fuerte": "Period of the strongest peak",
+    "Amplitud relativa del pico más fuerte": "Relative amplitude of the strongest peak",
+    "Resolución de la FFT en el mes sinódico": "FFT resolution at the synodic month",
+    "Mes sinódico afinado": "Refined synodic month",
+    "Términos del modelo (cos y sen)": "Model terms (cos and sin)",
+    "R² medio del ajuste": "Mean R² of the fit",
+    "RMSE medio del ajuste dentro de los datos": "Mean RMSE of the fit within the data",
+    "RMSE de la elevación del Sol": "RMSE of the Sun's elevation",
+    "RMSE del azimut de la Tierra": "RMSE of the Earth's azimuth",
+    "Meses con el semáforo bien predicho": "Months with the traffic light predicted correctly",
+    "Error medio de las puestas del Sol": "Mean error of the sunsets",
+    "Validación vigente": "Validation made with this data",
+    "Meses proyectables": "Months that can be projected",
+    "Incertidumbre del mes 1 (elevación del Sol)": "Uncertainty in month 1 (Sun elevation)",
+    "Incertidumbre del mes 12 (elevación del Sol)": "Uncertainty in month 12 (Sun elevation)",
+  },
+  unidades: { filas: "rows", "días": "days", meses: "months", "términos": "terms" },
+};
+
 export const enHoras = (h: number): string => `in ${horas(Math.round(h))}`;
 
 export function proximoCambio(e: EventosAstro, periodo?: { desde: Utc; hasta: Utc }): string {

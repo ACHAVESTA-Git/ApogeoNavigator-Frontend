@@ -13,6 +13,8 @@ const MARCAS = [7, 14, 30, 60, 120, 240];
 /** Espectro de una variable: cada pico es un ritmo (periodo en días) con su peso relativo. Barras, no curva: son pocos picos. */
 export function GraficoEspectro({ serie, sinodico }: { serie: Analisis["espectro"]["series"][number]; sinodico: number }) {
   const t = T.analisis.espectro;
+  // El nombre de la serie llega de la API en español: se rotula por su variable, como en el gráfico de la serie.
+  const nombre = T.analisis.serie.variables[serie.variable] ?? serie.nombre;
   const idTitulo = useId();
   const [refLienzo, { ancho }] = useDimensiones();
   const { ANCHO, ALTO, MARGEN } = lienzoGrafico(ancho, ANALISIS_GRAFICO.ESPECTRO);
@@ -26,10 +28,10 @@ export function GraficoEspectro({ serie, sinodico }: { serie: Analisis["espectro
   const nombres = (candidatos: string[]) => (candidatos.length ? candidatos.map((c) => t.candidatos[c] ?? c).join(", ") : t.ninguno);
   return (
     <figure className="mt-4">
-      <figcaption className="text-apoyo text-texto font-semibold">{serie.nombre}</figcaption>
+      <figcaption className="text-apoyo text-texto font-semibold">{nombre}</figcaption>
       <div ref={refLienzo}>
       <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} role="img" aria-labelledby={idTitulo} className="mt-1 h-auto w-full">
-        <title id={idTitulo}>{t.alt(serie.nombre, picos.length, numero(picos[0].periodo_dias, 1))}</title>
+        <title id={idTitulo}>{t.alt(nombre, picos.length, numero(picos[0].periodo_dias, 1))}</title>
         {[0, 0.5, 1].map((v) => (
           <g key={v}>
             <line x1={MARGEN.izq} x2={ANCHO - MARGEN.der} y1={y(v)} y2={y(v)} className={v === 0 ? "stroke-horizonte" : "stroke-linea"} strokeWidth={v === 0 ? 1.25 : 0.5} />
@@ -54,7 +56,7 @@ export function GraficoEspectro({ serie, sinodico }: { serie: Analisis["espectro
       <Desplegable titulo={t.tabla} className="mt-2 border-y">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[22rem] border-collapse text-left text-[0.8125rem]">
-            <caption className="sr-only">{serie.nombre}</caption>
+            <caption className="sr-only">{nombre}</caption>
             <thead><tr className="text-texto-3">{t.columnas.map((c) => <th key={c} scope="col" className="py-1.5 pr-3 font-normal">{c}</th>)}</tr></thead>
             <tbody>
               {picos.map((p) => (
