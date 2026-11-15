@@ -769,6 +769,7 @@ export const T = {
       sitio: "Sitio",
       insignia: (nombre: string) => `Insignia de la misión ${nombre}`,
       creditoInsignia: "Insignia: NASA",
+      avalInsignias: "Insignias de misión: NASA, sin modificar. La NASA no avala este proyecto.",
     },
     podio: {
       sensible: "Sensible al relieve",

@@ -768,6 +768,7 @@ export const T: Textos = {
       sitio: "Site",
       insignia: (nombre: string) => `${nombre} mission insignia`,
       creditoInsignia: "Insignia: NASA",
+      avalInsignias: "Mission insignias: NASA, unmodified. NASA does not endorse this project.",
     },
     podio: {
       sensible: "Terrain-sensitive",

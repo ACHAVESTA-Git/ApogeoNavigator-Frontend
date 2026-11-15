@@ -296,10 +296,10 @@ export const RANKING = {
   POLAR_SUR_LAT_MAX_DEG: -80, // latitud ≤ −80°: del paralelo 80° S al polo
   MONOGRAMA_MAX: 4,           // caracteres del monograma de un sitio
   /**
-   * Parches auténticos de misión disponibles en `public/insignias/<site_id>.jpg` (sin modificar). Vacío: todos los
-   * sitios llevan monograma. Para revertir, basta con borrar el archivo: la insignia cae sola al monograma.
+   * Parches auténticos de misión disponibles en `public/insignias/<site_id>.jpg` (sin modificar; fuentes y condiciones en
+   * `public/insignias/README.md`). Los demás sitios llevan monograma. Para revertir, basta con borrar el archivo: la insignia cae sola al monograma.
    */
-  INSIGNIAS: [] as readonly string[],
+  INSIGNIAS: ["apollo11", "apollo15", "apollo17"] as readonly string[],
   RUTA_INSIGNIA: (siteId: string) => `/insignias/${siteId}.jpg`,
   /** Si existe la pantalla «Ventana de alunizaje» (`/sitios/:id/ventana`). Mientras no esté en las rutas, el acceso no se pinta. */
   VENTANA_ALUNIZAJE: false,
