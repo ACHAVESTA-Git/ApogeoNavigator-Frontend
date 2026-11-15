@@ -23,7 +23,9 @@ export default function Inicio() {
     <>
       <RelatoInicio
         titulo={
-          <TituloPagina documento={t.documento} className="text-display! mt-3 max-w-[15ch] md:mt-5">
+          // Alto reservado en líneas: la fuente de respaldo parte el titular en menos líneas y, al llegar la
+          // definitiva, empujaba la tarjeta de la cifra (CLS 0,10-0,14). La fuente además se precarga (vite.config.ts).
+          <TituloPagina documento={t.documento} className="text-display! mt-3 min-h-[5lh] max-w-[15ch] max-[23rem]:min-h-[6lh] md:mt-5">
             {t.titular.antes}<span className="text-sol">{t.titular.acento}</span>{t.titular.despues}
           </TituloPagina>
         }
