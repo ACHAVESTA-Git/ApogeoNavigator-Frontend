@@ -45,7 +45,7 @@ export function LineaVentanas({ filas, desde, hasta, siteId, className }: {
               {fila !== "sol" && <GlifoAstro astro="tierra" px={12} />}
               <span className="whitespace-nowrap">{t.filas[fila]}</span>
             </p>
-            <div className="relative h-11">
+            <div className="relative h-12">
               <span aria-hidden="true" className="bg-texto/10 absolute inset-x-0 top-1/2 h-px" />
               {ventanas.length === 0 && <p className="text-texto-2 absolute inset-y-0 left-0 flex items-center text-[0.75rem]"><span className="bg-vacio pr-2">{t.ninguna}</span></p>}
               {ventanas.map((v) => {

@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { useId, useState, type CSSProperties } from "react";
+import { useEfemerides } from "../../hooks/useEfemerides";
 import { useMetricas } from "../../hooks/useMetricas";
 import { ENTRADA_LUJO } from "../../lib/constants";
 import { esMesSinDatos } from "../../lib/errores";
@@ -14,15 +15,18 @@ import { PanelVidrio } from "../lujo";
 import { unir } from "../ui/clases";
 import { Plegable } from "../ui/Plegable";
 import { ChipNivel } from "./ChipNivel";
+import { CifrasAhora } from "./CifrasAhora";
+import { EnlacePlanear } from "./EnlacePlanear";
 import { IndicadoresAstronauta } from "./IndicadoresAstronauta";
 import { MedidoresMision } from "./MedidoresMision";
 
 const retraso = (paso: number) => ({ "--retraso": `${paso * ENTRADA_LUJO.PASO_MS}ms` }) as CSSProperties;
 
 /**
- * Cabecera «Estado de misión» de un sitio en el periodo elegido. Veredicto: el semáforo global y los dos medidores
- * (energía y comunicación), con la próxima puesta del Sol y cuánto se ve la Tierra. Evidencia: los indicadores para
- * astronautas. Todo sale de `/api/metricas`; mientras carga se reservan los tamaños (nada se desplaza al llegar).
+ * Cabecera «Estado de misión» de un sitio. Primer nivel, siempre a la vista: el veredicto (semáforo global) y tres
+ * cifras del instante de la simulación: Sol ahora, Tierra ahora y próximo evento. Segundo nivel, plegable: los dos
+ * medidores del periodo (energía y comunicación) y los indicadores para astronautas. Todo sale de `/api/metricas` y
+ * de la efeméride del sitio; mientras carga se reservan los tamaños (nada se desplaza al llegar).
  */
 export function EstadoMision({ sitio, desde, hasta, plegado = false, className }: {
   sitio: Pick<Site, "site_id" | "nombre">; desde: Utc; hasta: Utc;
@@ -37,6 +41,9 @@ export function EstadoMision({ sitio, desde, hasta, plegado = false, className }
   const [eleccion, setEleccion] = useState<boolean | null>(null);
   const abierto = eleccion ?? !plegado;
   const { data, error } = useMetricas([sitio.site_id], { desde, hasta }, { mantener: true });
+  // La misma consulta (y caché) que el Cielo y el Día lunar: la cabecera no pide la serie dos veces.
+  const serie = useEfemerides(sitio.site_id, { desde, hasta }, { mantener: true });
+  const filas = serie.data?.site_id === sitio.site_id && !esMesSinDatos(serie.error) ? serie.data.filas : undefined;
   // Un mes sin datos no enseña las cifras del mes anterior (`mantener` las conserva mientras llega lo nuevo).
   const m = !esMesSinDatos(error) && data?.resultados[0]?.site_id === sitio.site_id ? data.resultados[0] : undefined;
   const periodo = periodoLegible(desde, hasta);
@@ -47,29 +54,18 @@ export function EstadoMision({ sitio, desde, hasta, plegado = false, className }
   const sensible = Boolean(m && esSensibleAlRelieve(m));
   return (
     <PanelVidrio como="section" relleno="ninguno" aria-label={t.region(sitio.nombre, periodo)} className={className}>
-      <div className="flex min-h-12 items-center gap-x-3 px-4 md:px-6">
+      <div className="flex min-h-14 items-center gap-x-3 px-4 md:px-6">
         <h2 className="rotulo shrink-0">{t.titulo}</h2>
         {m && <ChipNivel nivel={m.semaforo.global} rotulo={T.semaforo.global} nota={sensible} className="entrada-lujo shrink-0" />}
-        {/* Plegado, la franja resume las dos cifras (y la próxima puesta si cabe); abierto, ya están debajo. */}
-        {m && !abierto && (
-          <p className="entrada-lujo text-apoyo text-texto-2 min-w-0 truncate font-mono" data-dato>
-            {t.resumen(pct(Math.floor(m.pct_sol)), pct(Math.floor(m.pct_tierra)))}
-            {horasPuesta !== null && <span className="max-md:hidden"> · {t.puestaCorta(horas(horasPuesta))}</span>}
-          </p>
-        )}
         <button type="button" aria-expanded={abierto} aria-controls={id} aria-label={abierto ? t.ocultar : t.mostrar}
           onClick={() => setEleccion(!abierto)}
-          className="tactil text-texto-2 hover:text-texto -mr-3 ml-auto grid place-content-center transition-transform duration-(--dur-micro) ease-salida active:scale-[0.94]">
+          className="text-texto-2 hover:text-texto -mr-3 ml-auto grid size-12 shrink-0 place-content-center rounded-full transition-transform duration-(--dur-micro) ease-salida active:scale-[0.94]">
           <ChevronDown aria-hidden="true" className={unir("size-4 transition-transform duration-(--dur-corta) ease-salida", abierto && "rotate-180")} />
         </button>
       </div>
-      {/* Siempre a la vista (también plegada) y con el alto reservado: el periodo y, si la API lo avisa, el asterisco. */}
-      <p className="text-texto-2 -mt-1 min-h-5 px-4 pb-3 text-[0.75rem] md:px-6" data-linea-mision>
-        {sensible && <span className="text-texto" data-aviso-relieve>* <span className="first-letter:uppercase inline-block">{T.semaforo.sensible}</span> · </span>}
-        {t.periodo(periodo)}
-      </p>
+      <CifrasAhora filas={filas} indicadores={ind} sensible={sensible} className="px-4 pb-4 md:px-6" />
       <Plegable abierto={abierto} rapido>
-        <div id={id} className="grid gap-x-10 gap-y-6 px-4 pb-4 md:px-6 md:pb-6 lg:grid-cols-[auto_minmax(0,1fr)]" aria-busy={!m && !error}>
+        <div id={id} className="grid gap-x-10 gap-y-6 px-4 pt-2 pb-4 md:px-6 md:pb-6 lg:grid-cols-[auto_minmax(0,1fr)]" aria-busy={!m && !error}>
           <div className="flex flex-col gap-4 sm:max-lg:flex-row sm:max-lg:items-center sm:max-lg:gap-8">
             <MedidoresMision metrica={m} animar sensible={sensible} />
             <ul className="text-apoyo text-texto min-h-24 max-w-[26rem] space-y-2 lg:max-w-[14.5rem]">
@@ -98,6 +94,7 @@ export function EstadoMision({ sitio, desde, hasta, plegado = false, className }
               <div className="entrada-lujo" style={retraso(3)}>
                 <h3 className="rotulo text-texto mb-4">{t.indicadores} · <span className="normal-case">{periodo}</span></h3>
                 <IndicadoresAstronauta metrica={m} sitio={sitio} />
+                <EnlacePlanear siteId={sitio.site_id} className="mt-4" />
               </div>
             )}
           </div>

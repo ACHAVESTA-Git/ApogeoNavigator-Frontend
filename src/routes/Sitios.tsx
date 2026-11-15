@@ -17,9 +17,12 @@ import { consultaEfemerides } from "../hooks/useEfemerides";
 import { useDesde } from "../hooks/useMedia";
 import { useMovimientoReducido } from "../hooks/useMovimientoReducido";
 import { useEscribirUrl } from "../hooks/useParametrosUrl";
+import { useEfemeridesCatalogo } from "../hooks/useEfemeridesCatalogo";
 import { useMetricasCatalogo } from "../hooks/useMetricasCatalogo";
+import { useRelojCatalogo } from "../hooks/useRelojCatalogo";
 import { useSites } from "../hooks/useSites";
-import { CATEGORIAS, MAPA, MOVIMIENTO, PARAM_URL, RANGO_POR_DEFECTO } from "../lib/constants";
+import { Pause, Play } from "lucide-react";
+import { CATEGORIAS, DATOS, MAPA, MOVIMIENTO, PARAM_URL, RANGO_POR_DEFECTO } from "../lib/constants";
 import { NOMBRE_CATEGORIA, T, periodoLegible } from "../lib/textos";
 import type { Categoria } from "../lib/tipos";
 
@@ -46,6 +49,9 @@ export default function Sitios() {
   const ids = useMemo(() => (sitios ?? []).map((s) => s.site_id), [sitios]);
   const metricas = useMetricasCatalogo(ids, RANGO_POR_DEFECTO);
   const periodo = periodoLegible(RANGO_POR_DEFECTO.desde, RANGO_POR_DEFECTO.hasta);
+  // Tarjetas vivas: la efeméride real de cada sitio y un reloj que recorre el periodo a 6 h/s (se puede pausar).
+  const series = useEfemeridesCatalogo(ids, RANGO_POR_DEFECTO);
+  const reloj = useRelojCatalogo(RANGO_POR_DEFECTO.desde, RANGO_POR_DEFECTO.hasta, DATOS.T_POR_DEFECTO);
 
   const queryClient = useQueryClient();
   const seleccionar = useCallback((id: string | null) => escribir({ [PARAM_URL.SITIO]: id }, { reemplazar: false }), [escribir]);
@@ -62,9 +68,16 @@ export default function Sitios() {
 
   const lista = (
     <>
-      <Segmentado etiqueta={t.filtro} opciones={opciones} valor={filtro}
-        alCambiar={(v) => escribir({ [PARAM_URL.CATEGORIA]: v === TODAS ? null : v })} className="mb-5" />
-      <ListaSitios compartir={esEscritorio && !reducido} sitios={visibles} metricas={metricas} periodo={periodo} activo={activo} alActivar={activar} alSeleccionar={seleccionar} />
+      <div className="mb-5 flex items-center justify-between gap-2">
+        <Segmentado etiqueta={t.filtro} opciones={opciones} valor={filtro}
+          alCambiar={(v) => escribir({ [PARAM_URL.CATEGORIA]: v === TODAS ? null : v })} className="min-w-0" />
+        {/* El reloj UTC que mueve las tarjetas es el de la cabecera; aquí solo se pausa o se reanuda. */}
+        <button type="button" aria-label={reloj.vivo ? t.relojPausar : t.relojReproducir} onClick={reloj.alternar}
+          className="vidrio text-texto grid size-12 shrink-0 place-content-center rounded-full transition-transform duration-(--dur-micro) ease-salida active:scale-[0.94]">
+          {reloj.vivo ? <Pause aria-hidden="true" className="size-5" /> : <Play aria-hidden="true" className="size-5" />}
+        </button>
+      </div>
+      <ListaSitios compartir={esEscritorio && !reducido} sitios={visibles} metricas={metricas} series={series} reloj={reloj.t} periodo={periodo} activo={activo} alActivar={activar} alSeleccionar={seleccionar} />
     </>
   );
 
@@ -86,7 +99,7 @@ export default function Sitios() {
       <div className="relative min-w-0 lg:col-span-5 lg:col-start-8 lg:pt-2">
         {isPending && (
           <ul role="status" aria-busy="true" aria-label={T.cargando} className="grid grid-cols-1 gap-3 min-[30rem]:grid-cols-2">
-            {Array.from({ length: MAPA.ESQUELETO_FILAS }, (_, i) => <li key={i} className="vidrio h-64" />)}
+            {Array.from({ length: MAPA.ESQUELETO_FILAS }, (_, i) => <li key={i} className="vidrio h-80" />)}
           </ul>
         )}
         {isError && <EstadoError error={error} alReintentar={() => void refetch()} />}
