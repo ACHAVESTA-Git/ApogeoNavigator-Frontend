@@ -72,6 +72,25 @@ export interface Aviso {
   codigo: string;
   mensaje: string;
 }
+/** Racha continua (noche, apagón de enlace o ventana Sol+Tierra) dentro del rango pedido. Sin racha: 0 h y fechas nulas. */
+export interface Racha {
+  horas: number;
+  inicio_utc: Utc | null;
+  /** Exclusivo: un paso después de la última fila de la racha. */
+  fin_utc: Utc | null;
+  /** La racha ya estaba en curso al empezar el rango (o sigue al acabar): su duración es un mínimo («≥»). */
+  trunca_inicio: boolean;
+  trunca_fin: boolean;
+}
+/** Bloque aditivo de `GET /api/metricas`. Todo opcional: una API anterior no lo trae y entonces se deja el hueco. */
+export interface IndicadoresAstronauta {
+  noche_mas_larga?: Racha | null;
+  apagon_tierra_mas_largo?: Racha | null;
+  ventana_sol_y_tierra?: Racha | null;
+  proxima_puesta_sol_utc?: Utc | null;
+  proxima_puesta_tierra_utc?: Utc | null;
+  sol_el_media_horas_sol_deg?: number | null;
+}
 export interface Metrica extends ValoresMetricas {
   // intervalo [desde, hasta)
   site_id: string;
@@ -81,6 +100,7 @@ export interface Metrica extends ValoresMetricas {
   avisos: Aviso[];
   origen: "calculado" | "ejemplo" | "horizons_en_vivo";
   referencia: ReferenciaMetricas | null;
+  indicadores_astronauta?: IndicadoresAstronauta | null;
 }
 /** GET /api/horizons: efemérides en vivo de un punto cualquiera, con sus métricas y sus puestas. */
 export interface RespuestaHorizons extends Efemerides {
