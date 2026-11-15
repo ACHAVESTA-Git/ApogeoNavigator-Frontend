@@ -102,7 +102,7 @@ export default function Sitios() {
                 initial={reducido ? false : { opacity: 0 }}
                 animate={{ opacity: 1, transition: { duration: MOVIMIENTO.MEDIA / 1000, ease: MOVIMIENTO.EASE_SALIDA } }}
                 exit={reducido ? undefined : { opacity: 0, transition: { duration: MOVIMIENTO.SALIDA_RUTA / 1000, ease: MOVIMIENTO.EASE_ENTRADA } }}>
-                <FichaSitio sitio={seleccionado} alVolver={cerrar} idTitulo={idFicha} compartir={!reducido} />
+                <FichaSitio sitio={seleccionado} metrica={metricas.get(seleccionado.site_id)} alVolver={cerrar} idTitulo={idFicha} compartir={!reducido} />
               </m.div>
             ) : (
               <m.div key="lista" initial={reducido ? false : { opacity: 0 }} animate={{ opacity: 1, transition: { duration: MOVIMIENTO.CORTA / 1000 } }}
@@ -116,7 +116,7 @@ export default function Sitios() {
 
       {!esEscritorio && seleccionado && (
         <HojaInferior etiquetadaPor={idFicha} alCerrar={cerrar}>
-          <FichaSitio sitio={seleccionado} idTitulo={idFicha} />
+          <FichaSitio sitio={seleccionado} metrica={metricas.get(seleccionado.site_id)} idTitulo={idFicha} />
         </HojaInferior>
       )}
     </div>

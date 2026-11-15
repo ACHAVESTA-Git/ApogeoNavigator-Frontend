@@ -8,7 +8,7 @@ import { horasEntre } from "../../lib/fechas";
 import { coordenadas, horas } from "../../lib/formato";
 import { recordarOrigen } from "../../lib/motion/vuelo";
 import { NOMBRE_CATEGORIA, T, periodoLegible } from "../../lib/textos";
-import type { Site } from "../../lib/tipos";
+import type { Metrica, Site } from "../../lib/tipos";
 import { GlifoCategoria } from "../glifos/GlifoCategoria";
 import { Boton, EnlaceBoton, EnlaceExterno } from "../ui/Boton";
 import { Lectura } from "../ui/Lectura";
@@ -20,14 +20,16 @@ import { BotonComparar } from "./BotonComparar";
 const RANGO = RANGO_POR_DEFECTO;
 
 /** Detalle bajo demanda de un sitio: datos del catálogo, dos mini-lecturas del periodo y las acciones. */
-export function FichaSitio({ sitio, alVolver, idTitulo, compartir = false }: {
+export function FichaSitio({ sitio, metrica, alVolver, idTitulo, compartir = false }: {
   sitio: Site; alVolver?: () => void; idTitulo: string;
+  /** La métrica que ya tiene la tarjeta (mismo periodo): la ficha abre con sus cifras, sin hueco ni otra petición. */
+  metrica?: Metrica;
   /** El título es el mismo elemento que el nombre de la fila de la lista (transición compartida). */
   compartir?: boolean;
 }) {
   const t = T.sitios;
-  const { data } = useMetricas([sitio.site_id], RANGO);
-  const m = data?.resultados[0];
+  const { data } = useMetricas(metrica ? [] : [sitio.site_id], RANGO);
+  const m = metrica ?? data?.resultados[0];
   const total = horasEntre(RANGO.desde, RANGO.hasta);
   const periodo = t.enPeriodo(periodoLegible(RANGO.desde, RANGO.hasta));
   return (
