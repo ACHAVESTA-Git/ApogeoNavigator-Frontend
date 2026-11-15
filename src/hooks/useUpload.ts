@@ -5,14 +5,20 @@ import { CLAVES } from "../lib/queryClient";
 import { T } from "../lib/textos";
 import { ClaveInvalida, agregarArchivos, agrupar, contar, esGuardable, guardarEnSecuencia, puedeValidar, reiniciar, soloNoGuardados,
   validarEnSecuencia, type ArchivoCarga } from "../lib/upload";
+import { CLAVE_DE_SESION } from "../lib/sesion";
 import { useClaveGuardada } from "./useClaveCarga";
+import { useSesion } from "./useSesion";
 
 export type PasoCarga = "elegir" | "validando" | "revisar" | "guardando" | "hecho";
 
 /** Estado del popup «Subir datos»: máquina de pasos, archivos, progreso y errores. La lógica vive en lib/upload.ts. */
 export function useUpload(anunciar: (mensaje: string) => void) {
   const queryClient = useQueryClient();
-  const { clave, guardar: guardarClave, borrar: borrarClave } = useClaveGuardada(CARGA.CLAVE_SESSION_STORAGE);
+  const { clave: claveGuardada, guardar: guardarClave, borrar: borrarClave } = useClaveGuardada(CARGA.CLAVE_SESSION_STORAGE);
+  // Con sesión, la carga va con la cookie y no se pide clave; si la sesión caduca (401), se vuelve a la clave.
+  const { usuario, olvidar: olvidarSesion } = useSesion();
+  const conSesion = Boolean(usuario);
+  const clave = conSesion ? CLAVE_DE_SESION : claveGuardada;
   const [paso, setPaso] = useState<PasoCarga>("elegir");
   const [archivos, setArchivos] = useState<ArchivoCarga[]>([]);
   const [progreso, setProgreso] = useState({ hechos: 0, total: 0 });
@@ -43,7 +49,8 @@ export function useUpload(anunciar: (mensaje: string) => void) {
         if (await tanda()) alTerminar();
       } catch (error) {
         if (error instanceof ClaveInvalida) {
-          borrarClave();
+          if (conSesion) olvidarSesion();
+          else borrarClave();
           setClaveInvalida(true);
           setPaso("elegir");
           anunciar(T.carga.claveInvalida);
@@ -54,7 +61,7 @@ export function useUpload(anunciar: (mensaje: string) => void) {
         }
       }
     },
-    [borrarClave, anunciar],
+    [borrarClave, anunciar, conSesion], // eslint-disable-line react-hooks/exhaustive-deps -- olvidarSesion solo toca la caché de consultas
   );
 
   const validar = useCallback(() => {

@@ -12,8 +12,11 @@ import { unir } from "../components/ui/clases";
 import { CampoClave } from "../components/upload/CampoClave";
 import { Plegable } from "../components/ui/Plegable";
 import { SuccessCheck } from "../components/upload/SuccessCheck";
+import { Navigate } from "react-router";
 import { useClaveGuardada } from "../hooks/useClaveCarga";
-import { API, CLAVES_PQC } from "../lib/constants";
+import { useSesion } from "../hooks/useSesion";
+import { CLAVE_DE_SESION } from "../lib/sesion";
+import { API, CLAVES_PQC, RUTAS } from "../lib/constants";
 import { CLAVES_EJEMPLO, descargarTexto, entregaDeEjemplo, generarClaves, listarClaves, obtenerPublicaPem, revocarClave, rotarClave,
   type Clave, type ClaveEntregada, type EstadoClave, type FiltrosClaves, type TipoClave } from "../lib/claves";
 import { ApiError } from "../lib/errores";
@@ -160,7 +163,11 @@ const Contador = ({ rotulo, valor }: { rotulo: string; valor: number }) => (
 const Celda = ({ children, className }: { children: ReactNode; className?: string }) => <td className={unir("px-3 py-2.5 align-middle", className)}>{children}</td>;
 
 export default function GestorClaves() {
-  const { clave: claveAdmin, guardar, borrar } = useClaveGuardada(CLAVES_PQC.SESSION_STORAGE);
+  const { usuario, comprobando } = useSesion();
+  const { clave: claveGuardada, guardar, borrar } = useClaveGuardada(CLAVES_PQC.SESSION_STORAGE);
+  // Con sesión de administración no hace falta la clave: las peticiones van con la cookie.
+  const conSesion = usuario?.rol === "admin";
+  const claveAdmin = conSesion ? CLAVE_DE_SESION : claveGuardada;
   const [borrador, setBorrador] = useState("");
   const [estado, setEstado] = useState<EstadoClave | "todas">("todas");
   const [tipo, setTipo] = useState<TipoClave | "todos">("todos");
@@ -172,15 +179,18 @@ export default function GestorClaves() {
   // Cada «Entrar» abre una consulta nueva: así sale con la clave recién escrita y no con la anterior (vacía o rechazada).
   const [intento, setIntento] = useState(0);
   const consulta = useQuery({
-    queryKey: ["claves", intento, filtros.estado, filtros.tipo, filtros.q],
+    queryKey: ["claves", conSesion, intento, filtros.estado, filtros.tipo, filtros.q],
     queryFn: () => listarClaves(claveAdmin, filtros, CLAVES_PQC.LIMITE),
-    enabled: Boolean(claveAdmin),
+    enabled: Boolean(claveAdmin) && !comprobando,
     retry: false,
   });
   const ancla = useAnclaHorizonte("linea");
   const noAutorizado = consulta.error instanceof ApiError && consulta.error.status === API.NO_AUTORIZADO;
 
-  if (!claveAdmin || noAutorizado) {
+  // Con sesión pero sin el rol de administración, el gestor no existe: se vuelve a Acceso.
+  if (usuario && !conSesion) return <Navigate to={RUTAS.ACCESO} replace />;
+  if (comprobando) return <PantallaSimple documento={t.documento} rotulo={t.rotulo} titulo={t.titulo}><EstadoCarga /></PantallaSimple>;
+  if (!claveAdmin || (noAutorizado && !conSesion)) {
     return (
       <PantallaSimple documento={t.documento} rotulo={t.rotulo} titulo={t.titulo}>
         <form className="max-w-md" onSubmit={(e) => { e.preventDefault(); if (borrador) { guardar(borrador); setBorrador(""); setIntento((n) => n + 1); } }}>
@@ -226,7 +236,7 @@ export default function GestorClaves() {
           </label>
         </div>
         <div className="flex gap-2">
-          <Boton variante="texto" onClick={borrar}>{t.cambiarClave}</Boton>
+          {!conSesion && <Boton variante="texto" onClick={borrar}>{t.cambiarClave}</Boton>}
           <Boton variante="primario" onClick={() => setAccion({ tipo: "generar" })}><KeyRound aria-hidden="true" className="size-4" />{t.generar}</Boton>
         </div>
       </div>

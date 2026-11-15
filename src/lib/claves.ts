@@ -2,6 +2,7 @@
 import { urlApi } from "./api";
 import { API } from "./constants";
 import { ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
+import { accesoApi } from "./sesion";
 
 export type TipoClave = "kem" | "firma";
 export type EstadoClave = "activa" | "revocada";
@@ -49,11 +50,13 @@ export interface FiltrosClaves {
 
 async function llamar<T>(ruta: string, claveAdmin: string, init: RequestInit = {}, params: Record<string, string | undefined> = {}): Promise<T> {
   let respuesta: Response;
+  const acceso = accesoApi(claveAdmin);
   try {
     respuesta = await fetch(urlApi(ruta, params), {
       ...init,
       cache: "no-store", // nada de esto debe quedar en la caché del navegador
-      headers: { Accept: "application/json", [API.CABECERA_CLAVE]: claveAdmin, ...(init.body ? { "Content-Type": "application/json" } : {}) },
+      credentials: acceso.credentials,
+      headers: { Accept: "application/json", ...acceso.headers, ...(init.body ? { "Content-Type": "application/json" } : {}) },
     });
   } catch (error) {
     throw new ErrorDeRed(error);
@@ -84,7 +87,7 @@ export const rotarClave = (claveAdmin: string, id: string, motivo: string) =>
 export async function obtenerPublicaPem(claveAdmin: string, id: string): Promise<string> {
   let respuesta: Response;
   try {
-    respuesta = await fetch(urlApi(API.CLAVE_PUBLICA(id), { formato: "pem" }), { cache: "no-store", headers: { [API.CABECERA_CLAVE]: claveAdmin } });
+    respuesta = await fetch(urlApi(API.CLAVE_PUBLICA(id), { formato: "pem" }), { cache: "no-store", ...accesoApi(claveAdmin) });
   } catch (error) {
     throw new ErrorDeRed(error);
   }
