@@ -82,7 +82,7 @@ export const RACHAS = ["noche_mas_larga", "apagon_tierra_mas_largo", "ventana_so
 export type ClaveRacha = (typeof RACHAS)[number];
 
 /** La racha de un indicador, o null si la API no la trae o no es válida: sin dato no es cero. */
-export function rachaDe(indicadores: IndicadoresAstronauta | undefined, clave: ClaveRacha): Racha | null {
+export function rachaDe(indicadores: IndicadoresAstronauta | null | undefined, clave: ClaveRacha): Racha | null {
   const r = indicadores?.[clave];
   return r && typeof r.horas === "number" && Number.isFinite(r.horas) && r.horas >= 0 ? r : null;
 }

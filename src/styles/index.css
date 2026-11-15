@@ -88,6 +88,7 @@
      mueve dentro de la pantalla y la curva de hoja para capas que suben. */
   --ease-salida: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-entrada: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-lujo: cubic-bezier(0.22, 1, 0.36, 1);      /* entradas del lenguaje «lujo» (180–320 ms) */
   --ease-orbita: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-hoja: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-frenado: cubic-bezier(0.05, 0.7, 0.1, 1);   /* fallos: el cambio «se clava» */
@@ -258,16 +259,47 @@
 html[data-inmersivo] { overflow: hidden; }
 html[data-inmersivo] #contenido { z-index: 60; }
 
+/* Acceso: «sesión iniciada» entra por tiempos (opacidad + 8 px), y la Tierra de la escena sube UNA vez desde detrás
+   del horizonte. Solo transform y opacity; con movimiento reducido la regla global las deja en su estado final. */
+.acceso-entra { animation: acceso-entrar var(--dur-media) var(--ease-salida) var(--retraso, 0ms) both; }
+@keyframes acceso-entrar { from { opacity: 0; transform: translateY(8px); } }
+.acceso-tierra { animation: acceso-tierra var(--dur-escena) var(--ease-salida) both; }
+@keyframes acceso-tierra { from { opacity: 0; transform: translateY(70%); } }
+
 /* Check de confirmación: primero el círculo y luego el trazo (stroke-dashoffset). */
 .check-circulo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 350ms var(--ease-salida) forwards; }
 .check-trazo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 250ms var(--ease-salida) 350ms forwards; }
 @keyframes trazar { to { stroke-dashoffset: 0; } }
 
+/* Entrada «lujo»: 280 ms, opacidad + 8 px, escalonada con --retraso. `backwards`: al acabar no deja ningún
+   transform puesto (la elevación al pasar el puntero sigue funcionando). Con movimiento reducido, solo opacidad. */
+.entrada-lujo { animation: entrada-lujo 280ms cubic-bezier(0.22, 1, 0.36, 1) var(--retraso, 0ms) backwards; }
+@keyframes entrada-lujo { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) {
+  .entrada-lujo { animation: aparecer var(--dur-corta) var(--ease-salida) backwards; }
+}
+/* Banda luminosa de una ventana: el brillo es un halo fijo (no se anima); al pasar el puntero o enfocar, se aviva. */
+.banda-ventana { transition: opacity var(--dur-micro) var(--ease-salida), transform var(--dur-micro) var(--ease-salida); opacity: 0.86; }
+.banda-ventana[data-tenue] { opacity: 0.5; } /* Sol y Tierra por separado: contexto apagado de la ventana conjunta */
+a:focus-visible > .banda-ventana { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  a:hover > .banda-ventana { opacity: 1; transform: scaleY(1.25); }
+}
+@media (prefers-reduced-motion: reduce) {
+  a:hover > .banda-ventana { transform: none; }
+}
 /* Medidor (lujo): el arco se traza UNA vez al aparecer (stroke-dashoffset, 600 ms). `--medidor-desde` lo fija el
    propio arco. Con movimiento reducido la regla global lo deja en su valor final al instante. */
 .medidor-arco { animation: medidor-trazar var(--dur-lujo-conteo) var(--ease-salida) both;
   transition: stroke-dasharray var(--dur-media) var(--ease-salida); }
 @keyframes medidor-trazar { from { stroke-dashoffset: var(--medidor-desde, 0); } }
+
+/* Entrada «lujo» de un acto: sube unos px y aparece UNA vez (solo transform y opacity). El retraso y la distancia
+   los fija cada pieza (--retraso, --desde): la principal viaja más y sale primero. Con movimiento reducido la
+   regla global la deja en su estado final al instante, y aquí se anula el retraso. */
+.lujo-entrada { animation: lujo-entrar 280ms var(--ease-lujo) var(--retraso, 0ms) both; }
+@keyframes lujo-entrar { from { opacity: 0; transform: translateY(var(--desde, 10px)); } }
+@media (prefers-reduced-motion: reduce) { .lujo-entrada { animation-delay: 0ms !important; } }
 
 /* Regla de tiempo: input range nativo con pista transparente (las marcas se dibujan debajo en SVG). */
 .regla-tiempo { -webkit-appearance: none; appearance: none; background: transparent; width: 100%; height: 44px; margin: 0; }

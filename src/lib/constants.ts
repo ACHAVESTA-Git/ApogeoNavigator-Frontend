@@ -117,6 +117,17 @@ export const SEMAFORO = {
   COMUNICACION: { VERDE_MIN: 70, AMARILLO_MIN: 40 }, // por % de horas con la Tierra visible
   ORDEN: ["rojo", "amarillo", "verde"],
 } as const;
+/** Umbrales de los medidores de misión (misma fuente que el semáforo; coinciden con la API). */
+export const UMBRALES_MISION = {
+  ENERGIA: { reservas: SEMAFORO.ENERGIA.AMARILLO_MIN, viable: SEMAFORO.ENERGIA.VERDE_MIN },
+  COMUNICACION: { reservas: SEMAFORO.COMUNICACION.AMARILLO_MIN, viable: SEMAFORO.COMUNICACION.VERDE_MIN },
+} as const;
+/** Entrada escalonada «lujo»: solo las primeras tarjetas se escalonan; el resto llega con la última (≤ 300 ms en total). */
+export const ENTRADA_LUJO = { PASO_MS: 50, MAX_ESCALONADAS: 5 } as const;
+/** Identidad compartida de la pareja de medidores de un sitio: tarjeta ↔ ficha (`layoutId`). */
+export const ID_MEDIDORES_SITIO = (siteId: string) => `medidores-sitio-${siteId}`;
+/** Línea de tiempo de ventanas: ancho mínimo de una banda en pantalla (una ventana de 1 h sigue siendo pulsable). */
+export const LINEA_VENTANAS = { MIN_ANCHO_PX: 10 } as const;
 // El semáforo y los avisos los calcula la API. Estos umbrales existen SOLO para el respaldo con datos de
 // ejemplo y la prueba de oro (deben coincidir con app/core/config.py); los componentes no los aplican.
 export const UMBRAL_RASANTE_DEG = 3; // sol_el_max < 3° ⇒ aviso «sensible al relieve»
@@ -400,6 +411,8 @@ export const ANALISIS_GRAFICO = {
   // El viewBox se dibuja al ancho real del contenedor (una unidad = un píxel): los rótulos de 12 se leen a 12 px
   // en cualquier pantalla y el gráfico no obliga a desplazarse. ANCHO es solo el valor previo a medir.
   SERIE: { ANCHO: 720, RAZON: 0.42, ALTO_MIN: 230, ALTO_MAX: 320, MARGEN: { sup: 18, der: 16, inf: 30, izq: 44 }, MARGEN_COMPACTO: { sup: 18, der: 8, inf: 30, izq: 40 } },
+  // Acto 2 del informe: la serie es la protagonista y ocupa todo el ancho.
+  SERIE_AMPLIA: { ANCHO: 960, RAZON: 0.4, ALTO_MIN: 260, ALTO_MAX: 420, MARGEN: { sup: 22, der: 16, inf: 30, izq: 44 }, MARGEN_COMPACTO: { sup: 22, der: 8, inf: 30, izq: 40 } },
   ESPECTRO: { ANCHO: 720, RAZON: 0.3, ALTO_MIN: 210, ALTO_MAX: 240, MARGEN: { sup: 24, der: 20, inf: 42, izq: 44 }, MARGEN_COMPACTO: { sup: 24, der: 10, inf: 42, izq: 30 } },
   ANCHO_COMPACTO: 480, // por debajo, márgenes estrechos y menos marcas en el eje
   ANCHO_MIN: 280,
@@ -409,9 +422,26 @@ export const ANALISIS_GRAFICO = {
 } as const;
 
 /** Primitivas del rediseño «Lujo inmersivo» (src/components/lujo). Duraciones en ms; espejo de --dur-lujo-* en index.css. */
+/** Pantalla de Acceso (login). */
+export const ACCESO = {
+  SACUDIDA_MS: 280, // sacudida del formulario ante un error (techo del plan: 300 ms); no se ejecuta con movimiento reducido
+  SACUDIDA_PX: 6,
+  ESTRELLAS: 44, // puntos del cielo de la escena (posiciones deterministas, sin azar)
+  RETRASOS_ENTRADA_MS: [0, 50, 90], // escalonado no uniforme de «sesión iniciada»: identidad, huellas, acciones
+} as const;
+
 export const LUJO = {
   CONTEO_MS: 600, // una cifra héroe cuenta hacia su valor UNA vez; techo del plan (≤ 600 ms)
   COPIADO_MS: 2000, // cuánto se mantiene el aviso «Huella copiada»
   // Medidor: unidades del viewBox. El arco abre 270° y deja el hueco abajo (empieza a las 7:30 y acaba a las 4:30).
   MEDIDOR: { LADO: 120, RADIO: 50, GROSOR: 8, ARCO_DEG: 270, INICIO_DEG: 135, MARCA: 7 },
+} as const;
+
+/** «Informe de confianza de la proyección» (pantalla Análisis). Los umbrales son de LECTURA de esa pantalla y se explican en ella. */
+export const CONFIANZA = {
+  R2: { reservas: 0.9, viable: 0.99 }, // ajuste interno (0–1): ámbar desde 0,9 y verde desde 0,99
+  ACIERTOS_FRACCION: { reservas: 0.75, viable: 0.9 }, // parte de los meses con el semáforo bien predicho
+  DECIMALES_R2: 3,
+  CURSOR_PASO_LARGO: 10, // Re Pág / Av Pág: muestras que salta el cursor de la serie
+  VARIABLE_RITMO: "sol_el_deg", // el «día lunar» se lee en la elevación del Sol
 } as const;

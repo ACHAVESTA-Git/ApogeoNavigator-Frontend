@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { GraficoDiaLunar } from "../components/dia-lunar/GraficoDiaLunar";
 import { GlifoAstro } from "../components/glifos/Astros";
+import { LineaVentanas } from "../components/ventanas/LineaVentanas";
 import { AvisoHorizonteIdeal } from "../components/layout/AvisoHorizonteIdeal";
 import { TituloPagina } from "../components/layout/TituloPagina";
 import { Transporte, controlDeReloj } from "../components/tiempo/Transporte";
@@ -57,6 +58,8 @@ function Linea({ sitio, filas, desde, hasta }: { sitio: Site; filas: FilaEfemeri
         <GraficoDiaLunar filas={filas} reloj={reloj} alPulsarTecla={teclas} etiqueta={t.grafico(periodo)} />
         <Transporte filas={filas} control={controlDeReloj(reloj, filas)} conHoras={esEscritorio} className="mt-3" />
       </div>
+
+      <LineaVentanas filas={filas} desde={desde} hasta={hasta} siteId={sitio.site_id} className="mt-6" />
 
       <div className="panel mt-4 flex flex-wrap items-center justify-between gap-x-8 gap-y-3 p-4">
         <dl className="text-dato-sm grid gap-x-8 gap-y-1 font-mono sm:grid-cols-3" data-dato aria-live="polite">
