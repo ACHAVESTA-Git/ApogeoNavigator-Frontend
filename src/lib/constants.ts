@@ -131,8 +131,6 @@ export const ID_MEDIDORES_SITIO = (siteId: string) => `medidores-sitio-${siteId}
  * el horizonte se hunde con `HUNDIDO` veces la escala de lupa. `ALTO_PX` reserva el alto antes de que llegue la serie.
  */
 export const MINI_HORIZONTE = { HORIZONTE: 0.68, HUNDIDO: 1.6, ALTO_PX: 56, REFRESCO_RELOJ_HZ: 6 } as const;
-/** Funciones que dependen de pantallas de otras ramas: el enlace solo se dibuja cuando su ruta existe. */
-export const FUNCIONES = { VENTANA_ALUNIZAJE: false } as const;
 /** Línea de tiempo de ventanas: ancho mínimo de una banda en pantalla (una ventana de 1 h sigue siendo pulsable). */
 export const LINEA_VENTANAS = { MIN_ANCHO_PX: 10 } as const;
 // El semáforo y los avisos los calcula la API. Estos umbrales existen SOLO para el respaldo con datos de
@@ -382,7 +380,6 @@ export const RUTAS = {
   SITIO: (id: string) => `/sitios/${id}`,
   CIELO: (id: string) => `/sitios/${id}/cielo`,
   VENTANAS: (id: string) => `/sitios/${id}/ventanas`,
-  VENTANA_ALUNIZAJE: (id: string) => `/sitios/${id}/ventana`,
   DIA_LUNAR: (id: string) => `/sitios/${id}/dia-lunar`,
   ANALISIS: (id: string) => `/sitios/${id}/analisis`,
   VENTANA_ALUNIZAJE: (id: string) => `/sitios/${id}/ventana`,

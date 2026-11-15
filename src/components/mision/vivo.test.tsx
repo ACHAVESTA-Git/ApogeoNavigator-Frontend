@@ -2,7 +2,7 @@ import { act, render, screen } from "@testing-library/react";
 import { motionValue } from "motion/react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
-import { FUNCIONES } from "../../lib/constants";
+import { RANKING } from "../../lib/constants";
 import { aMs, sumarHoras } from "../../lib/fechas";
 import { fijarInstanteGlobal } from "../../lib/relojGlobal";
 import type { FilaEfemeride } from "../../lib/tipos";
@@ -46,9 +46,12 @@ describe("CifrasAhora (Sol ahora, Tierra ahora, próximo evento)", () => {
 
 describe("EnlacePlanear («Planear alunizaje»)", () => {
   it("no se dibuja mientras la pantalla de la ventana de alunizaje no exista (sin ruta rota)", () => {
-    expect(FUNCIONES.VENTANA_ALUNIZAJE).toBe(false);
-    render(<MemoryRouter><EnlacePlanear siteId="shackleton" /></MemoryRouter>);
+    render(<MemoryRouter><EnlacePlanear siteId="shackleton" activo={false} /></MemoryRouter>);
     expect(screen.queryByRole("link")).toBeNull();
+  });
+  it("por defecto sigue a la constante que comparte con Comparar", () => {
+    render(<MemoryRouter><EnlacePlanear siteId="shackleton" /></MemoryRouter>);
+    expect(screen.queryAllByRole("link")).toHaveLength(RANKING.VENTANA_ALUNIZAJE ? 1 : 0);
   });
   it("activo, enlaza a /sitios/:id/ventana", () => {
     render(<MemoryRouter><EnlacePlanear siteId="shackleton" activo /></MemoryRouter>);
