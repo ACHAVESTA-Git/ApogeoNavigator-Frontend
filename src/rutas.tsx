@@ -11,6 +11,7 @@ const SitioLayout = lazy(() => import("./routes/SitioLayout"));
 const Cielo = lazy(() => import("./routes/Cielo"));
 const Ventanas = lazy(() => import("./routes/Ventanas"));
 const DiaLunar = lazy(() => import("./routes/DiaLunar"));
+const VentanaAlunizaje = lazy(() => import("./routes/VentanaAlunizaje"));
 const Analisis = lazy(() => import("./routes/Analisis"));
 const Comparar = lazy(() => import("./routes/Comparar"));
 const Acceso = lazy(() => import("./routes/Acceso"));
@@ -33,6 +34,8 @@ export function Rutas() {
           <Route path={SEGMENTO.DIA_LUNAR} element={<DiaLunar />} />
           <Route path={SEGMENTO.ANALISIS} element={<Analisis />} />
         </Route>
+        {/* Pantalla propia (sin la cabecera de mes del sitio): abarca los seis meses de datos. */}
+        <Route path={RUTAS.VENTANA_ALUNIZAJE(PARAM_SITIO)} element={<VentanaAlunizaje />} />
         <Route path={RUTAS.COMPARAR} element={<Comparar />} />
         <Route path={RUTAS.ACCESO} element={<Acceso />} />
         <Route path={RUTAS.PERFIL} element={<Perfil />} />

@@ -81,6 +81,7 @@ export function FichaSitio({ sitio, metrica, alVolver, idTitulo, compartir = fal
           <ArrowRight aria-hidden="true" className="size-4" />
         </EnlaceBoton>
         <BotonComparar siteId={sitio.site_id} />
+        <EnlaceBoton to={RUTAS.VENTANA_ALUNIZAJE(sitio.site_id)} variante="secundario">{T.alunizaje.acceso}</EnlaceBoton>
       </div>
       <p className="text-apoyo mt-4">
         <Link to={RUTAS.ANALISIS(sitio.site_id)} className="text-texto-2 hover:text-texto underline decoration-linea underline-offset-4">{T.analisis.enlace}</Link>
