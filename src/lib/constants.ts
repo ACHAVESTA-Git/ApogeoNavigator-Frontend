@@ -9,6 +9,8 @@ export const API = {
   SITES: "/api/sites",
   EFEMERIDES: (id: string) => `/api/efemerides/${encodeURIComponent(id)}`,
   METRICAS: "/api/metricas",
+  VENTANAS_ALUNIZAJE: "/api/ventanas-alunizaje",
+  PARAM_ESTANCIA: "estancia_h",
   PUESTAS: (id: string) => `/api/puestas/${encodeURIComponent(id)}`,
   SIMULACION: (id: string) => `/api/simulacion/${encodeURIComponent(id)}`,
   ANALISIS: (id: string) => `/api/analisis/${encodeURIComponent(id)}`,
@@ -362,6 +364,7 @@ export const RUTAS = {
   VENTANAS: (id: string) => `/sitios/${id}/ventanas`,
   DIA_LUNAR: (id: string) => `/sitios/${id}/dia-lunar`,
   ANALISIS: (id: string) => `/sitios/${id}/analisis`,
+  VENTANA_ALUNIZAJE: (id: string) => `/sitios/${id}/ventana`,
   COMPARAR: "/comparar",
   ACCESO: "/acceso",
   CLAVES: "/admin/claves",
@@ -378,7 +381,7 @@ export const PUNTO_PROPIO = {
   CACHE_MAX: 6, // respuestas de /api/horizons que se guardan en memoria (una por punto y periodo)
 } as const;
 
-export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", VARIABLE: "variable" } as const;
+export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", VARIABLE: "variable", ESTANCIA: "estancia", DIA: "dia" } as const;
 
 export const ENLACES = {
   HORIZONS: "https://ssd.jpl.nasa.gov/horizons/",
@@ -428,4 +431,20 @@ export const CONFIANZA = {
   DECIMALES_R2: 3,
   CURSOR_PASO_LARGO: 10, // Re Pág / Av Pág: muestras que salta el cursor de la serie
   VARIABLE_RITMO: "sol_el_deg", // el «día lunar» se lee en la elevación del Sol
+} as const;
+
+/** Ventana de alunizaje (HU-18): contrato de GET /api/ventanas-alunizaje y lectura del calendario de calor. */
+export const ALUNIZAJE = {
+  ESTANCIAS_H: [72, 156, 336], // 3 d, 6,5 d (estancia de referencia) y 14 d: las únicas que acepta la API
+  ESTANCIA_POR_DEFECTO: 156,
+  MAX_SITIOS: 5,
+  // Calendario de calor: límite inferior (%) de los escalones 2, 3 y 4. El 0 es «nada»; el 1, «algo, menos del 25 %».
+  ESCALA_PCT: [25, 50, 75],
+  // Rejilla: celdas táctiles de 48 px con 8 px de separación; caben 6 columnas a 360 px.
+  CELDA_PX: 48,
+  HUECO_PX: 8,
+  COLUMNAS: { MIN: 6, MAX: 16 },
+  // Entrada escalonada de las celdas: retrasos decrecientes y techo, para que todo acabe en ≤ 320 ms.
+  ENTRADA: { PASO_MS: 5, RETRASO_MAX_MS: 120, DESDE_PX: 4 },
+  TOLERANCIA_EMPATE_H: 1e-6,
 } as const;
