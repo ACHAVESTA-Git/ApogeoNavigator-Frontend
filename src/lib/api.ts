@@ -3,6 +3,7 @@ import { avisosDe, avisosTraducidos, esSemaforo, semaforo } from "./astro";
 import type { Analisis, VariableAnalisis } from "./analisis";
 import { API, API_BASE_URL, DATOS, MODO_MUESTRA, MUESTRA, PUNTO_PROPIO } from "./constants";
 import { ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
+import { accesoApi } from "./sesion";
 import { efemeridesMuestra, marcarMuestraActiva, metricasMuestra, puestasMuestra, sitiosMuestra } from "./muestra";
 import { idDePunto, puntoDeId, type Punto } from "./puntoPropio";
 import type { Efemerides, InformeCsv, Metrica, Puestas, Rango, RespuestaHorizons, RespuestaMetricas, ResultadoGuardado, Simulacion, Site, TipoArchivo, Utc } from "./tipos";
@@ -153,7 +154,7 @@ export const obtenerAnalisis = (id: string, variable?: VariableAnalisis, { signa
 async function subir<T>(ruta: string, archivo: File, clave: string): Promise<T> {
   const cuerpo = new FormData();
   cuerpo.append(API.CAMPO_ARCHIVO, archivo);
-  const respuesta = await enviar(urlApi(ruta), { method: "POST", body: cuerpo, headers: { [API.CABECERA_CLAVE]: clave } });
+  const respuesta = await enviar(urlApi(ruta), { method: "POST", body: cuerpo, ...accesoApi(clave) });
   return leerRespuesta<T>(respuesta);
 }
 export const validarCsv = (tipo: TipoArchivo, archivo: File, clave: string): Promise<InformeCsv> =>

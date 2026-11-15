@@ -14,6 +14,7 @@ const DiaLunar = lazy(() => import("./routes/DiaLunar"));
 const Analisis = lazy(() => import("./routes/Analisis"));
 const Comparar = lazy(() => import("./routes/Comparar"));
 const Acceso = lazy(() => import("./routes/Acceso"));
+const Perfil = lazy(() => import("./routes/Perfil"));
 const GestorClaves = lazy(() => import("./routes/GestorClaves"));
 const NoEncontrado = lazy(() => import("./routes/NoEncontrado"));
 
@@ -34,6 +35,7 @@ export function Rutas() {
         </Route>
         <Route path={RUTAS.COMPARAR} element={<Comparar />} />
         <Route path={RUTAS.ACCESO} element={<Acceso />} />
+        <Route path={RUTAS.PERFIL} element={<Perfil />} />
         <Route path={RUTAS.CLAVES} element={<GestorClaves />} />
         <Route path="*" element={<NoEncontrado />} />
       </Route>

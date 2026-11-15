@@ -23,6 +23,12 @@ export const API = {
   CLAVE_REVOCAR: (id: string) => `/api/admin/claves/${encodeURIComponent(id)}/revocar`,
   CLAVE_ROTAR: (id: string) => `/api/admin/claves/${encodeURIComponent(id)}/rotar`,
   CABECERA_CLAVE: "X-API-Key",
+  // Sesión (cookie httpOnly que pone el backend): las peticiones con sesión llevan credenciales y esta cabecera.
+  AUTH_LOGIN: "/api/auth/login",
+  AUTH_LOGOUT: "/api/auth/logout",
+  AUTH_ME: "/api/auth/me",
+  CABECERA_PETICION: "X-Requested-With",
+  VALOR_PETICION: "XMLHttpRequest",
   CAMPO_ARCHIVO: "file",
   PARAM: { SITE_ID: "site_id", DESDE: "desde", HASTA: "hasta" },
   DETALLE_RUTA_INEXISTENTE: "Not Found", // 404 por defecto de FastAPI ≠ 404 de «sitio sin efemérides»
@@ -299,6 +305,7 @@ export const RUTAS = {
   COMPARAR: "/comparar",
   ACCESO: "/acceso",
   CLAVES: "/admin/claves",
+  PERFIL: "/perfil",
 } as const; // sin ruta de carga: es un popup
 export const SEGMENTO = { CIELO: "cielo", VENTANAS: "ventanas", DIA_LUNAR: "dia-lunar", ANALISIS: "analisis" } as const;
 /** Coordenadas propias (HU-13): contrato de GET /api/horizons. */

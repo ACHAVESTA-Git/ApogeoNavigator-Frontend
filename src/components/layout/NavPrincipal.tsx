@@ -1,11 +1,13 @@
 import { CloudUpload, Settings } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
 import { Link, NavLink } from "react-router";
+import { useSesion } from "../../hooks/useSesion";
 import { RUTAS } from "../../lib/constants";
 import { T } from "../../lib/textos";
 import { Logo } from "../marca/Logo";
 import { clasesBoton, unir } from "../ui/clases";
 import { useApp } from "./contexto";
+import { MenuSesion } from "./MenuSesion";
 import { RelojUtc } from "./RelojUtc";
 
 const enlace = ({ isActive }: { isActive: boolean }) =>
@@ -62,6 +64,7 @@ export function BotonSubirDatos() {
 }
 
 export function NavPrincipal() {
+  const { usuario } = useSesion();
   return (
     <header className="material-denso capilar-b sticky top-0 z-30">
       <div className="contenedor flex h-(--nav-alto-movil) items-center gap-4 md:h-(--nav-alto)">
@@ -75,9 +78,11 @@ export function NavPrincipal() {
         <div className="ml-auto flex items-center gap-3 md:gap-5">
           <RelojUtc className="hidden lg:flex" />
           <BotonSubirDatos />
-          <span className="hidden md:block">
-            <NavLink to={RUTAS.ACCESO} className={enlace}>{T.nav.acceso}</NavLink>
-          </span>
+          {usuario ? <MenuSesion /> : (
+            <span className="hidden md:block">
+              <NavLink to={RUTAS.ACCESO} className={enlace}>{T.nav.acceso}</NavLink>
+            </span>
+          )}
           <BotonConfiguracion />
         </div>
       </div>
