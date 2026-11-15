@@ -1,6 +1,5 @@
 @import "tailwindcss";
-@import "@fontsource-variable/archivo/wdth.css";
-@import "@fontsource-variable/jetbrains-mono";
+@import "./fuentes.css";
 
 @theme {
   /* Reiniciar la paleta por defecto: solo existen nuestros tokens */
