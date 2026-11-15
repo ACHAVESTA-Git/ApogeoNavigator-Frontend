@@ -1,6 +1,7 @@
 import { useMetricas } from "../../hooks/useMetricas";
 import { fechaHora, horasEntre } from "../../lib/fechas";
 import { grados, numeroCorto } from "../../lib/formato";
+import { motivoSinPuesta } from "../../lib/indicadores";
 import { esMinimo, varianteRacha } from "../../lib/informe";
 import { T, periodoLegible } from "../../lib/textos";
 import type { RachaAstronauta, Utc } from "../../lib/tipos";
@@ -45,13 +46,17 @@ export function IndicadoresMision({ siteId, sitio, desde, hasta }: { siteId: str
   const ind = m?.indicadores_astronauta;
   const mes = periodoLegible(desde, hasta);
   const horasPeriodo = m ? horasEntre(m.inicio_utc, m.fin_utc) : 0;
-  const puesta = (utc: Utc | null | undefined, con: (fecha: string, h: string, mes: string) => string, sin: (mes: string) => string) =>
-    utc === undefined ? null : utc === null ? sin(mes) : con(fechaHora(utc), numeroCorto(horasEntre(desde, utc)), mes);
+  // Sin próxima puesta (`null`) hay dos casos distintos: el astro no sale en todo el periodo (0 h a la vista) o está a
+  // la vista y no llega a ponerse. Decir «no hay puesta» en el primero daría el astro por visible.
+  const puesta = (utc: Utc | null | undefined, horasVisible: number, con: (fecha: string, h: string, mes: string) => string, sin: (mes: string) => string, noSale: string) =>
+    utc === undefined ? null : utc !== null ? con(fechaHora(utc), numeroCorto(horasEntre(desde, utc)), mes)
+      : motivoSinPuesta(horasVisible) === "noSale" ? `${noSale}.` : sin(mes);
   const elevacion = ind?.sol_el_media_horas_sol_deg;
   const detalle = ind && m ? [
     { clave: "elevacion", rotulo: t.elevacion.rotulo, frases: [typeof elevacion === "number" ? t.elevacion.normal(grados(elevacion, 1)) : elevacion === null && m.horas_sol === 0 ? t.elevacion.cero(mes) : null], nota: null },
     { clave: "puestas", rotulo: t.puestas.rotulo, nota: t.puestas.nota,
-      frases: [puesta(ind.proxima_puesta_sol_utc, t.puestas.sol, t.puestas.sinSol), puesta(ind.proxima_puesta_tierra_utc, t.puestas.tierra, t.puestas.sinTierra)] },
+      frases: [puesta(ind.proxima_puesta_sol_utc, m.horas_sol, t.puestas.sol, t.puestas.sinSol, T.mision.noSaleSol),
+        puesta(ind.proxima_puesta_tierra_utc, m.horas_tierra_visible, t.puestas.tierra, t.puestas.sinTierra, T.mision.noSaleTierra)] },
   ].map((d) => ({ ...d, frases: d.frases.filter((f): f is string => f !== null) })).filter((d) => d.frases.length > 0) : [];
   return (
     <section aria-labelledby="indicadores-mision" className="mt-12 min-h-64" aria-busy={isPending}>

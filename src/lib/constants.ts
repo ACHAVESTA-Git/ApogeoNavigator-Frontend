@@ -134,7 +134,7 @@ export const ID_MEDIDORES_SITIO = (siteId: string) => `medidores-sitio-${siteId}
  */
 export const MINI_HORIZONTE = { HORIZONTE: 0.68, HUNDIDO: 1.6, ALTO_PX: 56, REFRESCO_RELOJ_HZ: 6 } as const;
 /** Línea de tiempo de ventanas: ancho mínimo de una banda en pantalla (una ventana de 1 h sigue siendo pulsable). */
-export const LINEA_VENTANAS = { MIN_ANCHO_PX: 10 } as const;
+export const LINEA_VENTANAS = { MIN_ANCHO_PX: 10, MIN_PULSABLE_PX: 44 } as const;
 // El semáforo y los avisos los calcula la API. Estos umbrales existen SOLO para el respaldo con datos de
 // ejemplo y la prueba de oro (deben coincidir con app/core/config.py); los componentes no los aplican.
 export const UMBRAL_RASANTE_DEG = 3; // sol_el_max < 3° ⇒ aviso «sensible al relieve»
@@ -348,7 +348,8 @@ export const MAPA = {
   ESCALA_ACTIVO: 1.6,
   LON_CARA_OCULTA: 90,
   ANILLO_HORIZONTE: 0, // visto desde el polo sur, el limbo de la Luna es el ecuador
-  RADIO_ETIQUETA_IZQ: 30, // los sitios pegados al polo se rotulan a la izquierda
+  RADIO_ETIQUETA_IZQ: 30,
+  ETIQUETA_IZQ_DESDE_X: 0.6, // fracción del radio: más a la derecha, el nombre del punto va hacia dentro // los sitios pegados al polo se rotulan a la izquierda
   MERIDIANOS_ROTULADOS: [0, 90, 180, 270],
   INTERLINEA_ROTULO_MOVIL: 28, // unidades del viewBox entre las dos líneas de un rótulo de anillo en móvil (texto de 24)
   SEPARADOR_NOMBRE: " - ",
@@ -431,12 +432,13 @@ export const PORTADA = {
   CICLO: { AVANCE_MS: 24_000, PAUSA_MS: 1_600, RETORNO_MS: 900 },
   SALTO_MAX_MS: 100, // tras un cuadro largo (pestaña en segundo plano) el día no da un salto
   HOLGURA_VENTANA: 0.7, // el Sol y la Tierra se centran juntos si su separación cabe en esta fracción de la ventana
-  HORIZONTE_FRACCION: { movil: 0.66, escritorio: 0.7 }, // altura del horizonte en la escena
+  HORIZONTE_FRACCION: { movil: 0.62, escritorio: 0.7 }, // altura del horizonte en la escena
   TIERRA_FRACCION_X: { movil: 0.72, escritorio: 0.7 }, // dónde cae la Tierra cuando no se centra con el Sol
   LUPA_MAX_PX: 320,
   ROTULO_MARGEN_PX: 70, // el rótulo de un astro no se sale de la pantalla
   HUELLA_CARACTERES: 8, // caracteres de la huella SHA3-256 que se muestran como cifra
   REVELADO_MARGEN: "0px 0px -12% 0px", // un bloque se revela cuando ha entrado un 12 % en pantalla
+  PASO_ACTIVO_MARGEN: "-25% 0px -60% 0px", // el paso activo del recorrido es el que cruza la franja del 25 % al 40 % del alto de la pantalla
 } as const;
 
 /** Pantalla de Acceso (login). */

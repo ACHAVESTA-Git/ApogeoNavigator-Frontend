@@ -103,6 +103,7 @@ export const T: Textos = {
     hero: {
       lugar: (dia: string) => `Shackleton crater · ${dia}`,
       escena: (dia: string) => `Panorama of the horizon at Shackleton on ${dia} (UTC): the Sun and the Earth move through the day following their ephemeris, hour by hour.`,
+      instante: "Scene instant",
       hoy: "Today's sky, hour by hour.",
       fuera: {
         antes: (hoy: string, dia: string) => `Today (${hoy}) has no data yet: showing the first day with data, ${dia}.`,
@@ -125,6 +126,7 @@ export const T: Textos = {
     },
     recorrido: {
       titulo: "Three steps to decide",
+      indice: "Tour steps",
       paso: (n: number, nombre: string) => `Step ${n} · ${nombre}`,
       cielo: {
         nombre: "Sky", titulo: "See where the Sun and the Earth are", enlace: "See the sky at Shackleton",
@@ -780,7 +782,6 @@ export const T: Textos = {
       frente: (dif: number, valor: string, rival: string, puesto: number) =>
         dif === 0 ? `Same as ${rival} (rank ${puesto})` : `${valor} ${dif > 0 ? "more" : "less"} than ${rival} (rank ${puesto})`,
       elegir: (nombre: string) => `Open the detail for ${nombre}`,
-      quitar: (nombre: string) => `Remove ${nombre} from the detail`,
       enDetalle: "In the detail",
       tocar: "Tap a site to see its horizon. Up to 3 at once.",
       elegidos: (n: number, max: number) => `${n} of ${max} in the detail`,
@@ -797,20 +798,13 @@ export const T: Textos = {
     },
     podio: {
       sensible: "Terrain-sensitive",
-      sinDato: "No data",
-      alMenos: (valor: string) => `≥ ${valor}`,
       alMenosLeido: (valor: string) => `at least ${valor}`,
-      ahora: (sol: number, tierra: number, n: number) => `Right now: ${sol} of ${n} with Sun · ${tierra} of ${n} with Earth`,
+      enInstante: (sol: number, tierra: number, n: number) => `At the selected instant: ${sol} of ${n} with Sun · ${tierra} of ${n} with Earth`,
       mision: "What it means for your mission",
       rachas: {
         noche_mas_larga: "Longest night",
         apagon_tierra_mas_largo: "Longest Earth blackout",
         ventana_sol_y_tierra: "Sun + Earth window",
-      },
-      definiciones: {
-        noche_mas_larga: "Most consecutive hours with the Sun at or below 0° elevation.",
-        apagon_tierra_mas_largo: "Most consecutive hours with Earth at or below 0° elevation: no direct line of sight.",
-        ventana_sol_y_tierra: "Most consecutive hours with both Sun and Earth above the horizon.",
       },
       // Sentences from docs/datos/indicadores-astronauta.md (§4). `borde`: the run started earlier or the period is not a calendar month.
       frases: {
@@ -1242,6 +1236,7 @@ export function describirInstante(utc: Utc, fila: FilaCielo): string {
 
 export const horaLocal = (hora: string): string => `${hora} ${ZONA_HORARIA_LOCAL.NOMBRE}, ${ZONA_HORARIA_LOCAL.DESFASE}`;
 
+export const AGENCIAS_CONOCIDAS: Record<string, string> = { "Referencia (JPL Horizons)": "Reference (JPL Horizons)" };
 export const SIN_LINEA_DIRECTA = "No direct line to Earth: it needs a relay satellite.";
 
 const listar = (nombres: string[]): string =>

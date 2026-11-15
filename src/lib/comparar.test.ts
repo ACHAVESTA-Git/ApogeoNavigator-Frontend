@@ -188,7 +188,6 @@ describe("rachas de los indicadores para astronautas", () => {
   });
   it("una racha cortada por cualquiera de los dos bordes se escribe con «≥»", () => {
     expect([racha(329, true), racha(329, false, true), racha(329)].map(esTruncada)).toEqual([true, true, false]);
-    expect(es.T.comparar.podio.alMenos("329 h")).toBe("≥ 329 h");
   });
   it("las frases salen del documento de indicadores, en español y en inglés, con la unidad a la vista", () => {
     const f = { horas: "329 h", sitio: "Apolo 11", mes: "diciembre de 2026" };

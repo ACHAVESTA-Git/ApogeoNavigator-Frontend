@@ -8,7 +8,7 @@ import { avisoDeRelieve } from "../../lib/astro";
 import { esPolarSur, esTruncada, frenteAlRanking } from "../../lib/comparar";
 import { MOVIMIENTO, RANKING, SEMAFORO } from "../../lib/constants";
 import { horas, latitud, nombreCorto, numeroCorto } from "../../lib/formato";
-import { T } from "../../lib/textos";
+import { T, agenciaLegible } from "../../lib/textos";
 import { Medidor, PanelVidrio, Veredicto } from "../lujo";
 import { unir } from "../ui/clases";
 import { Insignia } from "./Monograma";
@@ -73,7 +73,7 @@ const Fila = forwardRef<HTMLLIElement, PropsFila>(function Fila({ fila, ranking,
           <div className="min-w-0 flex-1">
             <Veredicto nivel={metrica.semaforo.global} como="h3" tamano="seccion">{nombre}</Veredicto>
             <p className="text-apoyo text-texto-2 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span>{sitio.agencia}</span>
+              <span>{agenciaLegible(sitio.agencia)}</span>
               <span className="font-mono" data-dato>{latitud(sitio.lat_deg)}</span>
             </p>
             <div className="mt-2 flex min-h-6 flex-wrap items-center gap-x-4 gap-y-1.5">
@@ -103,7 +103,7 @@ const Fila = forwardRef<HTMLLIElement, PropsFila>(function Fila({ fila, ranking,
         <CifraDecisiva fila={fila} ranking={ranking} />
       </PanelVidrio>
       {/* Toda la fila es el objetivo táctil: un toque abre (o cierra) su detalle. El contenido queda debajo, legible. */}
-      <button type="button" aria-pressed={elegido} aria-label={elegido ? t.top.quitar(nombre) : t.top.elegir(nombre)} onClick={alAlternar}
+      <button type="button" aria-pressed={elegido} aria-label={t.top.elegir(nombre)} onClick={alAlternar}
         className="rounded-panel absolute inset-0 cursor-pointer transition-transform duration-(--dur-micro) ease-salida active:scale-[0.995]" />
     </m.li>
   );
