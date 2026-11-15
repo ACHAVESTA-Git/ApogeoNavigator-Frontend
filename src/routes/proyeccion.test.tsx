@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter, Outlet, Route, Routes } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PROYECCION_MODELO } from "../lib/constants";
-import type { ProyeccionModelo } from "../lib/proyeccionModelo";
+import type { ErrorModelo, ModeloProyeccion, ProyeccionModelo, ResultadoProyeccion } from "../lib/proyeccionModelo";
 import type { Rol } from "../lib/sesion";
 import type { Site } from "../lib/tipos";
 import Proyeccion from "./Proyeccion";
@@ -12,7 +12,8 @@ import SitioLayout from "./SitioLayout";
 // Datos de PRUEBA (no salen de ninguna API real): solo viven en este archivo.
 const SITIO: Site = { site_id: "shackleton", nombre: "Cráter Shackleton", categoria: "artemis", mision: "", agencia: "NASA", lat_deg: -89.9, lon_este_deg: 0, alt_km: 0, fuente_url: "https://example.test", notas: null };
 const HUELLA = "ab12".repeat(16);
-const mock = (cambios: Partial<ProyeccionModelo["modelo"]["error"]> | null = {}, resultado: Partial<ProyeccionModelo["resultados"][number]> = {}): ProyeccionModelo => ({
+type Completa = ProyeccionModelo & { modelo: ModeloProyeccion; resultados: ResultadoProyeccion[] };
+const mock = (cambios: Partial<ErrorModelo> | null = {}, resultado: Partial<ResultadoProyeccion> = {}): Completa => ({
   origen: "proyeccion",
   modelo: {
     version: "v-prueba", metodo: "Armónicos de prueba", entrenado_desde: "2026-12-01T00:00Z", entrenado_hasta: "2027-06-01T00:00Z", proyectado_hasta: "2028-07-31T23:00Z",
@@ -237,6 +238,56 @@ describe("campos de error en null: se deja el hueco, no se inventa", () => {
     expect(screen.getByText("No hay muestras de la serie en este periodo.")).toBeTruthy();
     expect(screen.queryByRole("region", { name: "Certificado de procedencia" })).toBeNull();
     expect(screen.getByText(/no tiene archivo de efemérides/)).toBeTruthy();
+  });
+});
+
+describe("respuesta vacía real (aún no hay CSV): nada se cae", () => {
+  const LIMITACIONES = [
+    { codigo: "proyeccion_no_es_efemeride", mensaje: "Limitación de prueba: no es efeméride." },
+    { codigo: "horizonte_ideal", mensaje: "Limitación de prueba: horizonte ideal." },
+    { codigo: "sin_datos_de_proyeccion", mensaje: "Limitación de prueba: sin datos." },
+    { codigo: "modelo_no_disponible", mensaje: "Limitación de prueba: sin modelo." },
+  ];
+  const sinDatos = [{ site_id: "shackleton", sha3_256: null, serie: [], meses: [] }];
+  const comprobar = async () => {
+    await screen.findByText("Sin veredicto");
+    for (const l of LIMITACIONES) expect(screen.getByText(l.mensaje)).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 2, name: "Cómo se hizo esta proyección" })).toBeTruthy();
+    expect(screen.getAllByText("Error a largo plazo pendiente de validar.").length).toBeGreaterThan(0);
+    expect(screen.getByText("No hay muestras de la serie en este periodo.")).toBeTruthy();
+    expect(screen.getByText(/no tiene archivo de efemérides/)).toBeTruthy();
+    expect(screen.queryByText("Método")).toBeNull(); // lo que llega en null no se rotula ni se rellena
+    expect(screen.queryByText("Entrenado con datos de")).toBeNull();
+    expect(document.body.textContent).not.toMatch(/undefined|null|NaN/);
+  };
+  it("modelo con todos sus campos en null, serie y meses vacíos y huella null", async () => {
+    proyeccion = () => respuesta({
+      origen: "proyeccion",
+      modelo: { version: null, metodo: null, entrenado_desde: null, entrenado_hasta: null, proyectado_hasta: null,
+        error: { rmse_deg: null, por_horizonte: null, control_horizons: null, aciertos_semaforo_control: null } },
+      limitaciones: LIMITACIONES, resultados: sinDatos,
+    });
+    montarRuta("admin");
+    await comprobar();
+  });
+  it("modelo null entero, o con el error en null", async () => {
+    proyeccion = () => respuesta({ origen: "proyeccion", modelo: null, limitaciones: LIMITACIONES, resultados: sinDatos });
+    const { unmount } = montarRuta("admin");
+    await comprobar();
+    unmount();
+    proyeccion = () => respuesta({ origen: "proyeccion", modelo: { version: null, metodo: null, entrenado_desde: null, entrenado_hasta: null, proyectado_hasta: null, error: null }, limitaciones: LIMITACIONES, resultados: sinDatos });
+    montarRuta("admin");
+    await comprobar();
+  });
+  it("campos sueltos en null dentro de una respuesta con datos (limitaciones, control, meses sin semáforo)", async () => {
+    const base = mock({ control_horizons: [{ site_id: "shackleton", utc: null, variable: null, error_deg: 0.3 }] as never });
+    proyeccion = () => respuesta({ ...base, limitaciones: null, modelo: { ...base.modelo, metodo: null, entrenado_hasta: null },
+      resultados: [{ ...base.resultados[0], meses: [...base.resultados[0].meses, { mes: "2027-09", pct_sol: null, pct_tierra: null, semaforo: null }] }] });
+    montarRuta("admin");
+    const lista = await screen.findByRole("list", { name: "Meses proyectados" });
+    expect(within(lista).getAllByRole("button")).toHaveLength(3); // el mes sin semáforo no se pinta
+    expect(screen.getByText("v-prueba")).toBeTruthy();
+    expect(document.body.textContent).not.toMatch(/undefined|NaN/);
   });
 });
 
