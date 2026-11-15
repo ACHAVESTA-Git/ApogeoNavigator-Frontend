@@ -173,7 +173,7 @@ export const PANORAMA = {
   HORIZONTE_FRACCION: 0.62,
   // Alto = fracción del alto de la ventana, acotado: el panorama y su control de tiempo caben en el primer pliegue.
   ALTO_PX: { movil: { min: 220, max: 300, fraccion: 0.36 }, escritorio: { min: 300, max: 440, fraccion: 0.42 } },
-  ETIQUETA: { ANCHO_CARACTER_PX: 7.3, MARGEN_PX: 8, MARGEN_IZQ_PX: 48, SEPARACION_PX: 10, ALTO_PX: 16 },
+  ETIQUETA: { ANCHO_CARACTER_PX: 7.3, MARGEN_PX: 8, MARGEN_IZQ_PX: 48, SEPARACION_PX: 10, ALTO_PX: 16, SEPARACION_ENTRE_PX: 4 },
   ZONA_TRANSPORTE_PX: 172, // franja inferior que tapa el control de tiempo flotante (≥ md): sin etiquetas ni cotas
   ZONA_NOTA_ALTO_PX: 36, // franja superior donde vive la nota de la escala: una etiqueta ahí la pisaría o rozaría el borde
   ZONA_SUPERIOR: { ANCHO_PX: 290, ALTO_PX: 64 }, // esquina de los botones de centrar y girar: ni etiquetas ni tarjetas

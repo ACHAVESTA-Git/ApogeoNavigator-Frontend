@@ -298,6 +298,7 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
           <EtiquetaAstro key={astro} texto={etiqueta(astro)} xPantalla={xPantalla[astro]} yGlifo={y[astro]} ancho={ancho} alto={alto}
             radio={astro === "sol" ? rSol + 4 : rTierra}
             debajo={!sobreHorizonte(lectura[CLAVE_ELEVACION[astro]])} oculta={contexto === astro} reserva={reserva}
+            rival={astro === "sol" && contexto !== "tierra" ? { texto: etiqueta("tierra"), xPantalla: xPantalla.tierra, yGlifo: y.tierra, radio: rTierra, debajo: !sobreHorizonte(lectura.tierra_el_deg) } : undefined}
             className={sobreHorizonte(lectura[CLAVE_ELEVACION[astro]]) && !azDudoso(astro) ? COLOR_TEXTO[astro] : "text-texto-2"} />
         ))}
         {ancho > 0 && ASTROS.map((astro) => (
@@ -348,7 +349,9 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
         </div>
         {/* Avisos de honestidad, siempre visibles dentro de la escena */}
         <p className="text-texto-3 pointer-events-none absolute right-3 font-mono text-[0.75rem]" style={{ top: yHorizonte - 18 }}>{T.cielo.horizonteIdeal}</p>
-        <p className="text-texto-2 pointer-events-none absolute left-14 text-[0.75rem]" style={{ top: yHorizonte + 34 }}>{T.cielo.relieve}</p>
+        {/* En móvil el aviso largo pisaba la cota de −5° y lo cortaba el control de tiempo: va corto y sobre el horizonte. */}
+        <p className="text-texto-2 pointer-events-none absolute left-14 text-[0.75rem] max-sm:hidden" style={{ top: yHorizonte + 34 }}>{T.cielo.relieve}</p>
+        <p className="text-texto-2 pointer-events-none absolute left-14 text-[0.75rem] sm:hidden" style={{ top: yHorizonte - 18 }}>{T.cielo.relieveCorto}</p>
       </div>
       <p aria-hidden="true" className="text-texto-3 mt-2 text-[0.75rem] max-md:hidden">
         {T.cielo.arrastra}. {T.cielo.tamanos} {T.cielo.faseTierra(pctTexto(faseTierra(lectura) * 100))}.
@@ -362,25 +365,43 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
  * Etiqueta de un astro en coordenadas de pantalla: sigue al glifo, pero no se sale por los bordes ni se mete en
  * la esquina de los botones de giro. Si el astro está fuera de la ventana visible, no se dibuja.
  */
-function EtiquetaAstro({ texto, xPantalla, yGlifo, ancho, alto, radio, debajo, oculta = false, reserva = 0, className }: {
-  texto: string; xPantalla: MotionValue<number>; yGlifo: MotionValue<number>; ancho: number; alto: number; radio: number; debajo: boolean; oculta?: boolean; reserva?: number; className: string;
-}) {
+/** Lo que hace falta para situar la etiqueta de un astro. */
+interface DatosEtiqueta { texto: string; xPantalla: MotionValue<number>; yGlifo: MotionValue<number>; radio: number; debajo: boolean }
+/** Esquina superior izquierda de la etiqueta de un astro, antes de mirar si choca con la del otro. */
+function cajaEtiqueta({ texto, xPantalla, yGlifo, radio, debajo }: DatosEtiqueta, ancho: number, alto: number, reserva: number) {
   const { ANCHO_CARACTER_PX, MARGEN_PX, MARGEN_IZQ_PX, SEPARACION_PX, ALTO_PX } = PANORAMA.ETIQUETA;
   const mitad = (texto.length * ANCHO_CARACTER_PX) / 2;
-  const x = useTransform(() => limitar(xPantalla.get(), mitad + MARGEN_IZQ_PX, Math.max(mitad + MARGEN_IZQ_PX, ancho - mitad - MARGEN_PX)) - mitad); // a la izquierda viven las cotas
+  const x = limitar(xPantalla.get(), mitad + MARGEN_IZQ_PX, Math.max(mitad + MARGEN_IZQ_PX, ancho - mitad - MARGEN_PX)) - mitad; // a la izquierda viven las cotas
+  const yg = yGlifo.get();
+  const abajo = yg + radio + SEPARACION_PX - 4;
+  // Bajo el horizonte la etiqueta va debajo del glifo, salvo que caiga en la zona de los botones o fuera del marco.
+  const limite = alto - reserva; // por debajo vive el control de tiempo flotante
+  const arriba = yg - radio - SEPARACION_PX - ALTO_PX + 2;
+  // Arriba a la derecha viven los botones de centrar y girar: ahí la etiqueta pasa debajo del glifo.
+  const enEsquina = arriba < PANORAMA.ZONA_SUPERIOR.ALTO_PX && x + 2 * mitad > ancho - PANORAMA.ZONA_SUPERIOR.ANCHO_PX;
+  // Astro casi en el cénit: arriba la etiqueta rozaría el borde y pisaría la nota de la escala.
+  const pegadaArriba = arriba < PANORAMA.ZONA_NOTA_ALTO_PX;
+  const destino = (debajo && abajo + ALTO_PX < limite) || enEsquina || pegadaArriba ? abajo : arriba;
+  // Astro hundido bajo el control de tiempo: su etiqueta se queda justo encima del panel, no debajo.
+  return { x, y: Math.min(destino, limite - ALTO_PX - 4), anchoPx: 2 * mitad };
+}
+
+function EtiquetaAstro({ texto, xPantalla, yGlifo, ancho, alto, radio, debajo, oculta = false, reserva = 0, rival, className }: DatosEtiqueta & {
+  ancho: number; alto: number; oculta?: boolean; reserva?: number; className: string;
+  /** etiqueta del otro astro: si las dos cajas se cortan, esta se aparta una línea (la otra no se mueve) */
+  rival?: DatosEtiqueta;
+}) {
+  const { ALTO_PX, SEPARACION_ENTRE_PX } = PANORAMA.ETIQUETA;
+  const propia = { texto, xPantalla, yGlifo, radio, debajo };
+  const x = useTransform(() => cajaEtiqueta(propia, ancho, alto, reserva).x);
   const y = useTransform(() => {
-    const yg = yGlifo.get();
-    const abajo = yg + radio + SEPARACION_PX - 4;
-    // Bajo el horizonte la etiqueta va debajo del glifo, salvo que caiga en la zona de los botones o fuera del marco.
-    const limite = alto - reserva; // por debajo vive el control de tiempo flotante
-    const arriba = yg - radio - SEPARACION_PX - ALTO_PX + 2;
-    // Arriba a la derecha viven los botones de centrar y girar: ahí la etiqueta pasa debajo del glifo.
-    const enEsquina = arriba < PANORAMA.ZONA_SUPERIOR.ALTO_PX && x.get() + 2 * mitad > ancho - PANORAMA.ZONA_SUPERIOR.ANCHO_PX;
-    // Astro casi en el cénit: arriba la etiqueta rozaría el borde y pisaría la nota de la escala.
-    const pegadaArriba = arriba < PANORAMA.ZONA_NOTA_ALTO_PX;
-    const destino = (debajo && abajo + ALTO_PX < limite) || enEsquina || pegadaArriba ? abajo : arriba;
-    // Astro hundido bajo el control de tiempo: su etiqueta se queda justo encima del panel, no debajo.
-    return Math.min(destino, limite - ALTO_PX - 4);
+    const yo = cajaEtiqueta(propia, ancho, alto, reserva);
+    if (!rival) return yo.y;
+    const otra = cajaEtiqueta(rival, ancho, alto, reserva);
+    const seCortan = yo.x < otra.x + otra.anchoPx + SEPARACION_ENTRE_PX && otra.x < yo.x + yo.anchoPx + SEPARACION_ENTRE_PX && Math.abs(yo.y - otra.y) < ALTO_PX + SEPARACION_ENTRE_PX;
+    if (!seCortan) return yo.y;
+    // Se aparta hacia arriba: por debajo puede vivir el control de tiempo.
+    return otra.y - ALTO_PX - SEPARACION_ENTRE_PX;
   });
   const opacity = useTransform(() => (xPantalla.get() > ancho + radio ? 0 : 1));
   return (
