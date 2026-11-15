@@ -72,7 +72,20 @@ export interface Aviso {
   codigo: string;
   mensaje: string;
 }
+/** Racha de horas seguidas dentro del rango pedido. `trunca_*`: toca el borde del rango, así que el valor es un mínimo («≥»). */
+export interface RachaAstronauta { horas: number; inicio_utc: Utc | null; fin_utc: Utc | null; trunca_inicio: boolean; trunca_fin: boolean }
+/** Indicadores para astronautas (campo aditivo de GET /api/metricas; ver docs/datos/indicadores-astronauta.md). */
+export interface IndicadoresAstronauta {
+  noche_mas_larga?: RachaAstronauta | null;
+  apagon_tierra_mas_largo?: RachaAstronauta | null;
+  ventana_sol_y_tierra?: RachaAstronauta | null;
+  proxima_puesta_sol_utc?: Utc | null;
+  proxima_puesta_tierra_utc?: Utc | null;
+  sol_el_media_horas_sol_deg?: number | null;
+}
 export interface Metrica extends ValoresMetricas {
+  /** Aditivo y opcional: si la API no lo trae (o es la muestra), la interfaz deja el hueco; nunca se inventa. */
+  indicadores_astronauta?: IndicadoresAstronauta | null;
   // intervalo [desde, hasta)
   site_id: string;
   inicio_utc: Utc;
