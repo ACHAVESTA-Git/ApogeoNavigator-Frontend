@@ -745,6 +745,18 @@ export const ERRORES_DE_DOMINIO: Record<string, { titulo: string; mensaje: strin
 const redondo = (v: number): string => numero(v, 0);
 
 /** 'en 291 h' */
+/** Estados de la validación de un análisis: hecha con estos datos, con otros (de referencia) o inexistente. */
+type EstadoValidacionAnalisis = "propia" | "referencia" | "ausente";
+/** Textos del análisis que escribe la API y la interfaz traduce: por `pasos[].id`, por el nombre de cada medida y por su unidad. */
+export interface TextosApiAnalisis {
+  /** La descripción de un paso puede depender de la validación (regla 1: propia, de referencia o ausente). */
+  pasos: Record<string, { nombre: string; descripcion: string | Record<EstadoValidacionAnalisis, string> }>;
+  medidas: Record<string, string>;
+  unidades: Record<string, string>;
+}
+/** La API de análisis ya escribe en español: aquí no se traduce nada y cada texto se muestra como llega. */
+export const ANALISIS_API: TextosApiAnalisis = { pasos: {}, medidas: {}, unidades: {} };
+
 export const enHoras = (h: number): string => `en ${horas(Math.round(h))}`;
 
 /**

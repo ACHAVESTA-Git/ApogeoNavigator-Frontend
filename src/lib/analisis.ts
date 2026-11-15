@@ -2,7 +2,7 @@
 // afirmar más de lo que los datos demuestran. Los textos viven en textos.ts (T.analisis); aquí solo se decide
 // CUÁL toca. Contrato: docs/api/analisis-transparencia.md del backend.
 import { ANALISIS_GRAFICO } from "./constants";
-import { T } from "./textos";
+import { ANALISIS_API, T, type TextosApiAnalisis } from "./textos";
 import type { Utc } from "./tipos";
 
 export const VARIABLES_ANALISIS = ["sol_el_deg", "sol_az_deg", "tierra_el_deg", "tierra_az_deg"] as const;
@@ -109,6 +109,33 @@ export function limitacionesQueAplican(a: Pick<Analisis, "limitaciones" | "valid
   if (estadoValidacion(a.validacion) !== "referencia" || aplican.some((l) => l.codigo === CODIGO_VALIDACION_AJENA)) return aplican;
   const ajena = a.limitaciones.find((l) => l.codigo === CODIGO_VALIDACION_AJENA);
   return [...aplican, ajena ?? { codigo: CODIGO_VALIDACION_AJENA, mensaje: T.analisis.validacion.referenciaNota, aplica: true }];
+}
+
+// ---------------------------------------------------------------- textos que escribe la API, en el idioma de la interfaz
+/** Los siete pasos del contrato, por su `id`. Un paso con otro `id` se muestra con el nombre y la descripción de la API. */
+export const PASOS_CONOCIDOS = ["carga", "validacion_csv", "features", "fft", "ajuste", "validacion_horizons", "proyeccion"] as const;
+const propio = <V,>(tabla: Record<string, V>, clave: string): V | undefined =>
+  Object.prototype.hasOwnProperty.call(tabla, clave) ? tabla[clave] : undefined;
+
+/**
+ * Nombre y descripción de un paso. Se traducen por `id`; si el `id` no se conoce, valen los de la API. Donde la
+ * descripción depende de la validación se elige con la regla 1, igual que hace la API: nunca se presenta como
+ * propia una validación hecha con otros datos.
+ */
+export function textoPaso(paso: Pick<PasoAnalisis, "id" | "nombre" | "descripcion">, v: ValidacionAnalisis, tabla: TextosApiAnalisis = ANALISIS_API): { nombre: string; descripcion: string } {
+  const traducido = propio(tabla.pasos, paso.id);
+  if (!traducido) return { nombre: paso.nombre, descripcion: paso.descripcion };
+  const d = traducido.descripcion;
+  return { nombre: traducido.nombre, descripcion: typeof d === "string" ? d : d[estadoValidacion(v)] };
+}
+/** Rótulo de una medida: se traduce por el nombre que le da la API; uno desconocido se muestra tal cual. */
+export const nombreMedida = (nombre: string, tabla: TextosApiAnalisis = ANALISIS_API): string => propio(tabla.medidas, nombre) ?? nombre;
+/** Unidad de una medida: solo se traducen las que son palabras (filas, días…); «°», «h» o «%» no cambian. */
+export const unidadMedida = (unidad: string, tabla: TextosApiAnalisis = ANALISIS_API): string => propio(tabla.unidades, unidad) ?? unidad;
+/** Un valor de texto «N de M» conserva sus dos cifras y solo cambia la palabra de enlace; cualquier otro texto no se toca. */
+export function valorTextoMedida(valor: string, deTotal: (parte: number, total: number) => string = T.analisis.validacion.deMeses): string {
+  const m = /^(\d+) de (\d+)$/.exec(valor);
+  return m ? deTotal(Number(m[1]), Number(m[2])) : valor;
 }
 
 /**

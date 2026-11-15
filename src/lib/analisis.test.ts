@@ -1,6 +1,11 @@
 import { ANALISIS_GRAFICO } from "./constants";
 import { describe, expect, it } from "vitest";
-import { CODIGO_VALIDACION_AJENA, estadoValidacion, lienzoGrafico, limitacionesQueAplican, quienCargo, rmseDeValidacion, textoFirma, textoOrigen, tramosSerie, type OrigenDatos, type TipoOrigen, type ValidacionAnalisis } from "./analisis";
+import {
+  CODIGO_VALIDACION_AJENA, PASOS_CONOCIDOS, estadoValidacion, lienzoGrafico, limitacionesQueAplican, nombreMedida, quienCargo, rmseDeValidacion,
+  textoFirma, textoOrigen, textoPaso, tramosSerie, unidadMedida, valorTextoMedida, type OrigenDatos, type TipoOrigen, type ValidacionAnalisis,
+} from "./analisis";
+import * as en from "./textos.en";
+import * as es from "./textos.es";
 import { T } from "./textos";
 
 const origen = (tipo: TipoOrigen, cargadoPor = "clave de API"): OrigenDatos => ({
@@ -114,5 +119,93 @@ describe("lienzoGrafico", () => {
     expect(lienzoGrafico(120, cfg).ANCHO).toBe(ANALISIS_GRAFICO.ANCHO_MIN);
     expect(lienzoGrafico(2000, cfg).ALTO).toBe(cfg.ALTO_MAX);
     expect(lienzoGrafico(2000, cfg).marcasX).toBe(ANALISIS_GRAFICO.MARCAS_X.amplio);
+  });
+});
+
+describe("textos del análisis que escribe la API", () => {
+  // Lo que manda hoy GET /api/analisis/{site_id} (contrato del backend): los siete pasos y el rótulo de cada medida.
+  const PASOS_API = [
+    { id: "carga", nombre: "Carga del archivo", descripcion: "Se lee el CSV de efemérides del sitio, con la misma lectura segura que usa la carga de datos." },
+    { id: "validacion_csv", nombre: "Validación del archivo", descripcion: "Se comprueba el estándar de CSV: cabecera, tipos, rangos, fechas en UTC, paso constante y saltos físicos." },
+    { id: "features", nombre: "Cálculo de características con Polars", descripcion: "Se miden las ventanas de luz solar y de Tierra visible, las horas de Sol por día lunar y la libración." },
+    { id: "fft", nombre: "Búsqueda de periodicidades (FFT)", descripcion: "Una transformada de Fourier busca los ritmos de la serie; el más fuerte es el mes sinódico, de unos 29,5 días." },
+    { id: "ajuste", nombre: "Ajuste del modelo armónico", descripcion: "Se ajusta una suma de senos y cosenos con los periodos lunares." },
+    { id: "validacion_horizons", nombre: "Validación contra Horizons", descripcion: "El modelo, entrenado solo con estos datos, predijo 12 meses que luego se compararon con los de JPL Horizons." },
+    { id: "proyeccion", nombre: "Proyección", descripcion: "El modelo se extiende más allá del último dato, con la incertidumbre medida en esa validación." },
+  ];
+  const MEDIDAS_API = [
+    "Filas leídas", "Tamaño del archivo", "Rango cubierto", "Paso entre filas", "Filas válidas", "Filas con error", "Huecos de tiempo",
+    "Ventanas de Sol completas", "Duración media de una ventana de Sol", "Días lunares completos", "Horas de Sol por día lunar (media)",
+    "Oscilación de la Tierra en azimut", "Oscilación de la Tierra en elevación", "Pico del mes sinódico (elevación del Sol)",
+    "Periodo del pico más fuerte", "Resolución de la FFT en el mes sinódico", "Mes sinódico afinado", "Términos del modelo (cos y sen)",
+    "R² medio del ajuste", "RMSE medio del ajuste dentro de los datos", "RMSE de la elevación del Sol", "RMSE del azimut de la Tierra",
+    "Meses con el semáforo bien predicho", "Validación vigente", "Meses proyectables", "Incertidumbre del mes 1 (elevación del Sol)",
+    "Incertidumbre del mes 12 (elevación del Sol)",
+  ];
+  const ESPANOL = /[áéíóúñ¿¡]|\b(el|la|los|las|del|de|con|que|se|un|una|y|en|por|más)\b/i;
+  const ESTADOS = [validacion({}), validacion({ vigente: false }), validacion({ disponible: false })];
+
+  it("los siete ids conocidos tienen nombre y descripción en inglés, con cualquier estado de la validación", () => {
+    expect(PASOS_API.map((p) => p.id)).toEqual([...PASOS_CONOCIDOS]);
+    expect(Object.keys(en.ANALISIS_API.pasos).sort()).toEqual([...PASOS_CONOCIDOS].sort());
+    for (const paso of PASOS_API) {
+      for (const v of ESTADOS) {
+        const { nombre, descripcion } = textoPaso(paso, v, en.ANALISIS_API);
+        expect(nombre, paso.id).not.toBe(paso.nombre);
+        expect(descripcion, paso.id).not.toBe(paso.descripcion);
+        expect(nombre.length, paso.id).toBeGreaterThan(3);
+        expect(descripcion.length, paso.id).toBeGreaterThan(20);
+        expect(`${nombre} ${descripcion}`, paso.id).not.toMatch(ESPANOL);
+      }
+    }
+  });
+  it("un id desconocido se muestra con el texto de la API, y también uno que coincida con una propiedad heredada", () => {
+    const nuevo = { id: "paso_nuevo", nombre: "Paso que aún no existe", descripcion: "Texto de la API." };
+    expect(textoPaso(nuevo, validacion({}), en.ANALISIS_API)).toEqual({ nombre: nuevo.nombre, descripcion: nuevo.descripcion });
+    expect(textoPaso({ ...nuevo, id: "constructor" }, validacion({}), en.ANALISIS_API)).toEqual({ nombre: nuevo.nombre, descripcion: nuevo.descripcion });
+    expect(nombreMedida("Medida nueva", en.ANALISIS_API)).toBe("Medida nueva");
+    expect(nombreMedida("toString", en.ANALISIS_API)).toBe("toString");
+    expect(unidadMedida("km", en.ANALISIS_API)).toBe("km");
+  });
+  it("en español no se traduce nada: pasa el texto de la API", () => {
+    for (const paso of PASOS_API) expect(textoPaso(paso, validacion({}), es.ANALISIS_API)).toEqual({ nombre: paso.nombre, descripcion: paso.descripcion });
+    for (const m of MEDIDAS_API) expect(nombreMedida(m, es.ANALISIS_API)).toBe(m);
+    expect(unidadMedida("filas", es.ANALISIS_API)).toBe("filas");
+    expect(valorTextoMedida("10 de 12", es.T.analisis.validacion.deMeses)).toBe("10 de 12");
+    // y el idioma activo de las pruebas es el español
+    expect(textoPaso(PASOS_API[0], validacion({})).nombre).toBe("Carga del archivo");
+    expect(nombreMedida("Filas leídas")).toBe("Filas leídas");
+  });
+  it("regla 1 · la descripción de la validación y de la proyección solo es la propia si la validación es vigente", () => {
+    const [vigente, referencia, ausente] = ESTADOS;
+    const de = (id: string, v: ValidacionAnalisis) => textoPaso({ id, nombre: "", descripcion: "" }, v, en.ANALISIS_API).descripcion;
+    expect(de("validacion_horizons", vigente)).toMatch(/trained only on this data/);
+    expect(de("validacion_horizons", referencia)).toMatch(/another validation/);
+    expect(de("validacion_horizons", referencia)).toMatch(/not on yours/);
+    expect(de("validacion_horizons", referencia)).not.toMatch(/trained only on this data/);
+    expect(de("validacion_horizons", ausente)).toMatch(/no validation/);
+    expect(de("proyeccion", vigente)).toMatch(/uncertainty measured in that validation/);
+    expect(de("proyeccion", referencia)).toMatch(/for reference/);
+    expect(de("proyeccion", referencia)).toMatch(/may be larger/);
+    expect(de("proyeccion", ausente)).toMatch(/no measured uncertainty/);
+  });
+  it("cada medida del contrato tiene su rótulo en inglés; regla 3: el RMSE del ajuste sigue diciendo que es dentro de los datos", () => {
+    for (const m of MEDIDAS_API) {
+      const rotulo = nombreMedida(m, en.ANALISIS_API);
+      expect(rotulo, m).not.toBe(m);
+      expect(rotulo, m).not.toMatch(ESPANOL);
+    }
+    expect(nombreMedida("RMSE medio del ajuste dentro de los datos", en.ANALISIS_API)).toMatch(/within the data/);
+    expect(nombreMedida("R² medio del ajuste", en.ANALISIS_API)).toMatch(/R² of the fit/);
+    expect(["filas", "días", "meses", "términos"].map((u) => unidadMedida(u, en.ANALISIS_API))).toEqual(["rows", "days", "months", "terms"]);
+    expect(["°", "h", "%", "bytes", ""].map((u) => unidadMedida(u, en.ANALISIS_API))).toEqual(["°", "h", "%", "bytes", ""]);
+  });
+  it("los valores no se traducen: «N de M» conserva sus cifras y cualquier otro texto pasa tal cual", () => {
+    const deMeses = en.T.analisis.validacion.deMeses;
+    expect(valorTextoMedida("10 de 12", deMeses)).toBe("10 of 12");
+    expect(valorTextoMedida("0 de 12", deMeses)).toBe("0 of 12");
+    expect(valorTextoMedida("None de 12", deMeses)).toBe("None de 12");
+    expect(valorTextoMedida("efemerides_shackleton.csv", deMeses)).toBe("efemerides_shackleton.csv");
+    expect(valorTextoMedida("2026-12-01T00:00Z", deMeses)).toBe("2026-12-01T00:00Z");
   });
 });
