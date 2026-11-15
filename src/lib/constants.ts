@@ -118,6 +118,8 @@ export const AVISO = { RELIEVE: "sensible_al_relieve" } as const;
 export const LUPA_K_DEG = 2;
 export const ELEVACION_MAX_DEG = 90;
 export const INCLINACION_EJE_LUNAR_DEG = 1.54;
+/** Marca. El nombre es propio y no se traduce; el símbolo reserva su tamaño para no mover nada al cargar. */
+export const MARCA = { NOMBRE: "Apogeo Navigator", NOMBRE_1: "Apogeo", NOMBRE_2: "Navigator", SIMBOLO_PX: 28 } as const;
 export const ZONA_HORARIA_LOCAL = { IANA: "America/Lima", ETIQUETA: "Lima (UTC−5)", NOMBRE: "Lima", DESFASE: "UTC−5" } as const;
 export const LOCALE = IDIOMA === "en" ? "en-GB" : "es-PE"; // fechas (día antes que mes en los dos idiomas)
 // es-PE usa punto decimal en CLDR; el plan pide coma decimal en la interfaz, así que las cifras usan «es».

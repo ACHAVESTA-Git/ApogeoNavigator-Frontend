@@ -2,7 +2,7 @@
 // The five presentation rules of the analysis hold here too: uploaded or modified data is never called NASA data,
 // R² is the in-sample fit, the RMSE is "optimistic; not an interval", observed/fitted exist only inside the data,
 // and `cargado_por` is shown as one of three categories, never as an identity.
-import { DATOS, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
+import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
 import { esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
 import type { FilaVeredicto, PartesVeredicto, Textos } from "./textos.es";
@@ -35,8 +35,8 @@ const plural = (n: number, uno: string, varios: string): string => (n === 1 ? un
 const mayuscula = (texto: string): string => texto.charAt(0).toUpperCase() + texto.slice(1);
 
 export const T: Textos = {
-  marca: "Apogeo",
-  producto: "Lunar navigator",
+  marca: MARCA.NOMBRE,
+  producto: "Lunar landing sites",
   descripcion: "Compare lunar landing sites: where the Sun and the Earth sit above the horizon, how many hours of power and direct link there are, and when they set. Data from JPL Horizons.",
   utc: "UTC",
   oeste: "W",

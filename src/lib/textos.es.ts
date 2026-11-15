@@ -1,6 +1,6 @@
 // Cadenas de la interfaz y plantillas generadas a partir de datos, en español. La interfaz las lee a través de
 // `textos.ts`, que elige este módulo o `textos.en.ts` según el idioma. Toda clave nueva va en los dos.
-import { DATOS, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
+import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
 import { esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
 import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
@@ -30,8 +30,8 @@ const leyendaEje = (u: Umbrales): string =>
   `≥ ${u.VERDE_MIN} % viable · ${u.AMARILLO_MIN}–${u.VERDE_MIN} % con reservas · < ${u.AMARILLO_MIN} % crítico`;
 
 export const T = {
-  marca: "Apogeo",
-  producto: "Navegador lunar",
+  marca: MARCA.NOMBRE,
+  producto: "Sitios de alunizaje",
   // La misma frase que la <meta name="description"> de index.html.
   descripcion: "Compara sitios de alunizaje: dónde están el Sol y la Tierra sobre el horizonte, cuántas horas de energía y de enlace directo hay, y cuándo se ponen. Datos de JPL Horizons.",
   utc: "UTC",

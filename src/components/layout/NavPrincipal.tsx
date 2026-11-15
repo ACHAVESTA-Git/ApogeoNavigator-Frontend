@@ -3,6 +3,7 @@ import { Suspense, lazy, useState } from "react";
 import { Link, NavLink } from "react-router";
 import { RUTAS } from "../../lib/constants";
 import { T } from "../../lib/textos";
+import { Logo } from "../marca/Logo";
 import { clasesBoton, unir } from "../ui/clases";
 import { useApp } from "./contexto";
 import { RelojUtc } from "./RelojUtc";
@@ -64,10 +65,8 @@ export function NavPrincipal() {
   return (
     <header className="material-denso capilar-b sticky top-0 z-30">
       <div className="contenedor flex h-(--nav-alto-movil) items-center gap-4 md:h-(--nav-alto)">
-        <Link to={RUTAS.INICIO} className="rotulo text-texto! tactil inline-flex items-center gap-2 whitespace-nowrap">
-          {T.marca}
-          <span aria-hidden="true" className="text-horizonte hidden sm:inline">·</span>
-          <span className="text-texto-2 hidden sm:inline">{T.producto}</span>
+        <Link to={RUTAS.INICIO} aria-label={`${T.marca} · ${T.nav.inicio}`} className="tactil inline-flex items-center">
+          <Logo compacto />
         </Link>
         <nav aria-label={T.nav.principal} className="hidden md:flex">
           <NavLink to={RUTAS.SITIOS} className={enlace}>{T.nav.sitios}</NavLink>

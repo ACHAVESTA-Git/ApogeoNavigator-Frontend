@@ -126,6 +126,9 @@
   .font-mono, [data-dato] { font-variant-numeric: tabular-nums slashed-zero; }
   .rotulo { font-size: var(--text-rotulo); line-height: 1.2; letter-spacing: 0.1em; text-transform: uppercase;
             font-weight: 600; font-variation-settings: "wdth" 125; color: var(--color-texto-3); }
+  /* Logotipo de la marca: «Apogeo» en Archivo ancha y negrita; la segunda palabra, normal y un tono más bajo. */
+  .logotipo { font-size: 1.0625rem; line-height: 1; font-weight: 700; font-variation-settings: "wdth" 125; letter-spacing: -0.01em; }
+  .logotipo-2 { font-weight: 400; font-variation-settings: "wdth" 112; letter-spacing: 0; color: var(--color-texto-2); }
   .titulo-instrumento { font-variation-settings: "wdth" 118; font-weight: 600; }
   :focus-visible { outline: 2px solid var(--color-foco); outline-offset: 2px; border-radius: var(--radius-xs); }
   h1:focus { outline: none; }     /* recibe el foco por código tras navegar; no es un control */
