@@ -701,6 +701,13 @@ export const T = {
     soloAdmin: "El gestor de claves es solo para el rol de administración.",
     claves: "Gestor de claves",
     documentoSeguridad: "Plan de seguridad: OAuth 2.0 y criptografía post-cuántica",
+    mostrarPassword: "Mostrar contraseña",
+    bloqMayus: "Bloq Mayús está activado.",
+    seguridad: "Sesión protegida · claves post-cuánticas ML-KEM-1024",
+    sesionIniciada: "Sesión iniciada",
+    rol: "Rol",
+    huellas: "Huellas públicas de tus claves",
+    escena: "Ilustración: la Tierra asoma sobre el horizonte lunar. No representa datos.",
   },
   sesion: {
     menu: (nombre: string) => `Cuenta de ${nombre}`,

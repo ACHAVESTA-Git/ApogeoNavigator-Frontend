@@ -395,6 +395,14 @@ export const ANALISIS_GRAFICO = {
 } as const;
 
 /** Primitivas del rediseño «Lujo inmersivo» (src/components/lujo). Duraciones en ms; espejo de --dur-lujo-* en index.css. */
+/** Pantalla de Acceso (login). */
+export const ACCESO = {
+  SACUDIDA_MS: 280, // sacudida del formulario ante un error (techo del plan: 300 ms); no se ejecuta con movimiento reducido
+  SACUDIDA_PX: 6,
+  ESTRELLAS: 44, // puntos del cielo de la escena (posiciones deterministas, sin azar)
+  RETRASOS_ENTRADA_MS: [0, 50, 90], // escalonado no uniforme de «sesión iniciada»: identidad, huellas, acciones
+} as const;
+
 export const LUJO = {
   CONTEO_MS: 600, // una cifra héroe cuenta hacia su valor UNA vez; techo del plan (≤ 600 ms)
   COPIADO_MS: 2000, // cuánto se mantiene el aviso «Huella copiada»
