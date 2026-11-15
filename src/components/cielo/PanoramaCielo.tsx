@@ -232,7 +232,7 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
     });
   }, [filas, i0, ppd, yDe, tUtc]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const ancla = useAnclaHorizonte("linea");
+  const ancla = useAnclaHorizonte("linea", 0, true);
   // Marcas de elevación: se descartan las que quedarían pegadas a otra (prioridad a las cercanas al horizonte).
   const marcas = useMemo(() => {
     const visibles: number[] = [];
