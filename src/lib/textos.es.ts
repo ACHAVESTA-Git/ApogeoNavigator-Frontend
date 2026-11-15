@@ -3,7 +3,7 @@
 import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
 import { diaDelMes, esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha, soloHora } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
-import { decidir, diferencias, type Diferencia, type LineaComparada } from "./comparar";
+import { decidir, diferencias, type Diferencia, type FraseRacha, type LineaComparada } from "./comparar";
 import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
 
 export const NOMBRE_ASTRO: Record<Astro, string> = { sol: "Sol", tierra: "Tierra" };
@@ -540,6 +540,60 @@ export const T = {
     verCielo: (nombre: string) => `Abrir el cielo de ${nombre} en este instante`,
     verSitio: (nombre: string) => `Ver las ventanas de ${nombre}`,
     cargando: "Comparando…",
+    // Podio del duelo: la cifra héroe es la mayor ventaja de la opción más sólida frente a la mejor de las demás.
+    podio: {
+      ventaja: "Su mayor ventaja",
+      segundaVentaja: "También gana",
+      cede: "Lo que cede",
+      deSol: (rival: string) => `de sol frente a ${rival}`,
+      deTierra: (rival: string) => `de Tierra visible frente a ${rival}`,
+      duelo: "Energía y comunicación, frente a frente",
+      dueloAyuda: "Cada barra es la parte del periodo con el Sol o con la Tierra sobre el horizonte ideal.",
+      tablaDuelo: "Duelo de las filas comparadas: energía, comunicación y horas seguidas más largas",
+      energia: "Energía · horas con sol",
+      comunicacion: "Comunicación · horas con la Tierra",
+      sensible: "Sensible al relieve",
+      sinDato: "Sin datos",
+      alMenos: (valor: string) => `≥ ${valor}`,
+      alMenosLeido: (valor: string) => `al menos ${valor}`,
+      ahora: (sol: number, tierra: number, n: number) => `Ahora mismo: ${sol} de ${n} con Sol · ${tierra} de ${n} con la Tierra`,
+      mision: "Qué significa para tu misión",
+      rachas: {
+        noche_mas_larga: "Noche más larga",
+        apagon_tierra_mas_largo: "Apagón de la Tierra más largo",
+        ventana_sol_y_tierra: "Ventana con Sol y Tierra",
+      },
+      definiciones: {
+        noche_mas_larga: "Más horas seguidas con el Sol a 0° o por debajo del horizonte.",
+        apagon_tierra_mas_largo: "Más horas seguidas con la Tierra a 0° o por debajo: sin línea directa con ella.",
+        ventana_sol_y_tierra: "Más horas seguidas con el Sol y la Tierra a la vez sobre el horizonte.",
+      },
+      // Frases de docs/datos/indicadores-astronauta.md (§4). `borde`: la racha empezó antes o el periodo no es un mes natural.
+      frases: {
+        noche_mas_larga: {
+          normal: (f: FraseRacha) => `Hasta ${f.horas} seguidas sin Sol en ${f.sitio} (${f.mes}). Dimensiona la batería para cubrir esa noche.`,
+          cero: (f: FraseRacha) => `No hay noche en ${f.mes}: el Sol se mantiene sobre el horizonte ideal. El relieve aún podría taparlo.`,
+          sigue: (f: FraseRacha) => `Al menos ${f.horas} seguidas sin Sol; la noche continúa el mes siguiente. Dimensiona la batería para más de ${f.horas}.`,
+          borde: (f: FraseRacha) => `Al menos ${f.horas} seguidas sin Sol; la noche sigue fuera de ${f.mes}. Dimensiona la batería para más de ${f.horas}.`,
+          todo: (f: FraseRacha) => `Sin Sol durante todo ${f.mes} (${f.horas}); puede seguir después. No hay energía solar en este periodo.`,
+        },
+        apagon_tierra_mas_largo: {
+          normal: (f: FraseRacha) => `Hasta ${f.horas} seguidas sin ver la Tierra en ${f.sitio} (${f.mes}). Dimensiona el relé o el almacenamiento de datos.`,
+          cero: (f: FraseRacha) => `La Tierra nunca se oculta en ${f.mes}: hay línea directa todo el periodo con horizonte ideal. El relieve podría cortarla.`,
+          sigue: (f: FraseRacha) => `Al menos ${f.horas} sin ver la Tierra; el apagón continúa el mes siguiente. Dimensiona relé o almacenamiento para más.`,
+          borde: (f: FraseRacha) => `Al menos ${f.horas} sin ver la Tierra; el apagón sigue fuera de ${f.mes}. Dimensiona relé o almacenamiento para más.`,
+          todo: (f: FraseRacha) => `La Tierra no se ve en todo ${f.mes} (${f.horas}). Sin enlace directo: la comunicación depende de un relé.`,
+        },
+        ventana_sol_y_tierra: {
+          normal: (f: FraseRacha) => `Hasta ${f.horas} seguidas con Sol y Tierra a la vez: la mejor ventana para operar con energía solar y enlace directo.`,
+          cero: (f: FraseRacha) => `En ${f.mes} nunca coinciden Sol y Tierra sobre el horizonte: no hay operación con energía solar y enlace directo a la vez.`,
+          sigue: (f: FraseRacha) => `Al menos ${f.horas} seguidas con Sol y Tierra; la ventana continúa el mes siguiente.`,
+          borde: (f: FraseRacha) => `Al menos ${f.horas} seguidas con Sol y Tierra; la ventana sigue fuera de ${f.mes}.`,
+          todo: (f: FraseRacha) => `Sol y Tierra sobre el horizonte todo ${f.mes} (${f.horas}): ventana continua durante el periodo.`,
+        },
+      },
+      avisoRachas: "Horizonte ideal: sin relieve. Cifras calculadas con efemérides de JPL Horizons, no medidas; las horas seguidas son múltiplos de 1 h.",
+    },
   },
   diaLunar: {
     documento: (nombre: string) => `Día lunar · ${nombre}`,

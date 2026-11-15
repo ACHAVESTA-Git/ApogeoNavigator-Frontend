@@ -1,4 +1,5 @@
-import { decidir, diferencias, type LineaComparada } from "./comparar";
+import { cifrasPodio, decidir, diferencias, esTruncada, protagonista, rachaDe, varianteRacha, type LineaComparada } from "./comparar";
+import type { Racha } from "./tipos";
 import * as en from "./textos.en";
 import * as es from "./textos.es";
 
@@ -119,5 +120,59 @@ describe("veredicto para decidir", () => {
       expect(typeof en.T.comparar[clave]).toBe(typeof es.T.comparar[clave]);
     }
     expect(Object.keys(en.T.comparar).sort()).toEqual(Object.keys(es.T.comparar).sort());
+  });
+});
+
+describe("podio del duelo", () => {
+  it("la cifra héroe es la mayor ventaja relativa de la opción más sólida; después, lo que cede", () => {
+    const lineas = [SHACKLETON, APOLO11];
+    const lider = protagonista(decidir(lineas));
+    expect(lider).toBe(1);
+    // Apolo 11 frente a Shackleton (API, diciembre de 2026): +156 % de Tierra (744 h frente a 291 h) y −388 h de sol.
+    expect(cifrasPodio(lineas, lider!)).toEqual([
+      { eje: "tierra", valor: 156, unidad: "%", rival: "Shackleton" },
+      { eje: "sol", valor: -388, unidad: "h", rival: "Shackleton" },
+    ]);
+  });
+  it("una diferencia nula no se muestra y, sin Tierra en el rival, la diferencia va en horas", () => {
+    const sinTierra = linea("Cara oculta", 356, 0, { energia: "verde", comunicacion: "rojo", global: "rojo" });
+    expect(cifrasPodio([APOLO11, sinTierra], 0)).toEqual([{ eje: "tierra", valor: 744, unidad: "h", rival: "Cara oculta" }]);
+    expect(cifrasPodio([APOLO11, { ...APOLO11, nombre: "Gemelo" }], 0)).toEqual([]);
+  });
+  it("en un empate del semáforo el protagonista es quien decide por cifras; si igualan en todo, nadie", () => {
+    const masSol = linea("Más sol", 500, 744, APOLO11.semaforo);
+    expect(protagonista(decidir([APOLO11, masSol]))).toBe(1);
+    expect(protagonista(decidir([APOLO11, { ...APOLO11, nombre: "Gemelo" }]))).toBeNull();
+    expect(protagonista(null)).toBeNull();
+  });
+});
+
+describe("rachas de los indicadores para astronautas", () => {
+  const racha = (horas: number, trunca_inicio = false, trunca_fin = false): Racha =>
+    ({ horas, inicio_utc: horas ? "2026-12-01T00:00Z" : null, fin_utc: horas ? "2026-12-14T17:00Z" : null, trunca_inicio, trunca_fin });
+  it("sin el bloque de la API (o con un valor no válido) no hay racha: sin dato no es cero", () => {
+    expect(rachaDe(undefined, "noche_mas_larga")).toBeNull();
+    expect(rachaDe({}, "noche_mas_larga")).toBeNull();
+    expect(rachaDe({ noche_mas_larga: { ...racha(1), horas: Number.NaN } }, "noche_mas_larga")).toBeNull();
+    expect(rachaDe({ noche_mas_larga: racha(0) }, "noche_mas_larga")?.horas).toBe(0);
+  });
+  it("elige la frase según el valor y los bordes, sin afirmar lo que no se sabe", () => {
+    expect(varianteRacha(racha(0), 744, true)).toBe("cero");
+    expect(varianteRacha(racha(120), 744, true)).toBe("normal");
+    expect(varianteRacha(racha(744, true, true), 744, true)).toBe("todo");
+    expect(varianteRacha(racha(200, false, true), 744, true)).toBe("sigue"); // la corta el final de un mes natural
+    expect(varianteRacha(racha(329, true, false), 744, true)).toBe("borde"); // empezó antes: no «continúa el mes siguiente»
+    expect(varianteRacha(racha(100, false, true), 168, false)).toBe("borde"); // periodo que no es un mes natural
+  });
+  it("una racha cortada por cualquiera de los dos bordes se escribe con «≥»", () => {
+    expect([racha(329, true), racha(329, false, true), racha(329)].map(esTruncada)).toEqual([true, true, false]);
+    expect(es.T.comparar.podio.alMenos("329 h")).toBe("≥ 329 h");
+  });
+  it("las frases salen del documento de indicadores, en español y en inglés, con la unidad a la vista", () => {
+    const f = { horas: "329 h", sitio: "Apolo 11", mes: "diciembre de 2026" };
+    expect(es.T.comparar.podio.frases.noche_mas_larga.normal(f)).toBe("Hasta 329 h seguidas sin Sol en Apolo 11 (diciembre de 2026). Dimensiona la batería para cubrir esa noche.");
+    expect(en.T.comparar.podio.frases.noche_mas_larga.normal({ ...f, mes: "December 2026" })).toBe("Up to 329 h in a row without Sun at Apolo 11 (December 2026). Size the battery to cover that night.");
+    expect(es.T.comparar.podio.frases.apagon_tierra_mas_largo.borde(f)).toMatch(/^Al menos 329 h sin ver la Tierra/);
+    expect(en.T.comparar.podio.frases.ventana_sol_y_tierra.cero(f)).toMatch(/never up together/);
   });
 });

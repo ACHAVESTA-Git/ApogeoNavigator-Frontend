@@ -276,6 +276,7 @@ export const COMPARAR = {
   AZIMUT_CENTRO: 180,      // el sur en el centro: el mismo encuadre de 360° en todas las filas
   MARGEN_PX: 8,
   PASO_MS: 50,             // reproducción: 1 h cada 50 ms (un mes en unos 37 s)
+  PODIO_STAGGER_MS: 50,    // las barras del duelo crecen escalonadas (fila a fila)
   FONDO_MAX: 0.7, UNA_DE_CADA: 2, // rocas y cráteres que se dibujan en la escena pequeña: los lejanos, uno de cada dos
 } as const;
 
