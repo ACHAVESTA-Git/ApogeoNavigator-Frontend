@@ -82,6 +82,8 @@ export interface Racha {
   trunca_inicio: boolean;
   trunca_fin: boolean;
 }
+/** Alias que usa Análisis. */
+export type RachaAstronauta = Racha;
 /** Bloque aditivo de `GET /api/metricas`. Todo opcional: una API anterior no lo trae y entonces se deja el hueco. */
 export interface IndicadoresAstronauta {
   noche_mas_larga?: Racha | null;
@@ -92,6 +94,8 @@ export interface IndicadoresAstronauta {
   sol_el_media_horas_sol_deg?: number | null;
 }
 export interface Metrica extends ValoresMetricas {
+  /** Aditivo y opcional: si la API no lo trae (o es la muestra), la interfaz deja el hueco; nunca se inventa. */
+  indicadores_astronauta?: IndicadoresAstronauta | null;
   // intervalo [desde, hasta)
   site_id: string;
   inicio_utc: Utc;
@@ -100,7 +104,6 @@ export interface Metrica extends ValoresMetricas {
   avisos: Aviso[];
   origen: "calculado" | "ejemplo" | "horizons_en_vivo";
   referencia: ReferenciaMetricas | null;
-  indicadores_astronauta?: IndicadoresAstronauta | null;
 }
 /** GET /api/horizons: efemérides en vivo de un punto cualquiera, con sus métricas y sus puestas. */
 export interface RespuestaHorizons extends Efemerides {
