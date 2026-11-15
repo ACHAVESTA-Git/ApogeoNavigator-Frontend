@@ -1,5 +1,6 @@
 // Lógica de la pantalla Comparar: ordena y resta lo que ya da la API. Aquí no hay umbrales: los niveles del
 // semáforo llegan decididos y solo se comparan entre sí.
+import { RANKING } from "./constants";
 import type { IndicadoresAstronauta, NivelSemaforo, Racha, Semaforo } from "./tipos";
 
 /** Una fila de la comparación con sus métricas (un sitio o un periodo). */
@@ -76,45 +77,6 @@ export function decidir(lineas: readonly LineaComparada[]): Decision | null {
   return { recomendadas, liderSol: lider("horas_sol"), liderTierra: lider("horas_tierra_visible"), contrapartida };
 }
 
-/** Fila protagonista del podio: la única recomendada o, si empatan en el semáforo, la que decide por cifras. */
-export const protagonista = (d: Decision | null): number | null =>
-  !d ? null : d.recomendadas.length === 1 ? d.recomendadas[0] : d.liderSol ?? d.liderTierra;
-
-/** Una diferencia del podio: horas de sol, o Tierra en % relativo (en horas si el rival no la ve). */
-export interface CifraPodio {
-  eje: "sol" | "tierra";
-  /** con signo: de más (+) o de menos (−) frente al rival */
-  valor: number;
-  unidad: "h" | "%";
-  rival: string;
-}
-
-/**
- * Las diferencias del protagonista, ordenadas para el podio: primero la mayor ventaja relativa (la cifra héroe) y
- * después la otra (lo que cede o su segunda ventaja). Una diferencia nula no se muestra. Con una sola recomendada
- * se mide frente a la mejor de las demás; en un empate del semáforo, frente a las otras empatadas, que es lo que
- * las cifras deciden.
- */
-export function cifrasPodio(lineas: readonly LineaComparada[], decision: Decision | null): CifraPodio[] {
-  const lider = protagonista(decision);
-  if (!decision || lider === null) return [];
-  const enLiza = decision.recomendadas.length === 1 ? [...lineas] : decision.recomendadas.map((i) => lineas[i]);
-  const yo = enLiza.indexOf(lineas[lider]);
-  const d = diferencias(enLiza)[yo];
-  if (!d) return [];
-  const rivalSol = enLiza.find((l, k) => k !== yo && l.nombre === d.rivalSol);
-  // Peso relativo solo para ordenar: frente a un rival con 0 h, cualquier diferencia es la mayor posible.
-  const relativo = (dif: number, base: number | undefined) => (base ? dif / base : Math.sign(dif) * Infinity);
-  const cifras: (CifraPodio & { peso: number })[] = [
-    { eje: "sol", valor: d.sol_h, unidad: "h", rival: d.rivalSol, peso: relativo(d.sol_h, rivalSol?.horas_sol) },
-    {
-      eje: "tierra", valor: d.tierra_pct === null ? d.tierra_h : Math.round(d.tierra_pct), unidad: d.tierra_pct === null ? "h" : "%",
-      rival: d.rivalTierra, peso: d.tierra_pct === null ? Math.sign(d.tierra_h) * Infinity : d.tierra_pct / 100,
-    },
-  ];
-  return cifras.filter((c) => c.valor !== 0).sort((a, b) => b.peso - a.peso).map(({ peso: _peso, ...c }) => c);
-}
-
 /** Los tres indicadores de racha que se enfrentan en el duelo (campos de `indicadores_astronauta`). */
 export const RACHAS = ["noche_mas_larga", "apagon_tierra_mas_largo", "ventana_sol_y_tierra"] as const;
 export type ClaveRacha = (typeof RACHAS)[number];
@@ -141,4 +103,44 @@ export function varianteRacha(r: Racha, horasPeriodo: number, mesCompleto: boole
   if (r.horas >= horasPeriodo) return "todo";
   if (r.trunca_fin && mesCompleto) return "sigue";
   return esTruncada(r) ? "borde" : "normal";
+}
+
+/** Lo que el ranking necesita de cada sitio: su veredicto (API) y su ventana continua con Sol y Tierra (API). */
+export interface Candidato {
+  semaforo: Semaforo;
+  /** Horas de `indicadores_astronauta.ventana_sol_y_tierra`; null si la API no las trae (va detrás a igualdad). */
+  ventana_h: number | null;
+}
+
+/**
+ * Ordena los sitios para el ranking: primero el veredicto combinado de energía y comunicación (el semáforo global
+ * de la API: viable, con reservas, crítico) y, a igualdad, más horas seguidas con Sol y Tierra a la vez. Si aún
+ * empatan se conserva el orden de llegada. Cada elemento sale con su puesto (1 = primero). Sin listas fijas.
+ */
+export function ordenarRanking<C extends Candidato>(candidatos: readonly C[]): (C & { puesto: number })[] {
+  return candidatos
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => ORDEN[a.c.semaforo.global] - ORDEN[b.c.semaforo.global] || (b.c.ventana_h ?? -1) - (a.c.ventana_h ?? -1) || a.i - b.i)
+    .map(({ c }, i) => ({ ...c, puesto: i + 1 }));
+}
+
+/** Los primeros puestos del ranking más los elegidos que quedan fuera (con su puesto real), en orden de puesto. */
+export const visiblesDelRanking = <C extends { puesto: number }>(ranking: readonly C[], elegido: (c: C) => boolean): C[] =>
+  ranking.filter((c) => c.puesto <= RANKING.PUESTOS || elegido(c));
+
+/** Región polar sur: latitud en el paralelo 80° S o más al sur. */
+export const esPolarSur = (lat_deg: number): boolean => lat_deg <= RANKING.POLAR_SUR_LAT_MAX_DEG;
+
+/**
+ * Monograma neutro de un sitio (iniciales generadas del nombre, sin logotipos ni parches): una sigla inicial se
+ * deja entera («SLIM», «IM»); si no, las iniciales de hasta dos palabras; después, el primer número del nombre.
+ * «Apolo 11» → A11 · «Blue Ghost 1» → BG1 · «Chang'e 4» → C4 · «Cráter Shackleton (centro)» → CS.
+ */
+export function monograma(nombre: string): string {
+  const palabras = nombre.split(/[^\p{L}\p{N}']+/u).filter(Boolean);
+  const letras = palabras.filter((p) => /^\p{L}/u.test(p));
+  const numero = nombre.match(/\d+/)?.[0] ?? "";
+  const sigla = letras[0] && letras[0].length <= RANKING.MONOGRAMA_MAX && letras[0] === letras[0].toUpperCase() && letras[0].length > 1;
+  const iniciales = sigla ? letras[0] : letras.slice(0, 2).map((p) => p[0].toUpperCase()).join("");
+  return `${iniciales}${numero}`.slice(0, RANKING.MONOGRAMA_MAX);
 }

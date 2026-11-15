@@ -1,4 +1,5 @@
-import { cifrasPodio, decidir, diferencias, esTruncada, protagonista, rachaDe, varianteRacha, type LineaComparada } from "./comparar";
+import { decidir, diferencias, esPolarSur, esTruncada, monograma, ordenarRanking, rachaDe, varianteRacha, visiblesDelRanking, type LineaComparada } from "./comparar";
+import { RANKING, RUTAS } from "./constants";
 import type { Racha } from "./tipos";
 import * as en from "./textos.en";
 import * as es from "./textos.es";
@@ -123,30 +124,37 @@ describe("veredicto para decidir", () => {
   });
 });
 
-describe("podio del duelo", () => {
-  it("la cifra héroe es la mayor ventaja relativa de la opción más sólida; después, lo que cede", () => {
-    const lineas = [SHACKLETON, APOLO11];
-    expect(protagonista(decidir(lineas))).toBe(1);
-    // Apolo 11 frente a Shackleton (API, diciembre de 2026): +156 % de Tierra (744 h frente a 291 h) y −388 h de sol.
-    expect(cifrasPodio(lineas, decidir(lineas))).toEqual([
-      { eje: "tierra", valor: 156, unidad: "%", rival: "Shackleton" },
-      { eje: "sol", valor: -388, unidad: "h", rival: "Shackleton" },
-    ]);
+describe("ranking de sitios", () => {
+  const c = (id: string, global: "verde" | "amarillo" | "rojo", ventana_h: number | null) => ({ id, semaforo: { energia: global, comunicacion: global, global }, ventana_h });
+  it("ordena por el veredicto combinado de la API y, a igualdad, por más horas seguidas con Sol y Tierra", () => {
+    // Ventanas reales de la API (diciembre de 2026): Shackleton 291 h (crítico), IM-1 383 h y Apolo 11 356 h (viables).
+    const orden = ordenarRanking([c("shackleton", "rojo", 291), c("apollo11", "verde", 356), c("im1", "verde", 383), c("medio", "amarillo", 700)]);
+    expect(orden.map((o) => [o.puesto, o.id])).toEqual([[1, "im1"], [2, "apollo11"], [3, "medio"], [4, "shackleton"]]);
   });
-  it("una diferencia nula no se muestra y, sin Tierra en el rival, la diferencia va en horas", () => {
-    const sinTierra = linea("Cara oculta", 356, 0, { energia: "verde", comunicacion: "rojo", global: "rojo" });
-    expect(cifrasPodio([APOLO11, sinTierra], decidir([APOLO11, sinTierra]))).toEqual([{ eje: "tierra", valor: 744, unidad: "h", rival: "Cara oculta" }]);
-    const gemelos = [APOLO11, { ...APOLO11, nombre: "Gemelo" }];
-    expect(cifrasPodio(gemelos, decidir(gemelos))).toEqual([]);
+  it("sin dato de ventana un sitio va detrás de los de su mismo veredicto, y un empate total conserva el orden de llegada", () => {
+    expect(ordenarRanking([c("a", "verde", null), c("b", "verde", 0), c("c", "verde", 10)]).map((o) => o.id)).toEqual(["c", "b", "a"]);
+    expect(ordenarRanking([c("x", "amarillo", 5), c("y", "amarillo", 5)]).map((o) => o.id)).toEqual(["x", "y"]);
+    expect(ordenarRanking([])).toEqual([]);
   });
-  it("en un empate del semáforo el protagonista es quien decide por cifras; si igualan en todo, nadie", () => {
-    const masSol = linea("Más sol", 500, 744, APOLO11.semaforo);
-    expect(protagonista(decidir([APOLO11, masSol]))).toBe(1);
-    expect(protagonista(decidir([APOLO11, { ...APOLO11, nombre: "Gemelo" }]))).toBeNull();
-    expect(protagonista(null)).toBeNull();
-    // En el empate, la cifra se mide frente a la otra empatada (lo que las cifras deciden), no frente a la descartada.
-    const tres = [SHACKLETON, masSol, APOLO11];
-    expect(cifrasPodio(tres, decidir(tres))).toEqual([{ eje: "sol", valor: 144, unidad: "h", rival: "Apolo 11" }]);
+  it("se ven los cinco primeros y, con su puesto real, los elegidos que quedan fuera", () => {
+    const orden = ordenarRanking(Array.from({ length: 8 }, (_, i) => c(`s${i}`, "verde", 100 - i)));
+    expect(visiblesDelRanking(orden, () => false).map((o) => o.puesto)).toEqual([1, 2, 3, 4, 5]);
+    expect(visiblesDelRanking(orden, (o) => o.id === "s6").map((o) => o.puesto)).toEqual([1, 2, 3, 4, 5, 7]);
+  });
+  it("la región polar sur empieza en el paralelo 80° S (constante RANKING.POLAR_SUR_LAT_MAX_DEG)", () => {
+    expect(RANKING.POLAR_SUR_LAT_MAX_DEG).toBe(-80);
+    // Latitudes del catálogo: Shackleton −89,66° e IM-1 −80,13° son polares; Chandrayaan-3 −69,37° y Apolo 11 0,67° no.
+    expect([-89.66, -80.13, -80, -79.99, -69.3741, 0.67416].map(esPolarSur)).toEqual([true, true, true, false, false, false]);
+  });
+  it("el monograma sale del nombre: iniciales y número, sin logotipos", () => {
+    const nombres = ["Apolo 11", "Apolo 15", "Apolo 17", "Cráter Shackleton (centro)", "IM-1 Odysseus", "Blue Ghost 1", "Chandrayaan-3", "Chang'e 4", "Chang'e 6", "SLIM"];
+    expect(nombres.map(monograma)).toEqual(["A11", "A15", "A17", "CS", "IM1", "BG1", "C3", "C4", "C6", "SLIM"]);
+  });
+  it("el acceso a «Planear alunizaje» solo se activa si la ruta existe: nunca un enlace roto", () => {
+    const rutas = Object.values(import.meta.glob<string>("../rutas.tsx", { query: "?raw", import: "default", eager: true }))[0];
+    const registrada = /VENTANA_ALUNIZAJE/.test(rutas) || /path=["'{][^>]*ventana["'}]/.test(rutas.replace(/VENTANAS/g, ""));
+    expect(RANKING.VENTANA_ALUNIZAJE && !registrada).toBe(false);
+    expect(RUTAS.VENTANA_ALUNIZAJE("shackleton")).toBe("/sitios/shackleton/ventana");
   });
 });
 
