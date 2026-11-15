@@ -169,8 +169,10 @@ export default function GestorClaves() {
   const [entrega, setEntrega] = useState<ClaveEntregada[] | null>(null); // la privada solo vive aquí, mientras dure el popup
   const busqueda = useDeferredValue(q.trim());
   const filtros: FiltrosClaves = { estado: estado === "todas" ? undefined : estado, tipo: tipo === "todos" ? undefined : tipo, q: busqueda };
+  // Cada «Entrar» abre una consulta nueva: así sale con la clave recién escrita y no con la anterior (vacía o rechazada).
+  const [intento, setIntento] = useState(0);
   const consulta = useQuery({
-    queryKey: ["claves", filtros.estado, filtros.tipo, filtros.q],
+    queryKey: ["claves", intento, filtros.estado, filtros.tipo, filtros.q],
     queryFn: () => listarClaves(claveAdmin, filtros, CLAVES_PQC.LIMITE),
     enabled: Boolean(claveAdmin),
     retry: false,
@@ -181,7 +183,7 @@ export default function GestorClaves() {
   if (!claveAdmin || noAutorizado) {
     return (
       <PantallaSimple documento={t.documento} rotulo={t.rotulo} titulo={t.titulo}>
-        <form className="max-w-md" onSubmit={(e) => { e.preventDefault(); if (borrador) { guardar(borrador); setBorrador(""); void consulta.refetch(); } }}>
+        <form className="max-w-md" onSubmit={(e) => { e.preventDefault(); if (borrador) { guardar(borrador); setBorrador(""); setIntento((n) => n + 1); } }}>
           <CampoClave etiqueta={t.pedirClave} ayuda={t.pedirClaveAyuda} valor={borrador} invalida={noAutorizado} alCambiar={setBorrador} />
           <Boton type="submit" variante="primario" className="mt-4 min-w-36" disabled={!borrador}>{t.entrar}</Boton>
         </form>
