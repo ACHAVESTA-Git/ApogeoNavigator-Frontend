@@ -103,7 +103,7 @@ const Fila = forwardRef<HTMLLIElement, PropsFila>(function Fila({ fila, ranking,
         <CifraDecisiva fila={fila} ranking={ranking} />
       </PanelVidrio>
       {/* Toda la fila es el objetivo táctil: un toque abre (o cierra) su detalle. El contenido queda debajo, legible. */}
-      <button type="button" aria-pressed={elegido} aria-label={elegido ? t.top.quitar(nombre) : t.top.elegir(nombre)} onClick={alAlternar}
+      <button type="button" aria-pressed={elegido} aria-label={t.top.elegir(nombre)} onClick={alAlternar}
         className="rounded-panel absolute inset-0 cursor-pointer transition-transform duration-(--dur-micro) ease-salida active:scale-[0.995]" />
     </m.li>
   );

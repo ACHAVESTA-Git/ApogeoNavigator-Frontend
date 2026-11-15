@@ -780,7 +780,6 @@ export const T: Textos = {
       frente: (dif: number, valor: string, rival: string, puesto: number) =>
         dif === 0 ? `Same as ${rival} (rank ${puesto})` : `${valor} ${dif > 0 ? "more" : "less"} than ${rival} (rank ${puesto})`,
       elegir: (nombre: string) => `Open the detail for ${nombre}`,
-      quitar: (nombre: string) => `Remove ${nombre} from the detail`,
       enDetalle: "In the detail",
       tocar: "Tap a site to see its horizon. Up to 3 at once.",
       elegidos: (n: number, max: number) => `${n} of ${max} in the detail`,
@@ -797,20 +796,13 @@ export const T: Textos = {
     },
     podio: {
       sensible: "Terrain-sensitive",
-      sinDato: "No data",
-      alMenos: (valor: string) => `≥ ${valor}`,
       alMenosLeido: (valor: string) => `at least ${valor}`,
-      ahora: (sol: number, tierra: number, n: number) => `Right now: ${sol} of ${n} with Sun · ${tierra} of ${n} with Earth`,
+      enInstante: (sol: number, tierra: number, n: number) => `At the selected instant: ${sol} of ${n} with Sun · ${tierra} of ${n} with Earth`,
       mision: "What it means for your mission",
       rachas: {
         noche_mas_larga: "Longest night",
         apagon_tierra_mas_largo: "Longest Earth blackout",
         ventana_sol_y_tierra: "Sun + Earth window",
-      },
-      definiciones: {
-        noche_mas_larga: "Most consecutive hours with the Sun at or below 0° elevation.",
-        apagon_tierra_mas_largo: "Most consecutive hours with Earth at or below 0° elevation: no direct line of sight.",
-        ventana_sol_y_tierra: "Most consecutive hours with both Sun and Earth above the horizon.",
       },
       // Sentences from docs/datos/indicadores-astronauta.md (§4). `borde`: the run started earlier or the period is not a calendar month.
       frases: {

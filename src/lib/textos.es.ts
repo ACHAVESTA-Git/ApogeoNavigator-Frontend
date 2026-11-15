@@ -782,7 +782,6 @@ export const T = {
       frente: (dif: number, valor: string, rival: string, puesto: number) =>
         dif === 0 ? `Las mismas que ${rival} (puesto ${puesto})` : `${valor} ${dif > 0 ? "más" : "menos"} que ${rival} (puesto ${puesto})`,
       elegir: (nombre: string) => `Abrir el detalle de ${nombre}`,
-      quitar: (nombre: string) => `Quitar ${nombre} del detalle`,
       enDetalle: "En el detalle",
       tocar: "Toca un sitio para ver su horizonte. Hasta 3 a la vez.",
       elegidos: (n: number, max: number) => `${n} de ${max} en el detalle`,
@@ -799,20 +798,13 @@ export const T = {
     },
     podio: {
       sensible: "Sensible al relieve",
-      sinDato: "Sin datos",
-      alMenos: (valor: string) => `≥ ${valor}`,
       alMenosLeido: (valor: string) => `al menos ${valor}`,
-      ahora: (sol: number, tierra: number, n: number) => `Ahora mismo: ${sol} de ${n} con Sol · ${tierra} de ${n} con la Tierra`,
+      enInstante: (sol: number, tierra: number, n: number) => `En el instante elegido: ${sol} de ${n} con Sol · ${tierra} de ${n} con la Tierra`,
       mision: "Qué significa para tu misión",
       rachas: {
         noche_mas_larga: "Noche más larga",
         apagon_tierra_mas_largo: "Apagón de la Tierra más largo",
         ventana_sol_y_tierra: "Ventana con Sol y Tierra",
-      },
-      definiciones: {
-        noche_mas_larga: "Más horas seguidas con el Sol a 0° o por debajo del horizonte.",
-        apagon_tierra_mas_largo: "Más horas seguidas con la Tierra a 0° o por debajo: sin línea directa con ella.",
-        ventana_sol_y_tierra: "Más horas seguidas con el Sol y la Tierra a la vez sobre el horizonte.",
       },
       // Frases de docs/datos/indicadores-astronauta.md (§4). `borde`: la racha empezó antes o el periodo no es un mes natural.
       frases: {
