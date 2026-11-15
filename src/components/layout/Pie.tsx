@@ -8,7 +8,10 @@ export function Pie() {
   return (
     <footer className="border-linea border-t">
       <div className="contenedor text-apoyo text-texto-2 grid gap-6 py-10 md:grid-cols-12">
-        <p className="max-w-[68ch] md:col-span-7">{t.aviso}</p>
+        <div className="max-w-[68ch] md:col-span-7">
+          <p className="text-texto font-semibold">{t.autoria}</p>
+          <p className="mt-2">{t.aviso}</p>
+        </div>
         <ul className="space-y-2 md:col-span-4 md:col-start-9">
           <li>{t.licencia}</li>
           <li><EnlaceExterno href={ENLACES.REPO_FRONTEND}>{t.repoFrontend}</EnlaceExterno></li>
