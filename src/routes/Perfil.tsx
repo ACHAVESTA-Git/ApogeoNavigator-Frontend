@@ -16,7 +16,7 @@ export default function Perfil() {
     <PantallaSimple documento={t.documento} rotulo={t.rotulo} titulo={usuario.nombre}>
       <p><span className="rotulo mr-2">{t.rol}</span><span className="text-texto font-semibold">{T.sesion.roles[usuario.rol]}</span></p>
       <h2 className="text-texto mt-7 font-semibold">{t.huellas}</h2>
-      <p className="text-apoyo mt-2 max-w-[60ch]">{t.explicacion}</p>
+      <p className="text-apoyo mt-2 max-w-medida">{t.explicacion}</p>
       {usuario.huellas.length === 0 ? (
         <p className="text-apoyo mt-4">{t.sinHuellas}</p>
       ) : (

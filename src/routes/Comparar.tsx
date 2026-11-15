@@ -69,7 +69,7 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
   return (
     <>
       {/* Una frase principal (el Sol) y, en menor jerarquía, los matices (la Tierra y la cautela del relieve). */}
-      <div key={frase?.principal} aria-live="polite" className="animate-aparecer mt-5 max-w-[60ch]">
+      <div key={frase?.principal} aria-live="polite" className="animate-aparecer mt-5 max-w-medida">
         <p className="text-subtitulo text-texto text-balance">{frase?.principal}</p>
         {frase && frase.matices.length > 0 && (
           <ul className="text-apoyo text-texto-2 mt-2 space-y-1">

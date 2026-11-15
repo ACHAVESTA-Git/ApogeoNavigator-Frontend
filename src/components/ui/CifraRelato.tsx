@@ -28,7 +28,7 @@ export function CifraRelato({ astro, rotulo, porcentaje, lectura, detalle, marca
         {rotulo}
       </Titulo>
       <p ref={cifra} data-dato
-        className={unir("text-texto mt-2 font-mono leading-none font-medium whitespace-nowrap", compacto ? "text-[1.75rem]" : "sm:text-dato-xl text-[2rem]")}>
+        className={unir("text-texto mt-2 font-mono leading-none font-medium whitespace-nowrap", compacto ? "text-dato-lg" : "text-dato-xl")}>
         {pct(porcentaje)}
       </p>
       <p className="text-dato-sm text-texto-2 mt-1.5 font-mono" data-dato>{lectura}</p>

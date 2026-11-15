@@ -56,7 +56,7 @@ export default function Acceso() {
   const hayError = faltan || Boolean(error);
   return (
     <PantallaSimple documento={t.documento} rotulo={t.rotulo} titulo={t.titulo}>
-      <p className="max-w-[60ch]">{t.texto}</p>
+      <p className="max-w-medida">{t.texto}</p>
       <form className="mt-6 max-w-md" noValidate onSubmit={enviar}>
         <label htmlFor={`${id}-email`} className="rotulo">{t.email}</label>
         <input id={`${id}-email`} name="email" type="email" inputMode="email" autoComplete="username" autoCapitalize="none" spellCheck={false}
@@ -79,7 +79,7 @@ export default function Acceso() {
           {entrando ? t.entrando : t.entrar}
         </Boton>
       </form>
-      <p className="text-apoyo text-texto-3 mt-5 max-w-[60ch]">{t.privacidad}</p>
+      <p className="text-apoyo text-texto-3 mt-5 max-w-medida">{t.privacidad}</p>
       <p className="text-apoyo mt-4"><EnlaceExterno href={ENLACES.SEGURIDAD}>{t.documentoSeguridad}</EnlaceExterno></p>
     </PantallaSimple>
   );

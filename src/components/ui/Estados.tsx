@@ -27,7 +27,7 @@ export function CargaHorizons({ className }: { className?: string }) {
         <span aria-hidden="true" className="bg-sol size-1.5 animate-pulse rounded-full" />
         {T.puntoPropio.cargando}
       </p>
-      <p className="text-apoyo text-texto-2 mt-2 max-w-[52ch]">{T.puntoPropio.cargandoNota}</p>
+      <p className="text-apoyo text-texto-2 mt-2 max-w-medida">{T.puntoPropio.cargandoNota}</p>
     </div>
   );
 }

@@ -9,7 +9,7 @@ export function Pie() {
   return (
     <footer className="border-linea border-t">
       <div className="contenedor text-apoyo text-texto-2 grid gap-6 py-10 md:grid-cols-12">
-        <div className="max-w-[68ch] md:col-span-7">
+        <div className="max-w-medida md:col-span-7">
           <Logo className="mb-4" />
           <p className="text-texto font-semibold">{t.autoria}</p>
           <p className="mt-2">{t.aviso}</p>

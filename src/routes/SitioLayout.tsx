@@ -57,7 +57,7 @@ export default function SitioLayout() {
             <GlifoCategoria categoria={sitio.categoria} className="size-3" />
             {propio ? T.puntoPropio.marca : `${NOMBRE_CATEGORIA[sitio.categoria]} · ${sitio.agencia}`}
           </p>
-          <p ref={nombre} className="titulo-instrumento text-texto truncate text-[1.0625rem] md:mt-1.5 md:text-[1.5rem]">{sitio.nombre}</p>
+          <p ref={nombre} className="titulo-instrumento text-seccion text-texto truncate md:mt-1.5">{sitio.nombre}</p>
           <p className="text-dato-sm text-texto-2 font-mono md:mt-1" data-dato>
             {coordenadas(sitio.lat_deg, sitio.lon_este_deg)}
             {/* En móvil el rótulo de arriba no se ve: la marca del punto propio va junto a las coordenadas. */}

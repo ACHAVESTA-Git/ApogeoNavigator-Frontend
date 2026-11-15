@@ -62,7 +62,7 @@ export function FichaSitio({ sitio, alVolver, idTitulo, compartir = false }: {
         <p className="text-texto-3 mt-3 text-[0.75rem] first-letter:uppercase">{periodo}. {T.avisoHorizonteCorto}{m && esSensibleAlRelieve(m) ? ` * ${T.semaforo.sensible}.` : ""}</p>
       </section>
 
-      {sitio.notas && <p className="text-apoyo text-texto-2 mt-4 max-w-[60ch]">{sitio.notas}</p>}
+      {sitio.notas && <p className="text-apoyo text-texto-2 mt-4 max-w-medida">{sitio.notas}</p>}
       <p className="text-apoyo mt-3">
         <EnlaceExterno href={sitio.fuente_url}>{T.fuente}: {new URL(sitio.fuente_url).hostname}</EnlaceExterno>
       </p>

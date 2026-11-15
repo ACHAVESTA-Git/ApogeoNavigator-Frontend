@@ -114,7 +114,7 @@ function Instrumento({ sitio, filas, periodo, avisos = [] }: { sitio: Site; fila
           <Link to={RUTAS.ANALISIS(sitio.site_id)} className="text-texto underline decoration-linea underline-offset-4">{T.analisis.enlaceProyeccion}</Link>
         </p>
       )}
-      {fiabilidad.esProyeccion && avisos.map((mensaje) => <p key={mensaje} className="text-apoyo text-texto-2 mt-1 max-w-[90ch]">{mensaje}</p>)}
+      {fiabilidad.esProyeccion && avisos.map((mensaje) => <p key={mensaje} className="text-apoyo text-texto-2 mt-1 max-w-medida">{mensaje}</p>)}
       {reloj.ajustado && <p role="status" className="text-apoyo text-reservas mt-2">{t.rangoAjustado}</p>}
 
       {/* La simulación es la protagonista: ocupa todo el ancho y casi toda la altura. El control de tiempo flota
