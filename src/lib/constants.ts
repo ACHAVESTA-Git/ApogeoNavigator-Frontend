@@ -162,6 +162,7 @@ export const MOVIMIENTO = {
   EASE_ORBITA: [0.77, 0, 0.175, 1],
   // Springs (interrumpibles: conservan la velocidad al cambiar de destino).
   SPRING_SUAVE: { type: "spring", duration: 0.45, bounce: 0 }, // paneles, fichas, popup
+  SPRING_PARALAJE: { stiffness: 170, damping: 19, mass: 0.5, restDelta: 0.004 }, // paralaje decorativo del suelo: casi crítico, se asienta en ~0,3 s
   SPRING_VIVO: { type: "spring", duration: 0.5, bounce: 0.2 }, // solo al soltar un arrastre
   CIERRE_HOJA: { DISTANCIA: 0.4, VELOCIDAD_PX_S: 500 }, // se cierra por distancia O por velocidad
   ELASTICO: 0.2,
@@ -209,7 +210,14 @@ export const PANORAMA = {
 /** Escena inmersiva del cielo (lienzo). Los tamaños de los astros están ampliados; se conserva la proporción real. */
 export const ESCENA = {
   DPR_MAX: 2,
-  ALTO: { movil: { min: 360, max: 560, fraccion: 0.62 }, escritorio: { min: 440, max: 760, fraccion: 0.7 } },
+  // Mientras la escena se mueve (reproducción, arrastre, cambio de tamaño) se pinta a menos resolución y, al
+  // parar, se vuelve a pintar nítida: el ojo no distingue el detalle en movimiento y cada fotograma cuesta menos.
+  DPR_MOVIMIENTO: 1.25, MOVIMIENTO_SI_MS: 90, NITIDEZ_TRAS_MS: 150,
+  // Alto de la escena en la página: en móvil, una fracción de la ventana; desde 768 px llega hasta el borde
+  // inferior de la ventana (se descuenta lo que queda encima: barra, cabecera del sitio y pestañas).
+  ALTO: { movil: { min: 360, max: 560, fraccion: 0.62 }, escritorio: { min: 460, max: 1100, descuento: 256 } },
+  // Pantalla completa: muelle sin rebote que se puede invertir a medio camino.
+  INMERSION: { type: "spring", duration: 0.6, bounce: 0 },
   HORIZONTE_FRACCION: 0.56,
   // Tamaño aparente real: Sol ≈ 0,53°, Tierra ≈ 1,9° desde la Luna (unas 3,6 veces mayor).
   RADIO_SOL_PX: 8.5,

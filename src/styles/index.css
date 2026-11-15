@@ -119,6 +119,7 @@
   --dur-media: 320ms;
   --dur-larga: 560ms;
   --dur-escena: 900ms;
+  --dur-escena-entrada: 480ms;    /* la escena del cielo se abre desde el horizonte */
   --dur-pliegue: 450ms;
   --dur-pliegue-opacidad: 250ms;
   --altura-horizonte: 68svh;      /* posición del horizonte en el hero */
@@ -222,6 +223,11 @@
    springs interrumpibles; aquí solo se anula el aspecto por defecto del diálogo. */
 .capa { background: transparent; border: 0; padding: 0; margin: 0; max-width: none; max-height: none; width: 100vw; height: 100dvh; overflow: visible; }
 .capa::backdrop { background: transparent; }
+
+/* Pantalla completa de la escena del cielo: el contenido sube por encima de la cabecera, la bandeja y la barra
+   inferior (todas en z-30) y la página deja de desplazarse. */
+html[data-inmersivo] { overflow: hidden; }
+html[data-inmersivo] #contenido { z-index: 60; }
 
 /* Check de confirmación: primero el círculo y luego el trazo (stroke-dashoffset). */
 .check-circulo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 350ms var(--ease-salida) forwards; }
