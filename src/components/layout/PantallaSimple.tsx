@@ -2,18 +2,18 @@ import type { ReactNode } from "react";
 import { useAnclaHorizonte } from "./horizonteContexto";
 import { TituloPagina } from "./TituloPagina";
 
-/** Pantalla sobria: rótulo, título y texto sobre un horizonte plano (404, Acceso). */
+/** Pantalla sobria: un solo panel centrado sobre el horizonte (404, Acceso y la clave del gestor). */
 export function PantallaSimple({ documento, rotulo, titulo, children }: { documento: string; rotulo: string; titulo: string; children: ReactNode }) {
   const ancla = useAnclaHorizonte("linea");
   return (
-    <div className="flex min-h-[calc(100svh-var(--nav-alto)-var(--barra-inferior-alto))] flex-col md:min-h-[calc(100svh-var(--nav-alto))]">
-      <section className="contenedor flex flex-[3] flex-col justify-end pb-10">
+    <div className="relative flex min-h-[calc(100svh-var(--nav-alto)-var(--barra-inferior-alto))] items-center justify-center px-(--margen) py-10 md:min-h-[calc(100svh-var(--nav-alto))]">
+      {/* El horizonte cruza por detrás del panel: cielo arriba, regolito abajo */}
+      <div aria-hidden="true" className="bg-regolito absolute inset-x-0 top-[58%] bottom-0" />
+      <div ref={ancla} aria-hidden="true" className="absolute inset-x-0 top-[58%] h-px" />
+      <section className="bg-elevada shadow-flotante relative w-full max-w-xl rounded-capa border border-texto/10 p-6 md:p-9">
         <p className="rotulo">{rotulo}</p>
-        <TituloPagina documento={documento} className="mt-3 max-w-2xl">{titulo}</TituloPagina>
-      </section>
-      <div ref={ancla} aria-hidden="true" className="h-px w-full" />
-      <section className="bg-regolito flex-[2]">
-        <div className="contenedor text-texto-2 max-w-none py-8">{children}</div>
+        <TituloPagina documento={documento} className="mt-3">{titulo}</TituloPagina>
+        <div className="text-texto-2 mt-5">{children}</div>
       </section>
     </div>
   );
