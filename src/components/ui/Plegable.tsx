@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { unir } from "../ui/clases";
+import { unir } from "./clases";
 
 /**
  * Pliegue sin animar alturas: grid-template-rows 0fr ↔ 1fr con hijo de min-height 0 (estándar de carga §2).

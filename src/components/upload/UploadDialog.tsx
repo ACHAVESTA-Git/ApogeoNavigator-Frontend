@@ -9,7 +9,7 @@ import { Popup } from "../ui/Popup";
 import { CampoClave } from "./CampoClave";
 import { DropZone } from "./DropZone";
 import { FileRow } from "./FileRow";
-import { Plegable } from "./Plegable";
+import { Plegable } from "../ui/Plegable";
 import { SuccessCheck } from "./SuccessCheck";
 
 const Girando = () => <LoaderCircle aria-hidden="true" className="animate-girar size-4 motion-reduce:hidden" />;

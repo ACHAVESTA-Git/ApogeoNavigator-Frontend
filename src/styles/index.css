@@ -186,7 +186,7 @@
               opacity var(--dur-pliegue-opacidad) var(--ease-salida);
   &[data-abierto="true"] { grid-template-rows: 1fr; opacity: 1; }
   & > * { min-height: 0; overflow: hidden; }
-  &[data-rapido="true"] { transition-duration: var(--dur-corta); }
+  &[data-rapido="true"] { transition-duration: var(--dur-corta), var(--dur-micro); } /* alto en 200 ms, opacidad en 140 ms */
 }
 
 /* Revelado de izquierda a derecha (el tiempo corre hacia la derecha): bandas de luz. */
