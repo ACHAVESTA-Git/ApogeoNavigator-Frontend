@@ -17,6 +17,10 @@ describe("prueba de oro: metricas.csv", () => {
     expect([...new Set(referencia.map((r) => r.site_id))].sort()).toEqual(ids);
     expect(ids).toHaveLength(10);
   });
+  it("ningún texto visible del catálogo de muestra nombra a Artemis (rótulo sin fuente: NASA no ha fijado sitio)", () => {
+    const visibles = leer<Site[]>("sites.json").flatMap((s) => [s.nombre, s.mision, s.agencia, s.notas ?? ""]);
+    expect(visibles.filter((v) => /artemis/i.test(v))).toEqual([]);
+  });
   it.each(referencia.map((r) => [`${r.site_id} ${r.inicio_utc.slice(0, 7)}`, r] as const))("%s", (_, ref) => {
     const m = calcularMetricas(filasDe(ref.site_id), ref.inicio_utc, ref.fin_utc)!;
     expect(m.horas_sol).toBe(ref.horas_sol);
