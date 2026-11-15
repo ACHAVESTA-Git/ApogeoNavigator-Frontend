@@ -120,8 +120,11 @@ export function RelatoInicio({ titulo, cta }: { titulo: ReactNode; cta: ReactNod
           const delta = ((pos[`${astro}_az_deg`] - centro + 540) % GRADOS_VUELTA) - 180;
           const x = ancho / 2 + delta * ppd;
           const radio = astro === "sol" ? ESCENA.RADIO_SOL_PX : ESCENA.RADIO_SOL_PX * ESCENA.RAZON_TIERRA_SOL;
-          nodo.style.transform = `translate(${Math.min(ancho - 70, Math.max(70, x))}px, ${yDe(elev) - radio - 30}px) translateX(-50%)`;
-          nodo.style.opacity = elev > 0 && x > 0 && x < ancho ? "1" : "0";
+          // Sobre el horizonte el rótulo va encima del astro; bajo él, debajo de su fantasma (así no queda tras la tarjeta
+          // ni a medio desvanecer: se lee siempre con el color pleno del astro, que cumple AA sobre el suelo).
+          const yRotulo = elev > 0 ? yDe(elev) - radio - HERO.RELATO.ROTULO.SOBRE_PX : yDe(elev) + radio + HERO.RELATO.ROTULO.BAJO_PX;
+          nodo.style.transform = `translate(${Math.min(ancho - 70, Math.max(70, x))}px, ${yRotulo}px) translateX(-50%)`;
+          nodo.style.opacity = x > 0 && x < ancho ? "1" : "0";
           nodo.textContent = `${NOMBRE_ASTRO[astro].toUpperCase()} ${grados(elev, 1, true)}`;
         }
       });
@@ -152,7 +155,7 @@ export function RelatoInicio({ titulo, cta }: { titulo: ReactNode; cta: ReactNod
         <div ref={ancla} aria-hidden="true" className="pointer-events-none absolute inset-x-0 h-px" style={{ top: yHorizonte }} />
         {(["sol", "tierra"] as const).map((astro) => (
           <p key={astro} ref={(n) => { etiquetas.current[astro] = n; }} aria-hidden="true"
-            className={unir("pointer-events-none absolute top-0 left-0 font-mono text-[12px] whitespace-nowrap transition-opacity duration-(--dur-corta)", astro === "sol" ? "text-sol" : "text-tierra")} />
+            className={unir("pointer-events-none absolute top-0 left-0 font-mono text-[12px] font-medium whitespace-nowrap [text-shadow:0_0_4px_var(--color-vacio),0_0_10px_var(--color-vacio)] transition-opacity duration-(--dur-corta)", astro === "sol" ? "text-sol" : "text-tierra")} />
         ))}
 
         <div className="contenedor relative h-full">
