@@ -644,6 +644,24 @@ export const T: Textos = {
     texto: "This route does not exist on our lunar map.",
     volver: "Back to Sites",
   },
+  // Primitives of the «Lujo inmersivo» redesign (src/components/lujo).
+  lujo: {
+    sinDato: "No data",
+    medidor: {
+      lectura: (valor: string, nivel: string) => `${valor} · ${nivel}`,
+      umbralesMayor: (reservas: string, viable: string) => `With reservations from ${reservas}; viable from ${viable}.`,
+      umbralesMenor: (viable: string, reservas: string) => `Viable up to ${viable}; with reservations up to ${reservas}.`,
+    },
+    sello: {
+      rotulo: "Certificate of provenance",
+      estados: { conforme: "Verified", invalida: "Invalid signature", sinConfirmar: "Not verified" },
+      firma: "ML-DSA-65 signature",
+      sinManifiesto: "There is no signed manifest for this file.",
+      manifiestoAjeno: "The signed manifest does not correspond to this file.",
+      copiar: "Copy the full fingerprint",
+      copiado: "Fingerprint copied",
+    },
+  },
   errores: {
     sinConexion: { titulo: "No connection to the server", mensaje: "We could not reach the data server.", sugerencia: "Check your connection and try again." },
     inesperado: { titulo: "Something did not go as expected", mensaje: "The application ran into a problem showing this data.", sugerencia: "Try again; if it happens again, reload the page." },

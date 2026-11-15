@@ -60,6 +60,9 @@
   --text-dato--line-height: 1.3;
   --text-dato-lg: clamp(1.5rem, 1.4167rem + 0.3704vw, 1.75rem);        /* 24 → 28 px */
   --text-dato-lg--line-height: 1.15;
+  --text-heroe: clamp(3.5rem, 2.6667rem + 3.7037vw, 6rem);             /* 56 → 96 px: cifra héroe (lujo) */
+  --text-heroe--line-height: 1;
+  --text-heroe--letter-spacing: -0.035em;
   --text-dato-sm: 0.8125rem;
   --text-dato-sm--line-height: 1.3;
 
@@ -120,6 +123,7 @@
   --dur-larga: 560ms;
   --dur-escena: 900ms;
   --dur-escena-entrada: 480ms;    /* la escena del cielo se abre desde el horizonte */
+  --dur-lujo-conteo: 600ms;       /* espejo de LUJO.CONTEO_MS: trazo del medidor y conteo de la cifra héroe */
   --dur-pliegue: 450ms;
   --dur-pliegue-opacidad: 250ms;
   --altura-horizonte: 68svh;      /* posición del horizonte en el hero */
@@ -177,6 +181,31 @@
   backdrop-filter: blur(16px) saturate(1.25);
   -webkit-backdrop-filter: blur(16px) saturate(1.25);
 }
+/* Vidrio (lujo): material translúcido con borde neutro de 1 px en TODO el contorno (7 %), nunca en un solo lado. */
+@utility vidrio {
+  background: linear-gradient(180deg, rgb(29 28 24 / 0.62), rgb(20 19 15 / 0.56));
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid rgb(237 235 228 / 0.07);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--color-superficie);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  @media (prefers-contrast: more) { background: var(--color-superficie); border-color: var(--color-horizonte); }
+}
+/* Profundidad al pasar el puntero: sube 2 px y gana sombra. Solo con puntero fino (el tacto dispara hovers falsos). */
+@utility vidrio-elevable {
+  transition: transform var(--dur-corta) var(--ease-salida), box-shadow var(--dur-corta) var(--ease-salida);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { transform: translateY(-2px); box-shadow: var(--shadow-flotante); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:hover { transform: none; }
+  }
+}
 /* Cabecera: más opaca, para que lo que pasa por debajo (cifras del relato) se apague antes de mezclarse con ella. */
 @utility material-denso {
   background: rgb(10 10 9 / 0.86);
@@ -233,6 +262,12 @@ html[data-inmersivo] #contenido { z-index: 60; }
 .check-circulo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 350ms var(--ease-salida) forwards; }
 .check-trazo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 250ms var(--ease-salida) 350ms forwards; }
 @keyframes trazar { to { stroke-dashoffset: 0; } }
+
+/* Medidor (lujo): el arco se traza UNA vez al aparecer (stroke-dashoffset, 600 ms). `--medidor-desde` lo fija el
+   propio arco. Con movimiento reducido la regla global lo deja en su valor final al instante. */
+.medidor-arco { animation: medidor-trazar var(--dur-lujo-conteo) var(--ease-salida) both;
+  transition: stroke-dasharray var(--dur-media) var(--ease-salida); }
+@keyframes medidor-trazar { from { stroke-dashoffset: var(--medidor-desde, 0); } }
 
 /* Regla de tiempo: input range nativo con pista transparente (las marcas se dibujan debajo en SVG). */
 .regla-tiempo { -webkit-appearance: none; appearance: none; background: transparent; width: 100%; height: 44px; margin: 0; }
