@@ -267,6 +267,15 @@ export const ESCENA = {
   },
 } as const;
 
+/** Pantalla Comparar: horizontes de las filas en el mismo instante. */
+export const COMPARAR = {
+  HORIZONTE_FRACCION: 0.6, // dónde cae el horizonte en cada escena pequeña
+  AZIMUT_CENTRO: 180,      // el sur en el centro: el mismo encuadre de 360° en todas las filas
+  MARGEN_PX: 8,
+  PASO_MS: 50,             // reproducción: 1 h cada 50 ms (un mes en unos 37 s)
+  FONDO_MAX: 0.7, UNA_DE_CADA: 2, // rocas y cráteres que se dibujan en la escena pequeña: los lejanos, uno de cada dos
+} as const;
+
 export const HERO = {
   PASO_HORAS: 3,
   HORIZONTE_FRACCION: { movil: 0.66, escritorio: 0.68 },

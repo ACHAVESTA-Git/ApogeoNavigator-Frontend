@@ -5,6 +5,7 @@
 import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
 import { esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
+import { decidir, diferencias, type Diferencia, type LineaComparada } from "./comparar";
 import type { FilaVeredicto, PartesVeredicto, Textos } from "./textos.es";
 import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
 
@@ -511,8 +512,6 @@ export const T: Textos = {
     comparar: (n: number) => `Compare ${n}`,
     cambiar: "Change selection",
     grafico: "Stacked horizons. With focus here, the arrow keys move the shared cursor 1 hour (with Shift, 1 day).",
-    cursor: "Cursor",
-    sinCursor: "Move the pointer over the bands or use the arrow keys to read every site at the same hour.",
     hora: (n: number) => `hour ${n} of the period`,
     menosDia: "Move the cursor 1 day back",
     masDia: "Move the cursor 1 day forward",
@@ -521,17 +520,21 @@ export const T: Textos = {
     metrica: "Metric",
     filas: { horas_sol: "Hours of sunlight", pct_sol: "% of hours with Sun", sol_el_max_deg: "Maximum height of the Sun", horas_tierra_visible: "Hours with the Earth in view", pct_tierra: "% of hours with the Earth", energia: "Power", comunicacion: "Communication", global: "Overall viability" },
     mejor: "best",
-    cifras: "Who leads and by how much",
-    lidera: (nombre: string, h: string) => `${nombre} · ${h}`,
-    frenteA: (nombre: string, p: string) => `${nombre}: ${p}`,
-    relato: {
-      sol: (mejor: string, peor: string, h: string, dias: string, empate: boolean) =>
-        empate ? "A tie in hours of sunlight: power does not decide between these options."
-          : `${mejor} gets ${h} more sunlight than ${peor}: ${dias} fewer days of night.`,
-      tierra: (mejor: string, peor: string, h: string, dias: string, empate: boolean) =>
-        empate ? "A tie in link hours: communication does not decide between these options."
-          : `${mejor} gets ${h} more direct link than ${peor}: ${dias} fewer days relying on a relay.`,
-    },
+    veredicto: "Verdict",
+    diferencias: "The difference, in figures",
+    frenteAlMejor: (rival: string) => `against ${rival}`,
+    frenteADos: (sol: string, tierra: string) => `sunlight against ${sol}; Earth against ${tierra}`,
+    recomendada: "Most solid option",
+    mismoInstante: (n: number) => `The same instant on ${n} horizons`,
+    mismoInstanteAyuda: "A single time control moves every horizon at once.",
+    horizonteDe: (nombre: string) => `Horizon of ${nombre}`,
+    instante: "Instant",
+    tiempo: "Instant of the comparison",
+    reproducir: "Play the horizons",
+    pausar: "Pause the horizons",
+    bajo: "below the horizon",
+    actualizando: "Updating the comparison…",
+    verCielo: (nombre: string) => `Open the sky of ${nombre} at this instant`,
     verSitio: (nombre: string) => `See the windows at ${nombre}`,
     cargando: "Comparing…",
   },
@@ -799,6 +802,39 @@ export function partesVeredicto(filas: FilaVeredicto[], periodo: string): Partes
   return partes(sol, tierra.join("; "), cautela(filas));
 }
 
+
+const SIGNO_MENOS = "−";
+const conSigno = (valor: number, texto: string): string => `${valor > 0 ? "+" : SIGNO_MENOS}${texto}`;
+/** “+388 h of sunlight, but −61% of Earth”: what a row gains or loses against the best of the others. */
+export function relatoDiferencia(d: Diferencia): string {
+  const sol = d.sol_h === 0 ? "the same hours of sunlight" : `${conSigno(d.sol_h, horas(Math.abs(d.sol_h)))} of sunlight`;
+  const tierra =
+    d.tierra_h === 0 ? "the same view of the Earth"
+      : `${conSigno(d.tierra_h, d.tierra_pct === null ? horas(Math.abs(d.tierra_h)) : pct(Math.round(Math.abs(d.tierra_pct))))} of Earth`;
+  return `${sol}${d.sol_h * d.tierra_h < 0 ? ", but " : " and "}${tierra}`;
+}
+const nivelesDe = (l: LineaComparada): string => {
+  const [energia, comunicacion] = [NOMBRE_NIVEL[l.semaforo.energia].toLowerCase(), NOMBRE_NIVEL[l.semaforo.comunicacion].toLowerCase()];
+  return energia === comunicacion ? `${energia} for power and for communication` : `power ${energia} and communication ${comunicacion}`;
+};
+/** Verdict to decide between rows: which option is the most solid by the API traffic light and why, then what it costs. */
+export function partesDecision(filas: LineaComparada[], contexto: string): PartesVeredicto {
+  const d = decidir(filas);
+  if (!d) return SIN_VEREDICTO;
+  const nombre = (i: number) => filas[i].nombre;
+  let principal: string;
+  if (d.recomendadas.length === 1) {
+    principal = `${nombre(d.recomendadas[0])} is the most solid option in ${contexto}: ${nivelesDe(filas[d.recomendadas[0]])}`;
+  } else {
+    const empatadas = `${listar(d.recomendadas.map(nombre))} tie on the traffic light in ${contexto}`;
+    principal =
+      d.liderSol === null && d.liderTierra === null ? `${empatadas} and on the figures`
+        : d.liderSol === d.liderTierra ? `${empatadas}; ${nombre(d.liderSol!)} gets more sunlight and sees the Earth more`
+          : `${empatadas}: ${[d.liderSol !== null && `${nombre(d.liderSol)} gets more sunlight`, d.liderTierra !== null && `${nombre(d.liderTierra)} sees the Earth more`].filter(Boolean).join(" and ")}`;
+  }
+  const contra = d.contrapartida === null ? "" : `${nombre(d.contrapartida)}: ${relatoDiferencia(diferencias(filas)[d.contrapartida])}`;
+  return partes(principal, contra, cautela(filas));
+}
 export const veredictoFechas = (filas: FilaVeredicto[], sitio: string): string => unido(partesVeredictoFechas(filas, sitio));
 export function partesVeredictoFechas(filas: FilaVeredicto[], sitio: string): PartesVeredicto {
   if (filas.length < 2) return SIN_VEREDICTO;
