@@ -32,6 +32,15 @@ describe("CifrasAhora (Sol ahora, Tierra ahora, próximo evento)", () => {
     expect(container).toHaveTextContent("Sin puestas por delante en los datos de este periodo");
     expect(container).not.toHaveTextContent("Puesta del Sol");
   });
+  it("si un astro no pasa ni una hora sobre el horizonte, dice que no sale en vez de «sin puestas por delante»", () => {
+    act(() => fijarInstanteGlobal(sumarHoras(T0, 1)));
+    const noche = filas.map((f) => ({ ...f, sol_el_deg: -1.5 }));
+    const { container, rerender } = render(<CifrasAhora filas={noche} indicadores={{ proxima_puesta_sol_utc: null, proxima_puesta_tierra_utc: null }} />);
+    expect(container).toHaveTextContent("El Sol no sale en este periodo");
+    expect(container).not.toHaveTextContent("Sin puestas por delante");
+    rerender(<CifrasAhora filas={noche.map((f) => ({ ...f, tierra_el_deg: -30 }))} indicadores={{ proxima_puesta_sol_utc: null, proxima_puesta_tierra_utc: null }} />);
+    expect(container).toHaveTextContent("El Sol no sale en este periodo · La Tierra no está a la vista en este periodo");
+  });
   it("fuera del periodo o sin serie deja el hueco, y el aviso de relieve va siempre a la vista", () => {
     act(() => fijarInstanteGlobal("2027-03-01T00:00Z"));
     const { container, rerender } = render(<CifrasAhora filas={filas} sensible />);

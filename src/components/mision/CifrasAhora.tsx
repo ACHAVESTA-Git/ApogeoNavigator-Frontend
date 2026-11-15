@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { aMs, fechaHora } from "../../lib/fechas";
 import { grados, horas } from "../../lib/formato";
+import { motivoSinPuesta } from "../../lib/indicadores";
 import { indiceEn } from "../../lib/interpolar";
 import { useInstanteGlobal } from "../../lib/relojGlobal";
 import { T } from "../../lib/textos";
@@ -41,6 +42,10 @@ export function CifrasAhora({ filas, indicadores, sensible = false, className }:
   const fila = dentro ? filas[indiceEn(filas, ms)] : null;
   const evento = fila && filas ? proximoEvento(ahora, filas, indicadores) : null;
   const hueco = filas && !dentro ? t.fueraDePeriodo : T.lujo.sinDato;
+  // Sin puesta por delante no es lo mismo que «el astro no sale»: si no pasa ni una hora sobre el horizonte, se dice eso.
+  const noSalen = (["sol", "tierra"] as const).filter((astro) => motivoSinPuesta(filas?.filter((f) => f[`${astro}_el_deg`] > 0).length ?? 0) === "noSale")
+    .map((astro) => (astro === "sol" ? t.noSaleSol : t.noSaleTierra));
+  const sinEvento = noSalen.length ? noSalen.join(" · ") : t.sinEvento;
   return (
     <div className={className}>
       {/* Alto reservado (dos líneas en móvil): qué es «ahora», el horizonte ideal y, si la API lo avisa, el asterisco. */}
@@ -58,7 +63,7 @@ export function CifrasAhora({ filas, indicadores, sensible = false, className }:
           );
         })}
         <Cifra rotulo={t.proximoEvento} valor={evento ? horas(evento.horas) : null}>
-          {evento ? t.puestaDe(evento.astro, fechaHora(evento.utc)) : fila ? t.sinEvento : hueco}
+          {evento ? t.puestaDe(evento.astro, fechaHora(evento.utc)) : fila ? sinEvento : hueco}
         </Cifra>
       </div>
     </div>

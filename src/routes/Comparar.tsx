@@ -132,7 +132,7 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
           </div>
           <p className="text-dato-sm text-texto font-mono max-md:w-full" data-dato><span className="rotulo">{t.instante}</span> {instante}</p>
         </div>
-        {visibles.length > 1 && <p className="text-apoyo text-texto-2 mt-2" data-dato>{t.podio.ahora(conSol, conTierra, visibles.length)}</p>}
+        {visibles.length > 1 && <p className="text-apoyo text-texto-2 mt-2" data-dato>{t.podio.enInstante(conSol, conTierra, visibles.length)}</p>}
         <HorizontesSincronizados filas={visibles} hora={hora} recomendadas={recomendadas} />
         <p className="text-texto-3 mt-2 text-[0.75rem]">{T.cielo.relieve}</p>
       </section>
