@@ -34,7 +34,7 @@ All figures assume an **ideal horizon** (a smooth Moon, no terrain). Shackleton'
 Everything that matters for choosing a site happens **on the horizon**: is the Sun above it, and by how much? Is the Earth above it? How long until one of them crosses it? So the interface is built around **one line, the horizon**, which persists between screens and changes shape: the lunar limb on the home page, the concentric rings of the polar map, the zero-degree axis of the sky, the base of the light bars. The palette is nearly monochrome (regolith greys) with only two lights in colour: the **Sun in amber** and the **Earth in blue**. The vertical scale of the sky is **magnified near the horizon**, because at the poles both bodies live within a few degrees of it.
 
 ## Screens
-**Home.** The real December 2026 sky above Shackleton crater, with a timeline you can play.
+**Home.** A three-act scroll story over the real December 2026 sky above Shackleton crater (the problem, the exploration, the decision), with the key figures counted from the data (744 h of Sun, 291 h of Earth, the Sun never above 1.74°), a timeline you can play, "three questions before landing", a short explanation of why the pole is extreme, a glossary and the data sources.
 
 **Sites.** Ten sites placed around the south pole by latitude (the closer to the centre, the more grazing the Sun), filterable by category: Apollo, Artemis, CLPS and international missions.
 
@@ -48,13 +48,19 @@ At Chang'e 4, on the far side, the Earth never leaves the lower half of the sky:
 
 ![Sky from Chang'e 4: the Earth stays below the horizon](docs/images/sky-change4.png)
 
-**Site → Light windows.** A bar for every hour of the period showing when the Sun and the Earth are up, plus the metrics and the traffic light.
+**Site → Light windows.** A bar for every hour of the period showing when the Sun and the Earth are up, plus the metrics, each one with its meaning in plain words and its comparison with the catalogue average, and the traffic light.
+
+**Site → Lunar day.** The elevation of the Sun and of the Earth over the period, with the horizon as the zero axis and marks at every rise and set:
+
+![Lunar day at Shackleton crater, December 2026: the Sun grazes the horizon and the Earth rises on 14 Dec and sets on 27 Dec](docs/images/lunar-day.png)
 
 **Compare.** Two or three sites in the same month, or one site in different months, with horizon rows, a comparison table, a shared time cursor and a one-sentence verdict. The state is kept in the URL (`/comparar?s=shackleton,apollo11,change4`).
 
 **Upload data** (button in the header). A pop-up where analysts enter the upload key, drop CSV files and see each one validated by the backend, with a table of errors by row and column, before saving.
 
-<!-- TODO: add screenshots of Compare, Light windows and the Upload pop-up (the existing captures predate those screens). -->
+**Access and key manager.** The sign-in page announces OAuth 2.0 (not available yet; the public app is read-only). The administration screen lists the post-quantum key pairs per user (ML-KEM-1024 and ML-DSA-65) and lets an administrator generate, rotate or revoke them; the private key is shown once and never stored by the server.
+
+<!-- TODO: add screenshots of Compare, Light windows and the Upload pop-up. Automated headless captures do not draw the light bars (their animation does not run), so capture them by hand in a real browser. -->
 
 ## Run it locally
 You need Node.js and the backend running. **Without Docker**, in two terminals:
@@ -91,7 +97,7 @@ Vite reads these at build time: change them and rebuild.
 React 18 · Vite · TypeScript · Tailwind CSS 4 · TanStack Query · React Router 7 · d3-scale and d3-shape (charts) · Motion (animation) · Vitest and Testing Library · Docker/nginx image for local use. Fonts: Archivo and JetBrains Mono (SIL Open Font License), via Fontsource. Source layout: `src/routes` (screens), `src/components`, `src/hooks`, `src/lib` (API client, astronomy helpers, constants, all interface texts in `textos.ts`).
 
 ## NASA data and sources
-All sunlight and Earth-visibility figures come from **NASA/JPL Horizons** ([system](https://ssd.jpl.nasa.gov/horizons/), [API](https://ssd-api.jpl.nasa.gov/doc/horizons.html)): hourly apparent azimuth and elevation of the Sun and the Earth seen from ten locations on the Moon, 2026-12-01 to 2027-06-01 (ephemerides DE441, observer `coord@301`, no refraction). Site coordinates come from the **NSSDC** ([lunar landing sites](https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html): Apollo 11, 15, 17), **LROC** (Shackleton, Blue Ghost 1, Chandrayaan-3, Chang'e 4 and 6, SLIM) and **NASA/LRO** (IM-1 Odysseus). The data files and their sources live in the [backend repository](https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend). Moon Trek, QuickMap and the PGDA products were consulted but **not used as data**.
+All sunlight and Earth-visibility figures come from **NASA/JPL Horizons** ([system](https://ssd.jpl.nasa.gov/horizons/), [API](https://ssd-api.jpl.nasa.gov/doc/horizons.html)): hourly apparent azimuth and elevation of the Sun and the Earth seen from ten locations on the Moon, 2026-12-01 to 2027-06-01 (ephemerides DE441, observer `coord@301`, no refraction). Site coordinates come from the **NSSDC** ([lunar landing sites](https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html): Apollo 11, 15, 17), **LROC** (Shackleton, Blue Ghost 1, Chandrayaan-3, Chang'e 4 and 6, SLIM) and **NASA/LRO** (IM-1 Odysseus). The data files and their sources live in the [backend repository](https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend). Moon Trek, QuickMap and the PGDA products were **not consulted and not used as data** (they are planned for validation and for real terrain horizons).
 
 ## Limitations
 - **Ideal horizon:** no terrain. Real horizons from LOLA are future work.
