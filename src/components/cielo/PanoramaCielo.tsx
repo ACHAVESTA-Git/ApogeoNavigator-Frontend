@@ -376,7 +376,9 @@ function EtiquetaAstro({ texto, xPantalla, yGlifo, ancho, alto, radio, debajo, o
     const arriba = yg - radio - SEPARACION_PX - ALTO_PX + 2;
     // Arriba a la derecha viven los botones de centrar y girar: ahí la etiqueta pasa debajo del glifo.
     const enEsquina = arriba < PANORAMA.ZONA_SUPERIOR.ALTO_PX && x.get() + 2 * mitad > ancho - PANORAMA.ZONA_SUPERIOR.ANCHO_PX;
-    const destino = (debajo && abajo + ALTO_PX < limite) || enEsquina ? abajo : arriba;
+    // Astro casi en el cénit: arriba la etiqueta rozaría el borde y pisaría la nota de la escala.
+    const pegadaArriba = arriba < PANORAMA.ZONA_NOTA_ALTO_PX;
+    const destino = (debajo && abajo + ALTO_PX < limite) || enEsquina || pegadaArriba ? abajo : arriba;
     // Astro hundido bajo el control de tiempo: su etiqueta se queda justo encima del panel, no debajo.
     return Math.min(destino, limite - ALTO_PX - 4);
   });
