@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiError, CODIGO_SIN_CONEXION, ErrorDeRed, errorDeRespuesta, traducirError } from "./errores";
+import { ApiError, CODIGO_MES_SIN_DATOS, CODIGO_SIN_CONEXION, ErrorDeRed, errorDeRespuesta, esMesSinDatos, traducirError } from "./errores";
 import { ERRORES_POR_ESTADO } from "./textos";
 
 const respuesta = (status: number, requestId?: string) => ({ status, headers: { get: (n: string) => (n === "X-Request-ID" ? requestId ?? null : null) } });
@@ -72,5 +72,30 @@ describe("traductor de errores", () => {
     expect(warn).toHaveBeenCalledWith("[API] 404 NO_ENCONTRADO rid1 /api/efemerides/x");
     errorDeRespuesta(respuesta(500), null, "/api/metricas?site_id=a");
     expect(error).toHaveBeenCalledWith("[API] 500 ERROR_INTERNO - /api/metricas");
+  });
+});
+
+describe("mes sin datos (422 de un periodo fuera de los datos)", () => {
+  const cuerpo = (mensaje: string) => ({ detail: mensaje, error: { codigo: "RANGO_FECHAS_INVALIDO", estado: 422, titulo: "Rango de fechas inválido", mensaje, accion: "Usa fechas UTC…", request_id: "ab81498be1" } });
+  const respuesta422 = { status: 422, headers: { get: () => null } };
+
+  it("se traduce a un estado vacío con acción de elegir otro mes, no al error del backend", () => {
+    for (const param of ["desde", "hasta"]) {
+      const e = errorDeRespuesta(respuesta422, cuerpo(`'${param}' está fuera del rango de datos disponible`), "/api/metricas");
+      expect(esMesSinDatos(e)).toBe(true);
+      expect(traducirError(e)).toMatchObject({ codigo: CODIGO_MES_SIN_DATOS, estado: 422, titulo: "No hay datos de ese mes", sugerencia: "Elige otro mes.", accion: "mes" });
+    }
+  });
+
+  it("vale también con el detail a secas (respuesta sin objeto error)", () => {
+    expect(traducirError(new ApiError(422, "'hasta' está fuera del rango de datos disponible")).accion).toBe("mes");
+  });
+
+  it("otros 422 siguen siendo errores que corregir", () => {
+    const orden = errorDeRespuesta(respuesta422, cuerpo("'hasta' debe ser posterior a 'desde'"), "/api/metricas");
+    expect(esMesSinDatos(orden)).toBe(false);
+    expect(traducirError(orden).accion).toBe("ninguna");
+    expect(esMesSinDatos(new ApiError(404, "fuera del rango de datos"))).toBe(false);
+    expect(esMesSinDatos(new Error("fuera del rango de datos"))).toBe(false);
   });
 });

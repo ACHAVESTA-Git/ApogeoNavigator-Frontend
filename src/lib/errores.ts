@@ -75,7 +75,7 @@ export function esApiAusente(error: unknown): boolean {
   return (API.ESTADOS_SIN_SERVICIO as readonly number[]).includes(error.status);
 }
 
-export type TipoAccion = "reintentar" | "clave" | "sitios" | "ninguna";
+export type TipoAccion = "reintentar" | "clave" | "sitios" | "mes" | "ninguna";
 /** Lo que la interfaz enseña de un error: nunca un estado a secas, un texto del navegador ni un JSON. */
 export interface ErrorTraducido {
   codigo: string;
@@ -106,10 +106,19 @@ function accionDe(estado: number): TipoAccion {
 const detalleLegible = (detail: unknown): string | null =>
   esTexto(detail) && detail !== API.DETALLE_RUTA_INEXISTENTE && !/^[[{<]/.test(detail.trim()) && !/^(internal server error|bad gateway|service unavailable|gateway timeout)$/i.test(detail.trim()) ? detail : null;
 
+export const CODIGO_MES_SIN_DATOS = "MES_SIN_DATOS";
+/** Frase con la que la API dice que «desde» o «hasta» caen fuera de los datos cargados (T.errores.fueraDeDatos). */
+const FUERA_DE_DATOS = /fuera del rango de datos/i;
+/** 422 de un periodo sin datos: no es un fallo ni algo que corregir en un formulario, es un mes que no existe en los datos. */
+export function esMesSinDatos(error: unknown): boolean {
+  return error instanceof ApiError && error.esNoProcesable && FUERA_DE_DATOS.test(`${error.error?.mensaje ?? ""} ${typeof error.detail === "string" ? error.detail : ""}`);
+}
+
 /** EL traductor: cualquier error (de la API, de red o inesperado) → título, mensaje, sugerencia y acción. */
 export function traducirError(error: unknown): ErrorTraducido {
   if (error instanceof ErrorDeRed) return { codigo: CODIGO_SIN_CONEXION, estado: 0, ...T.errores.sinConexion, accion: "reintentar" };
   if (!(error instanceof ApiError)) return { codigo: CODIGO_DESCONOCIDO, estado: 0, ...T.errores.inesperado, accion: "reintentar" };
+  if (esMesSinDatos(error)) return { codigo: CODIGO_MES_SIN_DATOS, estado: error.status, ...T.errores.mesSinDatos, accion: "mes", requestId: error.requestId };
   const base = ERRORES_POR_ESTADO[error.status] ?? (error.status >= 500 ? ERRORES_POR_ESTADO[500] : ERRORES_POR_ESTADO[400]);
   const b = error.error;
   return {

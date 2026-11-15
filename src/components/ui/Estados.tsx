@@ -1,7 +1,9 @@
-import { Copy, TriangleAlert } from "lucide-react";
+import { CalendarOff, Copy, TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { RUTAS } from "../../lib/constants";
-import { traducirError } from "../../lib/errores";
+import { usePeriodo } from "../../hooks/useParametrosUrl";
+import { DATOS, RUTAS } from "../../lib/constants";
+import { traducirError, type ErrorTraducido } from "../../lib/errores";
+import { mesLargo, sumarMeses } from "../../lib/fechas";
 import { T } from "../../lib/textos";
 import { Boton, EnlaceBoton } from "./Boton";
 import { unir } from "./clases";
@@ -33,6 +35,29 @@ export function CargaHorizons({ className }: { className?: string }) {
 const sinCodigo = { titulo: T.errores.sinServicio, mensaje: "", sugerencia: "", accion: "reintentar" as const, requestId: undefined };
 
 /**
+ * Mes sin datos: no es un fallo, así que no lleva rojo ni código de seguimiento. Dice qué pasa y ofrece la
+ * salida: el mes anterior o el último mes con datos.
+ */
+function EstadoMesSinDatos({ e, className }: { e: Pick<ErrorTraducido, "titulo" | "mensaje" | "sugerencia">; className?: string }) {
+  const periodo = usePeriodo();
+  const ultimo = sumarMeses(DATOS.COBERTURA.HASTA, -1);
+  return (
+    <div role="status" className={unir("panel max-w-xl p-4 md:p-5", className)}>
+      <p className="text-texto flex items-start gap-2 font-semibold">
+        <CalendarOff aria-hidden="true" className="text-texto-2 mt-1 size-4 shrink-0" />
+        {e.titulo}
+      </p>
+      <p className="text-apoyo text-texto-2 mt-1.5">{e.mensaje} <span className="text-texto">{e.sugerencia}</span></p>
+      <div className="mt-3 flex flex-wrap gap-3 empty:hidden">
+        {periodo.desde !== ultimo
+          ? <Boton onClick={() => periodo.fijar(ultimo, DATOS.COBERTURA.HASTA)}>{T.errores.acciones.ultimoMes(mesLargo(ultimo))}</Boton>
+          : periodo.hayAnterior && <Boton onClick={() => periodo.moverMes(-1)}>{T.errores.acciones.mesAnterior}</Boton>}
+      </div>
+    </div>
+  );
+}
+
+/**
  * Aviso de error estándar: qué pasó (título y mensaje), qué hacer (sugerencia y UN botón según la acción) y el
  * código de seguimiento copiable. Todo sale del traductor único; aquí no se interpreta ningún estado.
  */
@@ -45,6 +70,7 @@ export function EstadoError({ error, titulo, alReintentar, alIntroducirClave, co
     if (!e.requestId) return;
     void navigator.clipboard?.writeText(e.requestId).then(() => setCopiado(true)).catch(() => undefined);
   };
+  if (e.accion === "mes") return <EstadoMesSinDatos e={e} className={className} />;
   return (
     <div role="alert" className={unir("panel border-l-critico max-w-xl border-l-2", compacto ? "p-3" : "p-4 md:p-5", className)}>
       <p className="text-texto flex items-start gap-2 font-semibold">

@@ -589,7 +589,8 @@ export const T = {
   errores: {
     sinConexion: { titulo: "No hay conexión con el servidor", mensaje: "No pudimos llegar al servidor de datos.", sugerencia: "Comprueba tu conexión y vuelve a intentarlo." },
     inesperado: { titulo: "Algo no salió como esperábamos", mensaje: "La aplicación encontró un problema al mostrar estos datos.", sugerencia: "Vuelve a intentarlo; si se repite, recarga la página." },
-    acciones: { reintentar: "Reintentar", clave: "Introducir clave", sitios: "Elegir otro sitio" },
+    acciones: { reintentar: "Reintentar", clave: "Introducir clave", sitios: "Elegir otro sitio", mesAnterior: "Mes anterior", ultimoMes: (mes: string) => `Ir a ${mes}` },
+    mesSinDatos: { titulo: "No hay datos de ese mes", mensaje: "Ese periodo queda fuera de los datos disponibles.", sugerencia: "Elige otro mes." },
     seguimiento: "Código de seguimiento",
     copiar: "Copiar",
     copiado: "Copiado",
