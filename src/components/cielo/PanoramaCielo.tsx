@@ -1,22 +1,22 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { animate, m, useMotionValue, useMotionValueEvent, useTransform, type MotionValue } from "motion/react";
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { animate, m, useMotionValue, useMotionValueEvent, useSpring, useTransform, type MotionValue } from "motion/react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { useDimensiones } from "../../hooks/useDimensiones";
-import { useAltoVentana, useDesde } from "../../hooks/useMedia";
+import { useDesde } from "../../hooks/useMedia";
 import { useMovimientoReducido } from "../../hooks/useMovimientoReducido";
 import { useValorMotion } from "../../hooks/useValorMotion";
 import { CLAVE_AZIMUT, CLAVE_ELEVACION, sobreHorizonte } from "../../lib/astro";
 import { ESCENA, GRADOS_VUELTA, MOVIMIENTO, MS_POR_HORA, PANORAMA } from "../../lib/constants";
 import { desenrollar, diferenciaAngular, elevacionAY, escalaMixta, normalizarAz } from "../../lib/escalas";
 import { limitar } from "../../lib/fechas";
-import { grados, pct as pctTexto } from "../../lib/formato";
+import { grados } from "../../lib/formato";
 import { indiceEn, interpolarFila } from "../../lib/interpolar";
 import { NOMBRE_ASTRO, T, describirCielo } from "../../lib/textos";
 import type { Astro, EventosAstro, FilaEfemeride, Utc } from "../../lib/tipos";
 import { GlifoAstro, SolSvg, TierraSvg } from "../glifos/Astros";
 import { useAnclaHorizonte } from "../layout/horizonteContexto";
 import { ContextoAstro } from "./ContextoAstro";
-import { crearPaisaje, faseTierra, leerColores, pintarEscena, semillaDe, type Colores } from "./lienzoLunar";
+import { crearPaisaje, leerColores, pintarEscena, semillaDe, type Colores } from "./lienzoLunar";
 import { clasesBoton, unir } from "../ui/clases";
 
 const COPIAS = [-1, 0, 1]; // el mundo de 360° se dibuja tres veces: la vista puede girar sin costuras
@@ -32,7 +32,7 @@ export type Escala = "lupa" | "lineal";
  * escala de lupa (el tramo 0–5° ocupa buena parte de la altura, porque en el polo los astros viven ahí).
  * Arriba de la línea, el cielo; debajo, el regolito, donde los astros ocultos se dibujan como fantasmas.
  */
-export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo, semilla, alArrastrarTiempo, alSoltarTiempo, incertidumbre = 0, azimutFiable, eventos }: {
+export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo, semilla, alArrastrarTiempo, alSoltarTiempo, incertidumbre = 0, azimutFiable, eventos, altoReservado, accion }: {
   filas: readonly FilaEfemeride[]; t: MotionValue<number>; tUtc: Utc; escala: Escala;
   alPulsarTecla: (e: KeyboardEvent, girar: (grados: number) => void) => void; idTitulo: string;
   /** Texto que fija el paisaje ilustrativo (el id del sitio): cada sitio tiene siempre el mismo relieve. */
@@ -45,16 +45,23 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
   azimutFiable?: Record<Astro, boolean>;
   /** Próximo cruce del horizonte de cada astro (para la tarjeta de datos en contexto). */
   eventos?: Record<Astro, EventosAstro> | null;
+  /**
+   * Alto máximo que alcanzará la escena mientras cambia de tamaño (al entrar o salir de pantalla completa): el
+   * lienzo se reserva una vez a ese alto en lugar de volver a crearse en cada fotograma.
+   */
+  altoReservado?: number;
+  /** Botón extra junto a los de centrar y girar (en móvil, el de pantalla completa). */
+  accion?: ReactNode;
 }) {
   const id = useId();
   const reducido = useMovimientoReducido();
   const esTableta = useDesde("md");
   const esEscritorio = useDesde("lg");
-  const [refCaja, { ancho }] = useDimensiones<HTMLDivElement>();
+  // La escena llena la caja que la contiene: el alto lo decide quien la coloca (página o pantalla completa).
+  const [refCaja, dimensiones] = useDimensiones<HTMLDivElement>({ sincrono: true });
+  const ancho = dimensiones.ancho;
+  const alto = Math.round(dimensiones.alto);
   const ventana = PANORAMA.VENTANA_DEG[esEscritorio ? "escritorio" : esTableta ? "tableta" : "movil"];
-  const altoVentana = useAltoVentana();
-  const limites = ESCENA.ALTO[esTableta ? "escritorio" : "movil"];
-  const alto = Math.round(limitar(altoVentana * limites.fraccion, limites.min, limites.max));
   const ppd = ancho / ventana; // píxeles por grado de azimut
   const reserva = esTableta ? PANORAMA.ZONA_TRANSPORTE_PX : 0;
   const yHorizonte = Math.round(alto * ESCENA.HORIZONTE_FRACCION);
@@ -118,6 +125,10 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
   const [zona, setZona] = useState<"cielo" | "suelo">("cielo");
   const [contexto, setContexto] = useState<Astro | null>(null); // astro con la tarjeta de datos abierta
   const msPorPx = ancho ? (ESCENA.HORAS_POR_ANCHO * MS_POR_HORA) / ancho : 0;
+  // Profundidad: con ratón, las capas cercanas del suelo se desplazan un poco con el puntero (los astros y el
+  // horizonte, que son dato, no se mueven). Decorativo, con muelle; no existe en táctil ni con movimiento reducido.
+  const puntero = useMotionValue(0);
+  const paralaje = useSpring(puntero, MOVIMIENTO.SPRING_PARALAJE);
   const alBajar = (e: PointerEvent<HTMLDivElement>) => {
     if ((e.target as Element).closest("button, input, [data-transporte]")) return;
     setContexto(null); // tocar la escena cierra la tarjeta (en táctil no hay «salir» del astro)
@@ -129,7 +140,9 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
   const alMover = (e: PointerEvent<HTMLDivElement>) => {
     const a = arrastre.current;
     if (!a) {
-      setZona(e.clientY - e.currentTarget.getBoundingClientRect().top > yHorizonte ? "suelo" : "cielo");
+      const caja = e.currentTarget.getBoundingClientRect();
+      setZona(e.clientY - caja.top > yHorizonte ? "suelo" : "cielo");
+      if (e.pointerType === "mouse" && !reducido && caja.width) puntero.set(((e.clientX - caja.left) / caja.width) * 2 - 1);
       return;
     }
     if (!ppd) return;
@@ -158,33 +171,54 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
   const colores = useRef<Colores | null>(null);
   const paisaje = useMemo(() => crearPaisaje(semillaDe(semilla)), [semilla]);
   const pendiente = useRef(0);
+  const ultimoPintado = useRef(0);
+  const nitidez = useRef(0);
+  // Pedir un pintado es idempotente: si ya hay uno pendiente para el próximo fotograma, no se cancela ni se
+  // vuelve a pedir. (Cancelar y volver a pedir dejaba la escena sin pintar cuando dos fuentes la pedían en cada
+  // fotograma, p. ej. el cambio de tamaño y el muelle del paralaje.) El pintado usa siempre los valores del último render.
+  const dibujar = useRef<() => void>(() => undefined);
   const pintar = useCallback(() => {
-    cancelAnimationFrame(pendiente.current);
+    if (pendiente.current) return;
     pendiente.current = requestAnimationFrame(() => {
+      pendiente.current = 0;
+      dibujar.current();
+    });
+  }, []);
+  useLayoutEffect(() => {
+    dibujar.current = () => {
       const el = lienzo.current;
       const ctx = el?.getContext("2d");
-      if (!el || !ctx || !ancho) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, ESCENA.DPR_MAX);
-      if (el.width !== Math.round(ancho * dpr) || el.height !== Math.round(alto * dpr)) {
+      if (!el || !ctx || !ancho || !alto) return;
+      // Resolución adaptativa: si el fotograma anterior fue hace nada, la escena se está moviendo.
+      const ahora = performance.now();
+      const enMovimiento = ahora - ultimoPintado.current < ESCENA.MOVIMIENTO_SI_MS;
+      ultimoPintado.current = ahora;
+      clearTimeout(nitidez.current);
+      if (enMovimiento) nitidez.current = window.setTimeout(pintar, ESCENA.NITIDEZ_TRAS_MS);
+      const dpr = Math.min(window.devicePixelRatio || 1, enMovimiento ? ESCENA.DPR_MOVIMIENTO : ESCENA.DPR_MAX);
+      const altoLienzo = Math.max(alto, altoReservado ?? 0);
+      if (el.width !== Math.round(ancho * dpr) || el.height !== Math.round(altoLienzo * dpr)) {
         el.width = Math.round(ancho * dpr);
-        el.height = Math.round(alto * dpr);
+        el.height = Math.round(altoLienzo * dpr);
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       colores.current ??= leerColores(el);
       pintarEscena(ctx, {
-        ancho, alto, yHorizonte, ppd, centro: centro.get(), incertidumbre,
+        ancho, alto, yHorizonte, ppd, centro: centro.get(), incertidumbre, realista: { paralaje: paralaje.get() },
         yDe: elevacionAY(escalaMixta(mezcla.get()), yHorizonte, altoCielo, altoSubsuelo),
       }, posicion.get(), paisaje, colores.current);
-    });
-  }, [ancho, alto, yHorizonte, ppd, altoCielo, altoSubsuelo, centro, mezcla, posicion, paisaje, incertidumbre]);
+    };
+    pintar(); // cambió el tamaño, el paisaje o la proyección: se repinta
+  }, [ancho, alto, altoReservado, yHorizonte, ppd, altoCielo, altoSubsuelo, centro, mezcla, posicion, paisaje, paralaje, incertidumbre, pintar]);
   useEffect(() => {
-    pintar();
-    const bajas = [posicion.on("change", pintar), centro.on("change", pintar), mezcla.on("change", pintar)];
+    const bajas = [posicion.on("change", pintar), centro.on("change", pintar), mezcla.on("change", pintar), paralaje.on("change", pintar)];
     return () => {
       bajas.forEach((baja) => baja());
       cancelAnimationFrame(pendiente.current);
+      pendiente.current = 0;
+      clearTimeout(nitidez.current);
     };
-  }, [pintar, posicion, centro, mezcla]);
+  }, [pintar, posicion, centro, mezcla, paralaje]);
 
   // Rastro: trayectoria de las ±12 h alrededor del instante (hacia dónde se mueve cada astro).
   const i0 = indiceEn(filas, t.get());
@@ -227,7 +261,7 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
   const botonGiro = clasesBoton("secundario", "material px-0");
 
   return (
-    <figure className="m-0">
+    <figure className="m-0 h-full">
       <div
         ref={refCaja}
         tabIndex={0}
@@ -241,12 +275,14 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
         onPointerMove={alMover}
         onPointerUp={alSoltar}
         onPointerCancel={alSoltar}
+        onPointerLeave={() => puntero.set(0)}
         onWheel={(e) => Math.abs(e.deltaX) > Math.abs(e.deltaY) && ppd && centro.set(centro.get() + e.deltaX / ppd)}
-        className={unir("relative touch-pan-y overflow-clip rounded-panel select-none", zona === "suelo" ? "cursor-ew-resize" : "cursor-grab active:cursor-grabbing")}
-        style={{ height: alto }}
+        // Entrada: la escena se abre desde la línea del horizonte (56 % = ESCENA.HORIZONTE_FRACCION), una sola vez.
+        className={unir("relative h-full touch-pan-y overflow-clip select-none [clip-path:inset(0)] transition-[clip-path] duration-(--dur-escena-entrada) ease-salida starting:[clip-path:inset(56%_0_44%_0)]",
+          zona === "suelo" ? "cursor-ew-resize" : "cursor-grab active:cursor-grabbing")}
       >
-        <canvas ref={lienzo} aria-hidden="true" className="absolute inset-0 size-full" />
-        {ancho > 0 && (
+        <canvas ref={lienzo} aria-hidden="true" className="absolute top-0 left-0 w-full" style={{ height: Math.max(alto, altoReservado ?? 0) }} />
+        {ancho > 0 && alto > 0 && (
           <svg role="img" aria-labelledby={idTitulo} aria-describedby={`${id}-desc`} width={ancho} height={alto} className="relative block">
             <defs>
               {/* Lo que cruza la costura de 360° se desvanece en los bordes en vez de cortarse */}
@@ -345,6 +381,7 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
             <button type="button" className={botonGiro} aria-label={T.cielo.girarDer(PANORAMA.GIRO_DEG)} onClick={() => girar(PANORAMA.GIRO_DEG)}>
               <ChevronRight aria-hidden="true" className="size-4" />
             </button>
+            {accion}
           </div>
         </div>
         {/* Avisos de honestidad, siempre visibles dentro de la escena */}
@@ -353,9 +390,6 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
         <p className="text-texto-2 pointer-events-none absolute left-14 text-[0.75rem] max-sm:hidden" style={{ top: yHorizonte + 34 }}>{T.cielo.relieve}</p>
         <p className="text-texto-2 pointer-events-none absolute left-14 text-[0.75rem] sm:hidden" style={{ top: yHorizonte - 18 }}>{T.cielo.relieveCorto}</p>
       </div>
-      <p aria-hidden="true" className="text-texto-3 mt-2 text-[0.75rem] max-md:hidden">
-        {T.cielo.arrastra}. {T.cielo.tamanos} {T.cielo.faseTierra(pctTexto(faseTierra(lectura) * 100))}.
-      </p>
       <figcaption id={`${id}-desc`} className="sr-only">{describirCielo(tUtc, filas[i0])} {T.cielo.relieve}</figcaption>
     </figure>
   );

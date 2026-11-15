@@ -162,6 +162,7 @@ export const MOVIMIENTO = {
   EASE_ORBITA: [0.77, 0, 0.175, 1],
   // Springs (interrumpibles: conservan la velocidad al cambiar de destino).
   SPRING_SUAVE: { type: "spring", duration: 0.45, bounce: 0 }, // paneles, fichas, popup
+  SPRING_PARALAJE: { stiffness: 170, damping: 19, mass: 0.5, restDelta: 0.004 }, // paralaje decorativo del suelo: casi crítico, se asienta en ~0,3 s
   SPRING_VIVO: { type: "spring", duration: 0.5, bounce: 0.2 }, // solo al soltar un arrastre
   CIERRE_HOJA: { DISTANCIA: 0.4, VELOCIDAD_PX_S: 500 }, // se cierra por distancia O por velocidad
   ELASTICO: 0.2,
@@ -209,7 +210,14 @@ export const PANORAMA = {
 /** Escena inmersiva del cielo (lienzo). Los tamaños de los astros están ampliados; se conserva la proporción real. */
 export const ESCENA = {
   DPR_MAX: 2,
-  ALTO: { movil: { min: 360, max: 560, fraccion: 0.62 }, escritorio: { min: 440, max: 760, fraccion: 0.7 } },
+  // Mientras la escena se mueve (reproducción, arrastre, cambio de tamaño) se pinta a menos resolución y, al
+  // parar, se vuelve a pintar nítida: el ojo no distingue el detalle en movimiento y cada fotograma cuesta menos.
+  DPR_MOVIMIENTO: 1.25, MOVIMIENTO_SI_MS: 90, NITIDEZ_TRAS_MS: 150,
+  // Alto de la escena en la página: en móvil, una fracción de la ventana; desde 768 px llega hasta el borde
+  // inferior de la ventana (se descuenta lo que queda encima: barra, cabecera del sitio y pestañas).
+  ALTO: { movil: { min: 360, max: 560, fraccion: 0.62 }, escritorio: { min: 460, max: 1100, descuento: 256 } },
+  // Pantalla completa: muelle sin rebote que se puede invertir a medio camino.
+  INMERSION: { type: "spring", duration: 0.6, bounce: 0 },
   HORIZONTE_FRACCION: 0.56,
   // Tamaño aparente real: Sol ≈ 0,53°, Tierra ≈ 1,9° desde la Luna (unas 3,6 veces mayor).
   RADIO_SOL_PX: 8.5,
@@ -233,6 +241,30 @@ export const ESCENA = {
   PASO_PERFIL_PX: 4,
   CREPUSCULO_DEG: { desde: -1.2, hasta: 2.5 }, // tramo en que el suelo pasa de noche a día
   HORAS_POR_ANCHO: 96, // arrastrar el suelo de lado a lado recorre 4 días
+  // Escena realista (vista del cielo). La portada no la usa: allí el suelo se pinta como siempre.
+  REALISTA: {
+    // Luz general del suelo: irradiancia de Lambert sobre un plano horizontal, E ∝ sin(elevación), llevada a
+    // brillo percibido con un exponente. `LUZ_MAX` deja legibles los rótulos que van sobre el suelo.
+    LUZ_MAX: 0.44, LUZ_MIN: 0.004, GAMMA: 0.45,
+    CONTRALUZ: 0.55,        // con luz rasante, cuánto se apaga el suelo al mirar hacia el Sol (se ven las caras en sombra)
+    OPOSICION: { BRILLO: 0.1, ANCHO_DEG: 28 }, // realce del suelo con el Sol a la espalda (efecto de oposición)
+    // Laderas según miren o no al Sol: `realce` amplía la pendiente del perfil; la luz alcanza `alcance` alturas
+    // de loma hacia abajo, repartida en `franjas` cada vez más tenues.
+    LADERA: { base: 0.12, rasante: 0.36, sombra: 0.7, realce: 2.2, alcance: 1.6, franjas: 9 },
+    FILO: { OPACIDAD: 0.45, ANCHO_DEG: 20, HASTA_FONDO: 0.3 }, // crestas lejanas a contraluz, junto al azimut del Sol
+    PASO_SOMBREADO_PX: 24,
+    // Ondulaciones intermedias (entre las capas lejana, media y cercana del relieve ilustrativo).
+    ONDAS: [{ px: 18, fondo: 0.17, paralaje: 1 }, { px: 46, fondo: 0.72, paralaje: 2 }],
+    VOLUMEN: 0.42,          // oscurecimiento hacia el pie de cada loma (la siguiente la tapa)
+    CRATERES: 18, MOTAS: 150,
+    // Sombras: largo = alto / tan(elevación), con tope en razón (40 ≈ Sol a 1,4°) y en fracción del ancho.
+    SOMBRA: { RAZON_MAX: 40, FRACCION_ANCHO: 0.26, OPACIDAD: 0.8, PUNTA: 0.4, PUNTA_CERCA: 1.5 },
+    PERSPECTIVA: { horizonte: 0.1, pie: 0.5 }, // cuánto se acortan las distancias en profundidad
+    // Resplandor del horizonte: polvo levitado que dispersa la luz del Sol rasante (ilustrativo).
+    POLVO: { ALTO_PX: 26, ANCHO_DEG: 46, HASTA_DEG: 7, OPACIDAD: 0.42 },
+    GRANO_GRUESO_DESDE: 0.4,                   // desde esta profundidad el grano es el doble de grueso (perspectiva)
+    PARALAJE_PX: { lejos: 0, cerca: 18, rocas: 12 }, // desplazamiento de las capas al mover el puntero
+  },
 } as const;
 
 export const HERO = {
