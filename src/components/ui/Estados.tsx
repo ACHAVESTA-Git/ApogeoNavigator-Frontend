@@ -83,7 +83,8 @@ export function EstadoError({ error, titulo, alReintentar, alIntroducirClave, co
       <div className="mt-3 flex flex-wrap gap-3 empty:hidden">
         {e.accion === "reintentar" && alReintentar && <Boton onClick={alReintentar}>{T.errores.acciones.reintentar}</Boton>}
         {e.accion === "clave" && alIntroducirClave && <Boton onClick={alIntroducirClave}>{T.errores.acciones.clave}</Boton>}
-        {e.accion === "sitios" && <EnlaceBoton to={RUTAS.SITIOS}>{T.errores.acciones.sitios}</EnlaceBoton>}
+        {/* Dentro de un formulario (compacto) un 404 no es «otro sitio»: basta el mensaje, que dice qué revisar. */}
+        {e.accion === "sitios" && !compacto && <EnlaceBoton to={RUTAS.SITIOS}>{T.errores.acciones.sitios}</EnlaceBoton>}
         {e.accion !== "reintentar" && e.accion !== "clave" && alReintentar && !compacto && <Boton variante="texto" onClick={alReintentar}>{T.errores.acciones.reintentar}</Boton>}
         {children}
       </div>
