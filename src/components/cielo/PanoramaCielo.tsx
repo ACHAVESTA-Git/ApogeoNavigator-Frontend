@@ -54,6 +54,7 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
   const limites = ESCENA.ALTO[esTableta ? "escritorio" : "movil"];
   const alto = Math.round(limitar(altoVentana * limites.fraccion, limites.min, limites.max));
   const ppd = ancho / ventana; // píxeles por grado de azimut
+  const reserva = esTableta ? PANORAMA.ZONA_TRANSPORTE_PX : 0;
   const yHorizonte = Math.round(alto * ESCENA.HORIZONTE_FRACCION);
   const altoCielo = yHorizonte - PANORAMA.MARGEN_SUPERIOR_PX;
   const altoSubsuelo = alto - yHorizonte - PANORAMA.MARGEN_INFERIOR_PX;
@@ -201,10 +202,10 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
     const visibles: number[] = [];
     const candidatas = escala === "lupa" ? PANORAMA.MARCAS_ELEVACION : PANORAMA.MARCAS_ELEVACION_LINEAL;
     for (const e of [...candidatas].filter((v) => v !== 0).sort((a, b) => Math.abs(a) - Math.abs(b))) {
-      if (visibles.every((v) => Math.abs(yDe(v) - yDe(e)) >= PANORAMA.SEPARACION_MARCAS_PX) && Math.abs(yDe(e) - yHorizonte) >= PANORAMA.SEPARACION_MARCAS_PX) visibles.push(e);
+      if (visibles.every((v) => Math.abs(yDe(v) - yDe(e)) >= PANORAMA.SEPARACION_MARCAS_PX) && Math.abs(yDe(e) - yHorizonte) >= PANORAMA.SEPARACION_MARCAS_PX && yDe(e) < alto - reserva) visibles.push(e);
     }
     return visibles;
-  }, [escala, yDe, yHorizonte]);
+  }, [escala, yDe, yHorizonte, alto, reserva]);
   const { ANCHO_MAX_PX, ANCHO_MIN_PX, HASTA_DEG, ALTO_PX } = PANORAMA.RESPLANDOR;
   const fRasante = Math.min(1, Math.max(0, lectura.sol_el_deg / HASTA_DEG));
   const rxRasante = (ANCHO_MAX_PX - (ANCHO_MAX_PX - ANCHO_MIN_PX) * fRasante) / 2;
@@ -290,11 +291,11 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
         {ancho > 0 && ASTROS.map((astro) => (
           <EtiquetaAstro key={astro} texto={etiqueta(astro)} xPantalla={xPantalla[astro]} yGlifo={y[astro]} ancho={ancho} alto={alto}
             radio={astro === "sol" ? rSol + 4 : rTierra}
-            debajo={!sobreHorizonte(lectura[CLAVE_ELEVACION[astro]])} oculta={contexto === astro}
+            debajo={!sobreHorizonte(lectura[CLAVE_ELEVACION[astro]])} oculta={contexto === astro} reserva={reserva}
             className={sobreHorizonte(lectura[CLAVE_ELEVACION[astro]]) ? COLOR_TEXTO[astro] : "text-texto-2"} />
         ))}
         {ancho > 0 && ASTROS.map((astro) => (
-          <ContextoAstro key={astro} astro={astro} xPantalla={xPantalla[astro]} yGlifo={y[astro]} ancho={ancho} alto={alto}
+          <ContextoAstro key={astro} astro={astro} xPantalla={xPantalla[astro]} yGlifo={y[astro]} ancho={ancho} alto={alto - reserva}
             radio={astro === "sol" ? rSol + 4 : rTierra} az={lectura[CLAVE_AZIMUT[astro]]} el={lectura[CLAVE_ELEVACION[astro]]} utc={tUtc}
             evento={eventos?.[astro]} abierto={contexto === astro} alAbrir={() => setContexto(astro)}
             alCerrar={() => setContexto((actual) => (actual === astro ? null : actual))} />
@@ -355,8 +356,8 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
  * Etiqueta de un astro en coordenadas de pantalla: sigue al glifo, pero no se sale por los bordes ni se mete en
  * la esquina de los botones de giro. Si el astro está fuera de la ventana visible, no se dibuja.
  */
-function EtiquetaAstro({ texto, xPantalla, yGlifo, ancho, alto, radio, debajo, oculta = false, className }: {
-  texto: string; xPantalla: MotionValue<number>; yGlifo: MotionValue<number>; ancho: number; alto: number; radio: number; debajo: boolean; oculta?: boolean; className: string;
+function EtiquetaAstro({ texto, xPantalla, yGlifo, ancho, alto, radio, debajo, oculta = false, reserva = 0, className }: {
+  texto: string; xPantalla: MotionValue<number>; yGlifo: MotionValue<number>; ancho: number; alto: number; radio: number; debajo: boolean; oculta?: boolean; reserva?: number; className: string;
 }) {
   const { ANCHO_CARACTER_PX, MARGEN_PX, MARGEN_IZQ_PX, SEPARACION_PX, ALTO_PX } = PANORAMA.ETIQUETA;
   const mitad = (texto.length * ANCHO_CARACTER_PX) / 2;
@@ -365,11 +366,13 @@ function EtiquetaAstro({ texto, xPantalla, yGlifo, ancho, alto, radio, debajo, o
     const yg = yGlifo.get();
     const abajo = yg + radio + SEPARACION_PX - 4;
     // Bajo el horizonte la etiqueta va debajo del glifo, salvo que caiga en la zona de los botones o fuera del marco.
-    const enBotones = x.get() + 2 * mitad > ancho - PANORAMA.ZONA_BOTONES.ANCHO_PX && abajo + ALTO_PX > alto - PANORAMA.ZONA_BOTONES.ALTO_PX;
+    const limite = alto - reserva; // por debajo vive el control de tiempo flotante
     const arriba = yg - radio - SEPARACION_PX - ALTO_PX + 2;
     // Arriba a la derecha viven los botones de centrar y girar: ahí la etiqueta pasa debajo del glifo.
     const enEsquina = arriba < PANORAMA.ZONA_SUPERIOR.ALTO_PX && x.get() + 2 * mitad > ancho - PANORAMA.ZONA_SUPERIOR.ANCHO_PX;
-    return (debajo && !enBotones && abajo + ALTO_PX < alto) || enEsquina ? abajo : arriba;
+    const destino = (debajo && abajo + ALTO_PX < limite) || enEsquina ? abajo : arriba;
+    // Astro hundido bajo el control de tiempo: su etiqueta se queda justo encima del panel, no debajo.
+    return Math.min(destino, limite - ALTO_PX - 4);
   });
   const opacity = useTransform(() => (xPantalla.get() > ancho + radio ? 0 : 1));
   return (
