@@ -1,33 +1,35 @@
 import { Link } from "react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { m as motion } from "motion/react";
-import { useMediaCatalogo } from "../../hooks/useMediaCatalogo";
 import { useMetricas } from "../../hooks/useMetricas";
 import { esSensibleAlRelieve } from "../../lib/astro";
-import { ID_NOMBRE_SITIO, MOVIMIENTO, RANGO_POR_DEFECTO, RUTAS } from "../../lib/constants";
+import { ID_MEDIDORES_SITIO, ID_NOMBRE_SITIO, MOVIMIENTO, RANGO_POR_DEFECTO, RUTAS } from "../../lib/constants";
 import { horasEntre } from "../../lib/fechas";
-import { coordenadas } from "../../lib/formato";
+import { coordenadas, horas } from "../../lib/formato";
 import { recordarOrigen } from "../../lib/motion/vuelo";
 import { NOMBRE_CATEGORIA, T, periodoLegible } from "../../lib/textos";
-import type { Site } from "../../lib/tipos";
+import type { Metrica, Site } from "../../lib/tipos";
 import { GlifoCategoria } from "../glifos/GlifoCategoria";
 import { Boton, EnlaceBoton, EnlaceExterno } from "../ui/Boton";
 import { Lectura } from "../ui/Lectura";
-import { CifraMetrica } from "../ventanas/CifraMetrica";
+import { PanelVidrio } from "../lujo";
+import { ChipNivel } from "../mision/ChipNivel";
+import { MedidoresMision } from "../mision/MedidoresMision";
 import { BotonComparar } from "./BotonComparar";
 
 const RANGO = RANGO_POR_DEFECTO;
 
 /** Detalle bajo demanda de un sitio: datos del catálogo, dos mini-lecturas del periodo y las acciones. */
-export function FichaSitio({ sitio, alVolver, idTitulo, compartir = false }: {
+export function FichaSitio({ sitio, metrica, alVolver, idTitulo, compartir = false }: {
   sitio: Site; alVolver?: () => void; idTitulo: string;
+  /** La métrica que ya tiene la tarjeta (mismo periodo): la ficha abre con sus cifras, sin hueco ni otra petición. */
+  metrica?: Metrica;
   /** El título es el mismo elemento que el nombre de la fila de la lista (transición compartida). */
   compartir?: boolean;
 }) {
   const t = T.sitios;
-  const { data } = useMetricas([sitio.site_id], RANGO);
-  const m = data?.resultados[0];
-  const media = useMediaCatalogo(RANGO);
+  const { data } = useMetricas(metrica ? [] : [sitio.site_id], RANGO);
+  const m = metrica ?? data?.resultados[0];
   const total = horasEntre(RANGO.desde, RANGO.hasta);
   const periodo = t.enPeriodo(periodoLegible(RANGO.desde, RANGO.hasta));
   return (
@@ -51,14 +53,20 @@ export function FichaSitio({ sitio, alVolver, idTitulo, compartir = false }: {
       </dl>
 
       <section aria-busy={!m} aria-label={periodo} className="mt-5">
-        {m ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <CifraMetrica compacto titulo="h3" astro="sol" porcentaje={m.pct_sol} horasVisibles={m.horas_sol} horasTotales={total}
-              nivel={m.semaforo.energia} sensible={esSensibleAlRelieve(m)} media={media && { valor: media.pct_sol, n: media.n }} />
-            <CifraMetrica compacto titulo="h3" astro="tierra" porcentaje={m.pct_tierra} horasVisibles={m.horas_tierra_visible} horasTotales={total}
-              nivel={m.semaforo.comunicacion} media={media && { valor: media.pct_tierra, n: media.n }} />
-          </div>
-        ) : <div className="panel h-64" />}
+        {/* Los medidores son los mismos de la tarjeta (layoutId): viajan de la tarjeta a la ficha y vuelven por el mismo camino. */}
+        <PanelVidrio relleno="compacto" className="flex flex-col items-center gap-3">
+          <motion.div layoutId={compartir ? ID_MEDIDORES_SITIO(sitio.site_id) : undefined} layout="position" transition={MOVIMIENTO.SPRING_SUAVE}>
+            <MedidoresMision metrica={m} tamano="md" animar={!compartir} etiqueta={t.medidores(periodoLegible(RANGO.desde, RANGO.hasta))} />
+          </motion.div>
+          <p className="flex min-h-7 items-center">
+            {m ? <ChipNivel nivel={m.semaforo.global} rotulo={T.semaforo.global} /> : <span className="text-apoyo text-texto-2">{T.lujo.sinDato}</span>}
+          </p>
+          {m && (
+            <p className="text-texto-2 text-center text-[0.75rem]">
+              {t.solPeriodo}: {T.ventanas.deHoras(horas(m.horas_sol), horas(total))} · {t.tierraPeriodo}: {T.ventanas.deHoras(horas(m.horas_tierra_visible), horas(total))}
+            </p>
+          )}
+        </PanelVidrio>
         <p className="text-texto-3 mt-3 text-[0.75rem] first-letter:uppercase">{periodo}. {T.avisoHorizonteCorto}{m && esSensibleAlRelieve(m) ? ` * ${T.semaforo.sensible}.` : ""}</p>
       </section>
 
