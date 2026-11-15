@@ -1,5 +1,6 @@
 import { Check, MapPin, TriangleAlert } from "lucide-react";
 import { AnimatePresence, m } from "motion/react";
+import { forwardRef } from "react";
 import { useCifraAnimada } from "../../hooks/useCifraAnimada";
 import { useMovimientoReducido } from "../../hooks/useMovimientoReducido";
 import type { PuestoRanking } from "../../hooks/useRanking";
@@ -50,14 +51,16 @@ function CifraDecisiva({ fila, ranking }: { fila: PuestoRanking; ranking: readon
   );
 }
 
-function Fila({ fila, ranking, elegido, alAlternar }: { fila: PuestoRanking; ranking: readonly PuestoRanking[]; elegido: boolean; alAlternar: () => void }) {
+interface PropsFila { fila: PuestoRanking; ranking: readonly PuestoRanking[]; elegido: boolean; alAlternar: () => void }
+/** Con `forwardRef`: `AnimatePresence` en modo `popLayout` mide a sus hijos directos y necesita su nodo. */
+const Fila = forwardRef<HTMLLIElement, PropsFila>(function Fila({ fila, ranking, elegido, alAlternar }, ref) {
   const t = T.comparar;
   const reducido = useMovimientoReducido();
   const { sitio, metrica } = fila;
   const nombre = nombreCorto(sitio.nombre);
   const aviso = avisoDeRelieve(metrica);
   return (
-    <m.li layout={reducido ? false : "position"} transition={{ layout: MOVIMIENTO.SPRING_SUAVE }}
+    <m.li ref={ref} layout={reducido ? false : "position"} transition={{ layout: MOVIMIENTO.SPRING_SUAVE }}
       initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: MOVIMIENTO.CORTA / S, ease: MOVIMIENTO.EASE_SALIDA } }}
       exit={{ opacity: 0, transition: { duration: MOVIMIENTO.MICRO / S, ease: MOVIMIENTO.EASE_SALIDA } }}
       className="relative" data-puesto={fila.puesto} data-sitio={sitio.site_id}>
@@ -104,7 +107,7 @@ function Fila({ fila, ranking, elegido, alAlternar }: { fila: PuestoRanking; ran
         className="rounded-panel absolute inset-0 cursor-pointer transition-transform duration-(--dur-micro) ease-salida active:scale-[0.995]" />
     </m.li>
   );
-}
+});
 
 /**
  * Ranking de sitios para el periodo elegido. Cada fila: puesto, monograma, nombre con su veredicto (icono +
@@ -124,10 +127,13 @@ export function TopSitios({ filas, ranking, elegidos, alAlternar, cargando, vaci
   }
   if (!filas.length) return <p role="status" className="text-entrada text-texto-2 mt-6">{vacio}</p>;
   return (
+    <>
     <ol aria-label={t.lista(Math.min(RANKING.PUESTOS, filas.length))} className="mt-4 grid gap-3">
       <AnimatePresence mode="popLayout" initial={false}>
         {filas.map((f) => <Fila key={f.sitio.site_id} fila={f} ranking={ranking} elegido={elegidos.includes(f.sitio.site_id)} alAlternar={() => alAlternar(f.sitio.site_id)} />)}
       </AnimatePresence>
     </ol>
+    {filas.some((f) => RANKING.INSIGNIAS.includes(f.sitio.site_id)) && <p className="text-texto-2 mt-3 text-[0.75rem]">{t.avalInsignias}</p>}
+    </>
   );
 }
