@@ -45,7 +45,7 @@ function Linea({ sitio, filas, desde, hasta }: { sitio: Site; filas: FilaEfemeri
               <GlifoAstro astro={astro} px={14} className="mt-1" />
               <span className="first-letter:uppercase">
                 {cruces.length
-                  ? t.resumen(NOMBRE_ASTRO[astro], cruces.map((c) => `${c.tipo === "salida" ? "sale" : "se pone"} el ${fechaHora(c.utc)}`).join("; ") + " UTC")
+                  ? t.resumen(NOMBRE_ASTRO[astro], cruces.map((c) => ({ tipo: c.tipo, cuando: fechaHora(c.utc) })))
                   : t.sinEventos(NOMBRE_ASTRO[astro], arriba, periodo)}
               </span>
             </li>

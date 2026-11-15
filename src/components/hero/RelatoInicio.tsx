@@ -146,7 +146,7 @@ export function RelatoInicio({ titulo, cta }: { titulo: ReactNode; cta: ReactNod
     const recorrido = el.offsetHeight - window.innerHeight;
     window.scrollTo({ top: el.offsetTop + recorrido * (TRAMOS[n] + 0.02), behavior: "smooth" });
   };
-  const dia = (u: string) => `${Number(u.slice(8, 10))}/${u.slice(5, 7)} a las ${u.slice(11, 16)}`;
+  const dia = t.momento;
 
   return (
     <section ref={seccion} className="relative" style={{ height: `${HERO.RELATO.ALTO_SVH}svh` }}>
