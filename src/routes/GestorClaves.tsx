@@ -187,8 +187,8 @@ export default function GestorClaves() {
   const ancla = useAnclaHorizonte("linea");
   const noAutorizado = consulta.error instanceof ApiError && consulta.error.status === API.NO_AUTORIZADO;
 
-  // Con sesión pero sin el rol de administración, el gestor no existe: se vuelve a Acceso.
-  if (usuario && !conSesion) return <Navigate to={RUTAS.ACCESO} replace />;
+  // Con sesión pero sin el rol de administración, el gestor no existe: se vuelve a Acceso, que dice por qué.
+  if (usuario && !conSesion) return <Navigate to={RUTAS.ACCESO} replace state={{ soloAdmin: true }} />;
   if (comprobando) return <PantallaSimple documento={t.documento} rotulo={t.rotulo} titulo={t.titulo}><EstadoCarga /></PantallaSimple>;
   if (!claveAdmin || (noAutorizado && !conSesion)) {
     return (

@@ -159,6 +159,15 @@ describe("pantallas de Acceso y Mi perfil", () => {
     expect(screen.queryByRole("link", { name: "Gestor de claves" })).not.toBeInTheDocument(); // solo para admin
     expect(screen.getByRole("link", { name: "Mi perfil" })).toBeInTheDocument();
   });
+  it("a quien llega rebotado del gestor de claves sin ser admin le dice por qué", async () => {
+    const backend = simularBackend();
+    backend.abrir();
+    localStorage.setItem("apogeo.sesion", "1");
+    render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MemoryRouter initialEntries={[{ pathname: "/acceso", state: { soloAdmin: true } }]}><Acceso /></MemoryRouter></QueryClientProvider>);
+    expect(await screen.findByText("El gestor de claves es solo para el rol de administración.")).toHaveAttribute("role", "status");
+    expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument(); // ni formulario ni campo de clave
+  });
   it("Mi perfil muestra las huellas de las dos claves y qué protegen, nunca una privada", async () => {
     const backend = simularBackend({ yo: { ...YO, privada_pem: "-----BEGIN PRIVATE KEY-----" } });
     backend.abrir();
