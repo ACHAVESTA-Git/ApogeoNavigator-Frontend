@@ -125,3 +125,60 @@ describe("veredicto en partes", () => {
     expect(f.matices).toHaveLength(1);
   });
 });
+
+describe("plantillas en inglés sin restos de español", () => {
+  // Palabras típicas de las frases con fecha que se quedaron a medio traducir (auditoría 05, A2).
+  const RESTOS = /\b(sale el|sale la|se pone|se ponen|no sale|a las)\b/i;
+  /** Textos y fuente de las plantillas (funciones) de un árbol de textos, con su ruta. */
+  const plantillas = (valor: unknown, ruta = ""): [string, string][] => {
+    if (typeof valor === "string") return [[ruta, valor]];
+    if (typeof valor === "function") return [[ruta, String(valor)]];
+    if (valor && typeof valor === "object") return Object.entries(valor).flatMap(([k, v]) => plantillas(v, ruta ? `${ruta}.${k}` : k));
+    return [];
+  };
+
+  it("ningún texto ni plantilla del módulo inglés lleva «sale el», «se pone» o «a las»", async () => {
+    const en = await import("./textos.en");
+    const todas = plantillas(en);
+    expect(todas.length).toBeGreaterThan(400);
+    expect(todas.filter(([, texto]) => RESTOS.test(texto)).map(([ruta]) => ruta)).toEqual([]);
+    // la prueba detecta lo que busca: el módulo español sí las lleva
+    const es = await import("./textos.es");
+    expect(plantillas(es).filter(([, texto]) => RESTOS.test(texto)).map(([ruta]) => ruta)).toEqual(expect.arrayContaining(["T.inicio.actos.momento", "T.diaLunar.resumen"]));
+  });
+
+  it("las frases con fecha y hora del inicio y del día lunar se escriben en el idioma de cada módulo", async () => {
+    const [es, en] = await Promise.all([import("./textos.es"), import("./textos.en")]);
+    const [salida, puesta] = ["2026-12-14T23:00Z", "2026-12-27T02:00Z"];
+    const cruces = [{ tipo: "salida" as const, cuando: "2026-12-14 17:00" }, { tipo: "puesta" as const, cuando: "2026-12-29 13:00" }];
+
+    const actosEs = es.T.inicio.actos;
+    expect(actosEs.momento(salida)).toBe("14/12 a las 23:00");
+    expect(actosEs.dos.contexto(actosEs.momento(salida), actosEs.momento(puesta), "453 h"))
+      .toBe("Sale el 14/12 a las 23:00 y se pone el 27/12 a las 02:00 (UTC). El resto del mes, 453 h sin línea directa con la Tierra.");
+    expect(es.T.diaLunar.resumen("Tierra", cruces)).toBe("Tierra: sale el 2026-12-14 17:00; se pone el 2026-12-29 13:00 UTC");
+
+    // En inglés el día lleva el mes con nombre (lo da el formato de fechas del idioma activo) y la hora va con «at».
+    const actosEn = en.T.inicio.actos;
+    expect(actosEn.momento(salida)).toMatch(/^14 \S+ at 23:00$/);
+    const frases = [
+      actosEn.dos.contexto(actosEn.momento(salida), actosEn.momento(puesta), "453 h"),
+      actosEn.tres.contexto(actosEn.momento("2027-01-27T11:00Z")),
+      en.T.diaLunar.resumen("Earth", cruces),
+      en.T.diaLunar.sinEventos("Sun", true, "December 2026"),
+      en.T.diaLunar.evento("the Sun", "puesta", "2026-12-29 13:00"),
+    ];
+    for (const frase of frases) expect(frase).not.toMatch(RESTOS);
+    expect(frases[0]).toMatch(/^It rises on 14 \S+ at 23:00 and sets on 27 \S+ at 02:00 \(UTC\)\./);
+    expect(frases[1]).toMatch(/on 27 \S+ at 11:00 \(UTC\) the Sun at Shackleton sets too/);
+    expect(frases[2]).toBe("Earth: rises on 2026-12-14 17:00; sets on 2026-12-29 13:00 UTC");
+  });
+
+  it("ninguna pantalla escribe esas frases por su cuenta: salen de los textos", () => {
+    const fuentes = import.meta.glob<string>(["../components/**/*.{ts,tsx}", "../routes/**/*.{ts,tsx}", "!../**/*.test.{ts,tsx}"], { query: "?raw", import: "default", eager: true });
+    const sinComentarios = (codigo: string) => codigo.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+    const archivos = Object.entries(fuentes);
+    expect(archivos.length).toBeGreaterThan(40);
+    expect(archivos.filter(([, codigo]) => RESTOS.test(sinComentarios(codigo))).map(([ruta]) => ruta)).toEqual([]);
+  });
+});

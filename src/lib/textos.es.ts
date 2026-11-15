@@ -1,7 +1,7 @@
 // Cadenas de la interfaz y plantillas generadas a partir de datos, en español. La interfaz las lee a través de
 // `textos.ts`, que elige este módulo o `textos.en.ts` según el idioma. Toda clave nueva va en los dos.
 import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
-import { esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha } from "./fechas";
+import { diaDelMes, esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha, soloHora } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
 import { decidir, diferencias, type Diferencia, type LineaComparada } from "./comparar";
 import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
@@ -115,6 +115,8 @@ export const T = {
         contexto: (puesta: string) => `Un cambio de lugar o de fecha lo cambia todo: el ${puesta} (UTC) el Sol de Shackleton también se pone. Compara energía y enlace antes de decidir.`,
       },
       de: (total: string) => `de ${total}`,
+      // Día y hora de un cruce dentro de una frase del relato: «14/12 a las 23:00».
+      momento: (utc: Utc) => `${diaDelMes(utc)}/${utc.slice(5, 7)} a las ${soloHora(utc)}`,
       sigue: "Desplázate para avanzar el mes",
     },
     explorar: "Explorar sitios",
@@ -547,7 +549,9 @@ export const T = {
     duracion: (dias: string) => `Día lunar ≈ ${dias} días terrestres`,
     sinEventos: (astro: string, arriba: boolean, periodo: string) => `${astro} ${arriba ? "no se pone" : "no sale"} en ${periodo}`,
     evento: (astro: string, tipo: "salida" | "puesta", cuando: string) => `${tipo === "salida" ? "Sale" : "Se pone"} ${astro} · ${cuando} UTC`,
-    resumen: (astro: string, eventos: string) => `${astro}: ${eventos}`,
+    // Los cruces del periodo en una frase: «Tierra: sale el 2026-12-14 23:00; se pone el 2026-12-27 02:00 UTC».
+    resumen: (astro: string, cruces: { tipo: "salida" | "puesta"; cuando: string }[]) =>
+      `${astro}: ${cruces.map((c) => `${c.tipo === "salida" ? "sale" : "se pone"} el ${c.cuando}`).join("; ")} UTC`,
     irAlCielo: "Ver este instante en el cielo",
     tabla: "Ver tabla diaria",
     tablaTitulo: "Horas con Sol y con la Tierra visible por día (UTC)",

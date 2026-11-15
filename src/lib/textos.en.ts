@@ -3,7 +3,7 @@
 // R² is the in-sample fit, the RMSE is "optimistic; not an interval", observed/fitted exist only inside the data,
 // and `cargado_por` is shown as one of three categories, never as an identity.
 import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
-import { esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha } from "./fechas";
+import { diaCorto, esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha, soloHora } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
 import { decidir, diferencias, type Diferencia, type LineaComparada } from "./comparar";
 import type { FilaVeredicto, PartesVeredicto, Textos, TextosApiAnalisis } from "./textos.es";
@@ -117,6 +117,8 @@ export const T: Textos = {
         contexto: (puesta: string) => `A change of place or date changes everything: on ${puesta} (UTC) the Sun at Shackleton sets too. Compare power and link before you decide.`,
       },
       de: (total: string) => `of ${total}`,
+      // Day and time of a crossing inside a sentence of the story: "14 Dec at 23:00".
+      momento: (utc: Utc) => `${diaCorto(utc)} at ${soloHora(utc)}`,
       sigue: "Scroll to move through the month",
     },
     explorar: "Explore sites",
@@ -546,7 +548,9 @@ export const T: Textos = {
     duracion: (dias: string) => `Lunar day ≈ ${dias} Earth days`,
     sinEventos: (astro: string, arriba: boolean, periodo: string) => `${mayuscula(astro)} ${arriba ? "does not set" : "does not rise"} in ${periodo}`,
     evento: (astro: string, tipo: "salida" | "puesta", cuando: string) => `${mayuscula(astro)} ${tipo === "salida" ? "rises" : "sets"} · ${cuando} UTC`,
-    resumen: (astro: string, eventos: string) => `${astro}: ${eventos}`,
+    // The crossings of the period in one sentence: "Earth: rises on 2026-12-14 23:00; sets on 2026-12-27 02:00 UTC".
+    resumen: (astro: string, cruces: { tipo: "salida" | "puesta"; cuando: string }[]) =>
+      `${astro}: ${cruces.map((c) => `${c.tipo === "salida" ? "rises on" : "sets on"} ${c.cuando}`).join("; ")} UTC`,
     irAlCielo: "See this instant in the sky",
     tabla: "See the daily table",
     tablaTitulo: "Hours with Sun and with the Earth in view per day (UTC)",
