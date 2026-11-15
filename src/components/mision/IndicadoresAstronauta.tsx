@@ -23,6 +23,14 @@ function frase(clave: Clave, racha: Racha, horasPeriodo: number, sitio: string, 
   }
 }
 
+/** Primer nivel, en lenguaje operativo: «Tendrás Sol y Tierra a la vez 291 h seguidas», «Sin enlace… durante ≥ 335 h». */
+function operativa(clave: Clave, racha: Racha, horasPeriodo: number): string {
+  const t = T.mision.operativa[clave];
+  const h = `${esRachaCortada(racha) ? "≥ " : ""}${horas(racha.horas)}`;
+  const variante = varianteRacha(racha, horasPeriodo);
+  return variante === "cero" ? t.cero : variante === "todo" ? t.todo(h) : t.racha(h);
+}
+
 /** Una racha: cifra («≥» si toca un borde del periodo), su rango en UTC y la frase. Sin dato deja el hueco. */
 function Indicador({ clave, racha, horasPeriodo, sitio, periodo, children }: {
   clave: Clave; racha: unknown; horasPeriodo: number; sitio: string; periodo: string; children?: React.ReactNode;
@@ -42,7 +50,7 @@ function Indicador({ clave, racha, horasPeriodo, sitio, periodo, children }: {
     <div className="min-w-0" data-variante={varianteRacha(racha, horasPeriodo)}>
       <CifraHeroe valor={racha.horas} unidad="h" rotulo={rotulo} tamano="media" animar={false}
         formato={(v) => (cortada ? `≥ ${numeroCorto(v)}` : numeroCorto(v))}
-        contexto={frase(clave, racha, horasPeriodo, sitio, periodo)} />
+        contexto={<><span className="text-texto block font-medium">{operativa(clave, racha, horasPeriodo)}</span><span className="mt-1 block">{frase(clave, racha, horasPeriodo, sitio, periodo)}</span></>} />
       {racha.inicio_utc && racha.fin_utc && (
         <p className="text-texto-2 mt-1.5 font-mono text-[0.75rem]" data-dato>{T.mision.rango(fechaHora(racha.inicio_utc), fechaHora(racha.fin_utc))}</p>
       )}
@@ -80,7 +88,7 @@ export function IndicadoresAstronauta({ metrica, sitio }: { metrica: Metrica; si
         <Indicador clave="ventana" racha={ventana} {...comun}>
           {inicioVentana && (
             <Link to={`${RUTAS.CIELO(sitio.site_id)}?${new URLSearchParams({ [PARAM_URL.DESDE]: metrica.inicio_utc, [PARAM_URL.HASTA]: metrica.fin_utc, [PARAM_URL.T]: inicioVentana })}`}
-              className="text-apoyo text-texto hover:text-sol mt-2 inline-flex min-h-11 items-center gap-1.5 underline decoration-linea underline-offset-4">
+              className="text-apoyo text-texto hover:text-sol mt-2 inline-flex min-h-12 items-center gap-1.5 underline decoration-linea underline-offset-4">
               {t.verCielo}<ArrowRight aria-hidden="true" className="size-4 shrink-0" />
             </Link>
           )}
