@@ -399,3 +399,12 @@ export const LUJO = {
   // Medidor: unidades del viewBox. El arco abre 270° y deja el hueco abajo (empieza a las 7:30 y acaba a las 4:30).
   MEDIDOR: { LADO: 120, RADIO: 50, GROSOR: 8, ARCO_DEG: 270, INICIO_DEG: 135, MARCA: 7 },
 } as const;
+
+/** «Informe de confianza de la proyección» (pantalla Análisis). Los umbrales son de LECTURA de esa pantalla y se explican en ella. */
+export const CONFIANZA = {
+  R2: { reservas: 0.9, viable: 0.99 }, // ajuste interno (0–1): ámbar desde 0,9 y verde desde 0,99
+  ACIERTOS_FRACCION: { reservas: 0.75, viable: 0.9 }, // parte de los meses con el semáforo bien predicho
+  DECIMALES_R2: 3,
+  CURSOR_PASO_LARGO: 10, // Re Pág / Av Pág: muestras que salta el cursor de la serie
+  VARIABLE_RITMO: "sol_el_deg", // el «día lunar» se lee en la elevación del Sol
+} as const;
