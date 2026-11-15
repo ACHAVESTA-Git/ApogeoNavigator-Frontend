@@ -13,8 +13,8 @@ type Fila = "ambos" | "sol" | "tierra";
 // Una sola luz: solo la fila «Sol + Tierra» (la ventana para operar) brilla; las otras dos son su contexto, apagadas.
 const BANDA: Record<Fila, string> = {
   ambos: "bg-sol h-2.5 shadow-[0_0_14px_2px_rgb(from_var(--color-sol)_r_g_b/0.55)]",
-  sol: "bg-sol/45 h-1.5",
-  tierra: "bg-tierra/60 h-1.5",
+  sol: "bg-sol h-1.5",
+  tierra: "bg-tierra h-1.5",
 };
 
 /**
@@ -56,7 +56,7 @@ export function LineaVentanas({ filas, desde, hasta, siteId, className }: {
                     title={`${fechaHora(aUtc(v.inicioMs))} UTC · ${v.cortada ? "≥ " : ""}${horas(v.horas)}`}
                     className="entrada-lujo absolute inset-y-0 rounded-xs"
                     style={{ left: `${((v.inicioMs - a) / (b - a)) * 100}%`, width: `${((v.finMs - v.inicioMs) / (b - a)) * 100}%`, minWidth: LINEA_VENTANAS.MIN_ANCHO_PX, "--retraso": `${retraso}ms` } as CSSProperties}>
-                    <span aria-hidden="true" className={unir("banda-ventana absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full", BANDA[fila])} />
+                    <span aria-hidden="true" data-tenue={fila !== "ambos" || undefined} className={unir("banda-ventana absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full", BANDA[fila])} />
                   </Link>
                 );
               })}

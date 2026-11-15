@@ -84,7 +84,8 @@ export function EstadoMision({ sitio, desde, hasta, plegado = false, className }
               )}
             </ul>
           </div>
-          <div className="min-h-44 min-w-0">
+          {/* Alto reservado = el de la variante más larga (frases ES a 1024 px): el panel mide lo mismo antes y después del dato. */}
+          <div className="min-h-44 min-w-0 md:min-h-[21.75rem]">
             {m && (
               <div className="entrada-lujo" style={retraso(3)}>
                 <h3 className="rotulo text-texto mb-4">{t.indicadores} · <span className="normal-case">{periodo}</span></h3>
