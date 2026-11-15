@@ -10,6 +10,8 @@ export const API = {
   METRICAS: "/api/metricas",
   PUESTAS: (id: string) => `/api/puestas/${encodeURIComponent(id)}`,
   SIMULACION: (id: string) => `/api/simulacion/${encodeURIComponent(id)}`,
+  ANALISIS: (id: string) => `/api/analisis/${encodeURIComponent(id)}`,
+  PARAM_VARIABLE: "variable",
   VALIDAR: (tipo: TipoArchivo) => `/api/datos/validar/${tipo}`,
   GUARDAR: (tipo: TipoArchivo) => `/api/datos/${tipo}`,
   HORIZONS: "/api/horizons",
@@ -58,6 +60,8 @@ export const MUESTRA = {
   SITES: `${RUTA_MUESTRA}/sites.json`,
   EFEMERIDES: (id: string) => `${RUTA_MUESTRA}/efemerides/${encodeURIComponent(id)}.json`,
   REFERENCIA: `${RUTA_MUESTRA}/metricas-referencia.json`,
+  // Respuesta real de /api/analisis guardada como ejemplo (solo de este sitio). Se quita cuando el endpoint esté desplegado.
+  ANALISIS: { SITIO: "shackleton", RUTA: `${RUTA_MUESTRA}/analisis_shackleton.json` },
   FECHA_INSTANTANEA: "14/11/2026",
 } as const;
 
@@ -278,11 +282,12 @@ export const RUTAS = {
   CIELO: (id: string) => `/sitios/${id}/cielo`,
   VENTANAS: (id: string) => `/sitios/${id}/ventanas`,
   DIA_LUNAR: (id: string) => `/sitios/${id}/dia-lunar`,
+  ANALISIS: (id: string) => `/sitios/${id}/analisis`,
   COMPARAR: "/comparar",
   ACCESO: "/acceso",
   CLAVES: "/admin/claves",
 } as const; // sin ruta de carga: es un popup
-export const SEGMENTO = { CIELO: "cielo", VENTANAS: "ventanas", DIA_LUNAR: "dia-lunar" } as const;
+export const SEGMENTO = { CIELO: "cielo", VENTANAS: "ventanas", DIA_LUNAR: "dia-lunar", ANALISIS: "analisis" } as const;
 /** Coordenadas propias (HU-13): contrato de GET /api/horizons. */
 export const PUNTO_PROPIO = {
   PREFIJO: "punto_",
@@ -296,7 +301,7 @@ export const PUNTO_PROPIO = {
   RESPALDO_EJEMPLO: true,
 } as const;
 
-export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses" } as const;
+export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", VARIABLE: "variable" } as const;
 
 export const ENLACES = {
   HORIZONS: "https://ssd.jpl.nasa.gov/horizons/",
@@ -306,4 +311,11 @@ export const ENLACES = {
   REPO_FRONTEND: "https://github.com/ACHAVESTA-Git/ApogeoNavigator-Frontend",
   REPO_BACKEND: "https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend",
   SEGURIDAD: "https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend/tree/dev/docs",
+} as const;
+
+/** Gráficos de «Cómo analizamos los datos» (unidades del viewBox). */
+export const ANALISIS_GRAFICO = {
+  SERIE: { ANCHO: 720, ALTO: 300, MARGEN: { sup: 18, der: 16, inf: 30, izq: 44 } },
+  ESPECTRO: { ANCHO: 720, ALTO: 220, MARGEN: { sup: 22, der: 20, inf: 34, izq: 44 }, PERIODO_MIN_DIAS: 5 },
+  DECIMALES_HUELLA: 12, // caracteres de la huella SHA3-256 que se enseñan antes de la elipsis
 } as const;
