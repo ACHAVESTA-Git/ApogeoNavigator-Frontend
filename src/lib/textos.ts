@@ -19,6 +19,7 @@ export const FORMA_NIVEL = activo.FORMA_NIVEL;
 export const NOMBRE_CATEGORIA = activo.NOMBRE_CATEGORIA;
 export const FORMA_CATEGORIA = activo.FORMA_CATEGORIA;
 export const ERRORES_POR_ESTADO = activo.ERRORES_POR_ESTADO;
+export const ERRORES_DE_DOMINIO = activo.ERRORES_DE_DOMINIO;
 export const SIN_LINEA_DIRECTA = activo.SIN_LINEA_DIRECTA;
 export const umbralNivel = activo.umbralNivel;
 export const esperaYReintenta = activo.esperaYReintenta;
