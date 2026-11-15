@@ -128,8 +128,18 @@ describe("alto de la escena", () => {
   it("en escritorio llega hasta el borde inferior de la ventana y en móvil ocupa una fracción", () => {
     expect(altoDeEscena(900, true)).toBe(900 - ESCENA.ALTO.escritorio.descuento);
     expect(altoDeEscena(500, true)).toBe(ESCENA.ALTO.escritorio.min);
-    expect(altoDeEscena(780, false)).toBe(Math.round(780 * ESCENA.ALTO.movil.fraccion));
+    // En móvil la escena acaba donde empieza el control de tiempo: el suelo no queda tapado.
+    expect(altoDeEscena(780, false)).toBe(780 - ESCENA.ALTO.movil.descuento);
+    expect(altoDeEscena(844, false)).toBe(844 - ESCENA.ALTO.movil.descuento);
+    expect(altoDeEscena(600, false)).toBe(ESCENA.ALTO.movil.min);
     expect(altoDeEscena(2000, false)).toBe(ESCENA.ALTO.movil.max);
+    // y el horizonte cae hacia el 55 % de lo que se ve, con el suelo debajo (a 360×780 y a 390×844)
+    for (const alto of [780, 844]) {
+      const escena = altoDeEscena(alto, false);
+      const suelo = escena - Math.round(escena * ESCENA.HORIZONTE_FRACCION);
+      expect(ESCENA.HORIZONTE_FRACCION).toBeCloseTo(0.55, 1);
+      expect(suelo).toBeGreaterThanOrEqual(140);
+    }
   });
 });
 

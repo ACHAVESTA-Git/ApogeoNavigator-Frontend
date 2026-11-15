@@ -214,9 +214,11 @@ export const ESCENA = {
   // Mientras la escena se mueve (reproducción, arrastre, cambio de tamaño) se pinta a menos resolución y, al
   // parar, se vuelve a pintar nítida: el ojo no distingue el detalle en movimiento y cada fotograma cuesta menos.
   DPR_MOVIMIENTO: 1.25, MOVIMIENTO_SI_MS: 90, NITIDEZ_TRAS_MS: 150,
-  // Alto de la escena en la página: en móvil, una fracción de la ventana; desde 768 px llega hasta el borde
-  // inferior de la ventana (se descuenta lo que queda encima: barra, cabecera del sitio y pestañas).
-  ALTO: { movil: { min: 360, max: 560, fraccion: 0.62 }, escritorio: { min: 460, max: 1100, descuento: 256 } },
+  // Alto de la escena en la página. En móvil acaba donde empieza el control de tiempo, para que el suelo no
+  // quede tapado y el horizonte caiga hacia la mitad de lo que se ve: se descuenta lo que queda encima (barra,
+  // cabecera del sitio, pestañas y conmutadores: 271 px) y debajo (control de tiempo, 127 px, y barra inferior,
+  // 56 px). Desde 768 px llega hasta el borde inferior de la ventana (se descuenta lo que queda encima).
+  ALTO: { movil: { min: 280, max: 560, descuento: 454 }, escritorio: { min: 460, max: 1100, descuento: 256 } },
   // Pantalla completa: muelle sin rebote que se puede invertir a medio camino.
   INMERSION: { type: "spring", duration: 0.6, bounce: 0 },
   HORIZONTE_FRACCION: 0.56,

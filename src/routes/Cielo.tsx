@@ -124,11 +124,11 @@ function Instrumento({ sitio, filas, periodo, avisos = [] }: { sitio: Site; fila
                 {/* En pantalla completa la cabecera queda tapada: el instante que se mira va aquí. */}
                 {fijada && <RelojUtc className="max-md:mr-auto max-md:items-start" />}
                 {enPanorama && (
-                  <Segmentado etiqueta={t.escala} opciones={ESCALAS} valor={escala}
+                  <Segmentado compacto etiqueta={t.escala} opciones={ESCALAS} valor={escala}
                     alCambiar={(v) => escribir({ [PARAM_URL.ESCALA]: v === "lupa" ? null : v })} />
                 )}
                 {!fijada && (
-                  <Segmentado etiqueta={t.vista} opciones={VISTAS} valor={vista}
+                  <Segmentado compacto etiqueta={t.vista} opciones={VISTAS} valor={vista}
                     alCambiar={(v) => escribir({ [PARAM_URL.VISTA]: v === "panorama" ? null : v })} />
                 )}
                 {enPanorama && botonInmersion("max-md:hidden", true)}
@@ -149,13 +149,15 @@ function Instrumento({ sitio, filas, periodo, avisos = [] }: { sitio: Site; fila
           </div>
         )}
         pie={
-          <div data-transporte className="max-md:material-denso max-md:sticky max-md:bottom-[calc(var(--barra-inferior-alto)+var(--bandeja-alto)+env(safe-area-inset-bottom))] max-md:z-20 max-md:border-t max-md:border-texto/10 max-md:px-(--margen) max-md:pt-1 max-md:pb-2 group-data-inmersiva/escena:max-md:static group-data-inmersiva/escena:max-md:pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:material md:absolute md:inset-x-4 md:bottom-12 md:mx-auto md:max-w-(--contenido-max) md:rounded-panel md:border md:border-texto/10 md:px-4 md:pt-3 md:pb-2 md:shadow-flotante">
+          <div data-transporte className="max-md:material-denso max-md:sticky max-md:bottom-[calc(var(--barra-inferior-alto)+var(--bandeja-alto)+env(safe-area-inset-bottom))] max-md:z-20 max-md:border-t max-md:border-texto/10 max-md:px-(--margen) max-md:pt-1 max-md:pb-2 max-md:mb-[calc(var(--barra-inferior-alto)+var(--bandeja-alto)+env(safe-area-inset-bottom))] group-data-inmersiva/escena:max-md:static group-data-inmersiva/escena:max-md:mb-0 group-data-inmersiva/escena:max-md:pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:material md:absolute md:inset-x-4 md:bottom-12 md:mx-auto md:max-w-(--contenido-max) md:rounded-panel md:border md:border-texto/10 md:px-4 md:pt-3 md:pb-2 md:shadow-flotante">
             <Transporte filas={filas} control={controlDeReloj(reloj, filas)} conHoras={esEscritorio} />
           </div>
         }>
         {/* La simulación es la protagonista: ocupa todo el ancho de la ventana y llega hasta su borde inferior.
             El control de tiempo flota sobre el suelo de la escena en pantallas anchas; en móvil es una barra
-            compacta que se queda pegada encima de la barra inferior mientras la escena está a la vista. */}
+            compacta que se queda pegada encima de la barra inferior mientras la escena está a la vista. En móvil
+            la escena acaba donde empieza esa barra, y debajo se deja el hueco de la barra inferior: en el primer
+            pliegue no queda ningún texto detrás de ella. */}
         {(fijada) => enPanorama ? (
           <PanoramaCielo filas={filas} t={reloj.t} tUtc={reloj.tUtc} escala={escala} alPulsarTecla={alPulsarTecla} idTitulo={idTitulo}
             semilla={sitio.site_id} alArrastrarTiempo={reloj.arrastrarA} alSoltarTiempo={reloj.irA} incertidumbre={fiabilidad.bandaDeg} azimutFiable={fiabilidad.azimutFiable} eventos={eventos}
