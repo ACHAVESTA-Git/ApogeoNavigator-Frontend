@@ -1119,6 +1119,8 @@ export function describirInstante(utc: Utc, fila: FilaCielo): string {
 
 export const horaLocal = (hora: string): string => `${hora} ${ZONA_HORARIA_LOCAL.NOMBRE}, ${ZONA_HORARIA_LOCAL.DESFASE}`;
 
+/** Valores de `agencia` del catálogo que no son nombres propios y hay que traducir (en español ya llegan bien). */
+export const AGENCIAS_CONOCIDAS: Record<string, string> = {};
 export const SIN_LINEA_DIRECTA: string = "Sin línea directa con la Tierra: requiere satélite de retransmisión.";
 
 export interface FilaVeredicto {
