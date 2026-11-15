@@ -28,11 +28,11 @@ export function SelectorMultiple({ titulo, opciones, inicial, alComparar }: {
   return (
     <fieldset>
       <legend className="rotulo">{titulo}</legend>
-      <ul className="mt-2 grid gap-x-6 sm:grid-cols-2">
+      <ul className="mt-2 grid grid-cols-1 gap-x-6 sm:grid-cols-2">
         {opciones.map((o) => {
           const marcado = elegidos.includes(o.valor);
           return (
-            <li key={o.valor} className="capilar-b">
+            <li key={o.valor} className="capilar-b min-w-0">
               <label className={unir("tactil flex items-center gap-3 px-2 py-1.5 transition-[background-color,transform] duration-(--dur-micro) active:scale-[0.98]",
                 marcado ? "bg-superficie" : "hover:bg-superficie")}>
                 <input type="checkbox" checked={marcado} onChange={() => alternar(o.valor)} aria-describedby={aviso ? `${id}-aviso` : undefined}
