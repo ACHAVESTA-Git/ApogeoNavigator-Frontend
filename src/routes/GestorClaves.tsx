@@ -251,7 +251,7 @@ export default function GestorClaves() {
                     <Celda><span className="inline-flex items-center gap-2 whitespace-nowrap"><Icono aria-hidden="true" className={unir("size-4", activa ? "text-viable" : "text-critico")} />{t.estadoClave[c.estado]}</span></Celda>
                     <Celda><span className="text-texto block font-medium">{c.usuario_nombre}</span><span className="text-texto-3 block">{c.usuario_email}</span></Celda>
                     <Celda className="font-mono whitespace-nowrap"><time dateTime={c.creada_utc}>{fecha(c.creada_utc)}</time>
-                      {c.revocada_utc && <span className="text-texto-3 block font-sans">{t.revocadaEl(fecha(c.revocada_utc), c.motivo_revocacion)}</span>}</Celda>
+                      {c.revocada_utc && <span className="text-texto-3 block max-w-[22rem] font-sans whitespace-normal">{t.revocadaEl(fecha(c.revocada_utc), c.motivo_revocacion)}</span>}</Celda>
                     <Celda className="text-texto font-mono whitespace-nowrap">{c.algoritmo}</Celda>
                     <Celda className="text-texto-2 font-mono whitespace-nowrap">{t.tamanos(c.tamano_publica, c.tamano_privada_fips)}</Celda>
                     <Celda className="text-texto-2 font-mono"><abbr title={c.huella_sha3_256} className="no-underline">{c.huella_sha3_256.slice(0, CLAVES_PQC.HUELLA_VISIBLE)}…</abbr></Celda>
