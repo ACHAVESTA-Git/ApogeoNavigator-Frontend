@@ -1,18 +1,77 @@
-# Verificación del frontend · dom 15/11/2026 (cierre de la entrega)
+# Verificación del frontend · dom 15/11/2026 (cierre de la entrega y rediseño)
 
-Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 63, una rama y un worktree por bloque).
+Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 74, una rama y un worktree por bloque). La tabla está actualizada tras el rediseño de la tarde del 15/11 (PR 70, 72, 73 y 74).
 
 | Comprobación | Resultado |
 |---|---|
 | `npm run build` | En verde. Incluye `scripts/contraste.mjs`: 41 pares de tokens cumplen WCAG AA (el más justo, `texto-3` sobre `elevada`, 4,68:1) |
-| `npm run test:run` | 254 pruebas en verde |
-| JS inicial (gzip) | 199,2 kB (`index-*.js`, 592,8 kB sin comprimir). Eran 177,7 kB antes del PR 60: los textos de los dos idiomas viajan en el paquete inicial (unos 14 kB) y el estado de sesión de la cabecera añade unos 7 kB. Sin límite por decisión del usuario |
-| Chunks diferidos (gzip) | d3 13,1 · Cielo 9,3 · GestorClaves 7,2 · Analisis 6,5 · Sitios 6,1 · UploadDialog 5,9 · Comparar 5,4 · DiaLunar 3,7 · Ventanas 3,1 · CifraRelato 3,1 · Acceso 1,6 · Perfil 0,6 · DialogoConfiguracion 0,5 kB |
+| `npm run test:run` | 363 pruebas en verde (23 archivos) |
+| JS inicial (gzip) | 207,6 kB (`index-*.js`, 619,6 kB sin comprimir). Eran 203,6 kB antes del rediseño: 203,7 tras la tipografía, 206,9 tras la escena inmersiva (incluye el PR 71, de otra terminal), 207,4 tras Comparar y 207,6 tras el acceso en móvil. Sin límite por decisión del usuario |
+| Chunks diferidos (gzip) | d3 13,1 · Cielo 12,3 · Comparar 7,0 · Analisis 6,5 · Sitios 6,2 · GestorClaves 6,2 · UploadDialog 6,0 · DiaLunar 3,6 · Ventanas 3,1 · Acceso 1,5 · CieloCenital 1,3 · Perfil 0,6 · DialogoConfiguracion 0,5 kB |
 | Fuentes | Solo latino y latino extendido de Archivo y JetBrains Mono; la de texto se precarga |
 | Tamaño mínimo de texto | 12 px efectivos medidos en navegador (incluidos los rótulos SVG) en Inicio, Sitios, ficha, Cielo, Día lunar, Ventanas, Comparar y Análisis, a 1440 y a 360 px |
 | Capturas | `docs/frontend/capturas/` (1440×900 y 360×780). Regeneradas el 15/11 con la API real: inicio (acto 1), sitios, ficha, cielo (Shackleton y Apolo 11), cielo en proyección, día lunar, ventanas, comparar, análisis, análisis con firma no válida, mes sin datos (Ventanas y Comparar) y coordenadas propias (cielo y ventanas). `cielo-proyeccion-azimut-poco-fiable` usa la respuesta real con `azimut_solar_fiable: false` e incertidumbre de 180° añadidos por interceptación, porque el backend #28 aún no está fusionado |
 | Desplazamiento horizontal a 360 px | 0 px en todas las rutas capturadas |
 | Errores de consola | 0 en todas las capturas. En un mes sin datos el navegador anota el 422 de la propia petición (la interfaz lo muestra como estado vacío) |
+
+## Rediseño del 15/11 por la tarde (PR 70, 72, 73 y 74)
+Todas las medidas son del build de producción, con Playwright (Chromium sin GPU) y la API real en `localhost:8080`.
+
+| PR | Bloque | Qué cambia |
+|---|---|---|
+| 70 | Tipografía | Escala más contenida y fluida (`clamp()` entre 360 y 1440 px, sin saltos), medida de línea de unos 66 caracteres, nivel nuevo de sección e interletraje por tamaño. Se mantiene Archivo (motivo en `docs/marca.md`) |
+| 72 | Escena inmersiva | La vista del cielo ocupa todo el ancho, tiene pantalla completa con transición interrumpible y un suelo realista: luz según la elevación real del Sol, laderas, sombras en perspectiva, cráteres y polvo en el horizonte. Los datos no cambian |
+| 73 | Comparar | Veredicto con su porqué (según el semáforo de la API), la diferencia contada como relato («+388 h de sol, pero −61 % de Tierra») y los horizontes de las filas en el mismo instante con un único control de tiempo |
+| 74 | Detalles | «Acceso» en la cabecera del móvil sin sesión y espera del 429 en minutos cuando pasa de 90 s |
+
+### Tipografía (PR 70)
+| Medida | Antes | Después |
+|---|---|---|
+| Portada (`text-display`), 360 / 1440 px | 36 / 72 px | 32 / 54 px |
+| Título de pantalla (`text-titulo`) | 24 / 36 px | 22 / 30 px |
+| Sección o paso (`text-seccion`, nuevo) | 24 / 36 px (usaba el título) | 19 / 22 px |
+| Subtítulo | 20 px | 18 px |
+| Cifra grande (`text-dato-xl`) | 32 → 40 px con salto a 480 px / 64 px | 32 / 52 px, fluida |
+| Alto del titular del inicio a 1440 px | 367 px (5 líneas) | 168 px (3 líneas) |
+| Alto del titular del inicio a 360 px | 220 px (6 líneas) | 166 px (5 líneas) |
+| Línea más larga de texto corrido | unos 98 caracteres | unos 74 caracteres |
+| CLS del inicio (1440 y 360 px) | 0 | 0 |
+| Texto mínimo | 12 px | 12 px |
+
+El alto del titular del inicio se reserva en líneas por ancho e idioma. Medido en español y en inglés cada 8 px de 320 a 800 px, cada 40 px hasta 1480 px y píxel a píxel alrededor de cada cambio de línea: las líneas reservadas coinciden con las reales en todos los anchos probados. `src/styles/escala.test.ts` fija los máximos de los titulares, el suelo de 12 px, la continuidad de los `clamp()`, la jerarquía y la medida.
+
+### Escena del cielo (PR 72)
+| Medida | Antes | Después |
+|---|---|---|
+| Tamaño de la escena a 1440×900 | 1360×630 | 1440×644 en la página; 1440×838 en pantalla completa (+41 % de área) |
+| Tamaño de la escena a 360×780 | 328×484 | 360×484 en la página; 360×591 en pantalla completa (+34 %) |
+| Reproducción, 1440 px a 2x | 60 fps | 60 fps (p95 16,8 ms), también en pantalla completa |
+| Giro arrastrando, 1440 px a 2x | 60 fps | 60 fps |
+| Móvil 360 px a 3x (reposo, reproducción y giro) | 60 fps | 60 fps |
+| Transición a pantalla completa | no existía | 60 fps a 1x y en móvil; 56 fps a 2x (3 fotogramas de 33 ms: el primero y el último, a resolución completa) |
+| Pintados del lienzo en reposo | 10 por segundo, siempre | 0 |
+| Portada (comparación píxel a píxel a 1440×900 y 360×780) | — | 0 píxeles distintos; CLS 0 antes y después |
+
+- Cómo se sostienen los 60 fps: cada capa del suelo se pinta solo hasta donde la tapa la siguiente; mientras la escena se mueve se pinta a 1,25x de densidad y vuelve a 2x a los 150 ms de parar; el lienzo se reserva una vez al alto final durante la transición; pedir un pintado es idempotente.
+- Corregido de paso: `useValorMotion` guardaba como estado nuevo un objeto igual al anterior y la vista del cielo se renderizaba y repintaba diez veces por segundo en reposo.
+- Luz comprobada con el Sol a 9°, a 88° y de noche con la Tierra visible (Apolo 11): el suelo se pinta con una quinta parte de la luz a 1,7° que a 88°; las sombras miden 1/tan(elevación) alturas (33 con el Sol a 1,7°).
+- Transición revisada fotograma a fotograma (uno cada 80 ms) a 1440 y 360 px. La revisión destapó un fallo que se corrigió antes de fusionar: con el puntero sobre la escena, el lienzo se quedaba sin pintar durante el cambio de tamaño y se veía estirado.
+- Datos intactos: posiciones por azimut y elevación de la API, aviso de horizonte ideal y de relieve ilustrativo dentro de la escena, y proyección marcada (aviso, anillo de incertidumbre y azimut poco fiable atenuado) también en pantalla completa.
+- Accesibilidad: `Escape` sale (con una tarjeta de astro abierta, el primero cierra la tarjeta); lo tapado pasa a `inert`; el foco se queda dentro y vuelve al botón. Con movimiento reducido no hay transición, apertura desde el horizonte ni paralaje.
+
+### Comparar (PR 73)
+- Veredicto: una frase principal y dos matices. Decide con el semáforo de la API (nivel global y, a igualdad, los de energía y comunicación); en el cliente no se repite ningún umbral. Ejemplo real: «Apolo 11 es la opción más sólida en diciembre de 2026: viable en energía y en comunicación.»
+- Relato de diferencias: restas de las métricas de la API (744 − 356 h de sol; (291 − 744) / 744 de Tierra).
+- Un solo control de tiempo: con el foco en la regla, dos pulsaciones de flecha pasan de las 12:00 a las 14:00 UTC y cambian las lecturas de todos los horizontes. Reproducción a 60 fps (p95 16,8 ms) a 1440 px a 2x y a 360 px a 3x.
+- Cambio de 2 a 3 sitios grabado y revisado fotograma a fotograma a 1440 y 360 px: las tarjetas se recolocan en unos 320 ms y la URL queda en `s=shackleton,apollo11,apollo17`. Probado también con tres sitios y en modo fechas (HU-08).
+- Español e inglés con prueba de claves (`src/lib/comparar.test.ts`, 17 pruebas). Sin desplazamiento horizontal a 360 px ni errores de consola. El fragmento de Comparar pasa de 5,4 a 7,0 kB gzip.
+
+### Detalles (PR 74)
+- A 360×780 sin sesión, «Acceso» es visible en la cabecera (44×44 px), lleva a `/acceso` y no hay desplazamiento horizontal; a 1440×900 sigue el enlace de texto.
+- `Retry-After: 900` da «Espera 15 min y reintenta» / «Wait 15 min and retry»; hasta 90 s sigue en segundos. Cubierto por prueba del traductor de errores.
+
+### Capturas del rediseño
+En `docs/frontend/capturas/`, a 1440×900 y 360×780: `tipografia-antes-*` y `tipografia-despues-*` (12 pantallas), `escena-antes-*`, `escena-despues-*` y `escena-despues-pantalla-completa-*`, `comparar-antes-*` y `comparar-despues-*` (también con tres sitios, en modo fechas y a página completa), `acceso-movil-despues-360` y las hojas de fotogramas `escena-transicion-pantalla-completa-*` y `comparar-transicion-seleccion-*`. Las capturas generales de inicio, sitios, ficha, cielo, ventanas, día lunar, análisis, comparar y acceso se regeneraron con el build final.
 
 ## Qué entró en el cierre (PR 54 a 63)
 | PR | Contenido |
@@ -85,14 +144,17 @@ Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 63, una rama 
 ## Pendiente
 - **Pulido sin hacer:** muestra de respaldo partida por mes (hoy un JSON de unos 180 kB por sitio con los seis meses) y relato del inicio diferido. Se dejaron fuera por riesgo de regresión en la primera pantalla y en el respaldo.
 - **Sesión contra el backend real:** el PR 63 está tipado con el contrato anunciado (`POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me → {id, nombre, rol, huellas}`). Falta probarlo con la API real y ajustar la forma de las huellas cuando el backend publique el contrato (`leerHuellas` en `src/lib/sesion.ts`).
-- **Reproducción a 30 fps** (auditoría 04, A3): sin hacer. `lienzoLunar.ts` lo comparte el relato del inicio, así que no se toca sin medir antes en el portátil de la demo.
+- **Fps en hardware real** (auditoría 04, A3): la reproducción va a 60 fps en Chromium sin GPU gracias a la resolución adaptativa (PR 72), pero falta medirla en el portátil de la demo y en un teléfono, y comprobar allí que el paso de 1,25x a 2x de densidad al parar no se nota.
+- **CLS de Ventanas a 360 px:** 0,066 (ya estaba antes del rediseño; el inicio y el cielo están en 0). Sin corregir.
+- **Pantalla completa con barras de desplazamiento clásicas:** al bloquear el desplazamiento de la página puede moverse el contenido unos píxeles en sistemas sin barras superpuestas. Sin comprobar fuera de macOS.
 - **`og:image` con dirección completa:** el HTML lleva `/marca/og.png`; falta el dominio de producción para que las redes lo recojan.
 - **Idioma sin recarga:** cambiar de idioma recarga la página. Los dos idiomas viajan en el JS inicial (unos 14 kB gzip más); cargar solo el activo queda sin hacer por no arriesgar la primera pantalla.
 - **Línea «Media de los 10 sitios…»** en la ficha estrecha de Ventanas, que parte en tres renglones (auditoría 04, menor).
 - **Validación de coherencia:** C5 (declaración de uso de IA, a la espera del usuario; el pie ya nombra al equipo, al autor y la sede desde el PR 57). C8 resuelto: la cabecera de Shackleton dice «Región polo sur · Referencia (JPL Horizons)» con la API real y la muestra de respaldo ya coincide (PR 52).
 
 ## No verificado
-- Dispositivo físico, Lighthouse, lector de pantalla y medición de fps.
+- Dispositivo físico, Lighthouse y lector de pantalla. Los fps están medidos en Chromium sin aceleración por GPU (el caso más lento), no en un Mac con GPU ni en un teléfono.
+- El gesto táctil real sobre la escena en pantalla completa (arrastre del cielo y del suelo) y el paralaje con ratón en hardware real.
 - La tarjeta para compartir (`og:`) en una red real y el icono de 180 px en un iPhone.
 - El inicio de sesión contra el backend real y la cookie de sesión entre orígenes distintos (CORS con credenciales).
 - El cambio de idioma con el almacenamiento del navegador bloqueado (solo con prueba unitaria).
