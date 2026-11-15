@@ -327,13 +327,14 @@ export const T: Textos = {
         r2Sol: "R² fit · Sun elevation",
         r2Tierra: "R² fit · Earth elevation",
         aciertos: "Traffic-light hits",
+        nivelesR2: { verde: "High fit", amarillo: "Medium fit", rojo: "Low fit" },
         deMeses: (meses: number) => `/ ${meses}`,
         r2Mision: "How closely the model traces the data it already has. It does not say how well it will do later.",
         aciertosMision: "Months in which the projection gave the same traffic light as JPL Horizons.",
         aciertosReferencia: "Measured with other data: a reference, it does not describe yours.",
         ayuda: (rotulo: string) => `How to read: ${rotulo}`,
         umbralesR2: (reservas: string, viable: string) =>
-          `Reading thresholds for this screen: green from ${viable}, amber from ${reservas}, red below. R² is an internal fit: it measures likeness to data already known, not future accuracy.`,
+          `Reading thresholds for this screen: high fit from ${viable}, medium from ${reservas}, low below. R² is an internal fit: it measures likeness to data already known, not future accuracy.`,
         umbralesAciertos: (reservas: number, viable: number, meses: number) =>
           `Reading thresholds for this screen: green with ${viable} or more months right out of ${meses}, amber with ${reservas} or more, red below.`,
       },

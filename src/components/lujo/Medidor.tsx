@@ -40,6 +40,8 @@ export interface MedidorProps {
   leyenda?: boolean;
   /** Traza el arco y cuenta la cifra UNA vez al aparecer (600 ms). */
   animar?: boolean;
+  /** Palabra de cada nivel cuando «Viable / Con reservas / Crítico» no describe la medida (p. ej. un R²: «Ajuste alto»). */
+  nombresNivel?: Record<NivelSemaforo, string>;
   /** Línea extra bajo el nivel («qué significa para tu misión»). */
   children?: ReactNode;
   className?: string;
@@ -63,7 +65,7 @@ function Marca({ en }: { en: number }) {
  * Arco radial de 270° con los dos umbrales marcados y la cifra en el centro. El nivel se dice con glifo + palabra
  * (no solo con el color del arco). `role="meter"`: el lector de pantalla oye rótulo, valor con unidad y nivel.
  */
-export function Medidor({ valor, umbrales, rotulo, unidad, min = 0, max = 100, formato = numeroCorto, tamano = "md", leyenda = false, animar = true, children, className }: MedidorProps) {
+export function Medidor({ valor, umbrales, rotulo, unidad, min = 0, max = 100, formato = numeroCorto, tamano = "md", leyenda = false, animar = true, nombresNivel = NOMBRE_NIVEL, children, className }: MedidorProps) {
   const fmt = useFormatoEstable(formato);
   const idLeyenda = useId();
   const hayDato = valor !== null && Number.isFinite(valor);
@@ -78,7 +80,7 @@ export function Medidor({ valor, umbrales, rotulo, unidad, min = 0, max = 100, f
   return (
     <div className={unir("flex min-w-0 flex-col items-center text-center", className)} data-nivel={nivel ?? "sin-dato"}>
       <div role="meter" aria-label={rotulo} aria-valuemin={min} aria-valuemax={max} aria-valuenow={hayDato ? valor : undefined}
-        aria-valuetext={hayDato && nivel ? T.lujo.medidor.lectura(conUnidad(valor), NOMBRE_NIVEL[nivel]) : T.lujo.sinDato}
+        aria-valuetext={hayDato && nivel ? T.lujo.medidor.lectura(conUnidad(valor), nombresNivel[nivel]) : T.lujo.sinDato}
         aria-describedby={idLeyenda} className={unir("relative aspect-square max-w-full", t.caja)}>
         <svg viewBox={`0 0 ${LADO} ${LADO}`} aria-hidden="true" className="block size-full" fill="none">
           <path d={ARCO} className="stroke-texto/10" strokeWidth={GROSOR} strokeLinecap="round" />
@@ -100,7 +102,7 @@ export function Medidor({ valor, umbrales, rotulo, unidad, min = 0, max = 100, f
         </p>
       </div>
       <p className="rotulo mt-2 text-balance">{rotulo}</p>
-      {nivel ? <GlifoSemaforo nivel={nivel} className="mt-1.5" /> : <p className="text-apoyo text-texto-2 mt-1.5">{T.lujo.sinDato}</p>}
+      {nivel ? <GlifoSemaforo nivel={nivel} etiqueta={nombresNivel[nivel]} className="mt-1.5" /> : <p className="text-apoyo text-texto-2 mt-1.5">{T.lujo.sinDato}</p>}
       <p id={idLeyenda} className={leyenda ? "text-texto-2 mt-1.5 max-w-medida-corta text-[0.75rem]" : "sr-only"}>{textoUmbrales}</p>
       {children && <div className="text-apoyo text-texto-2 mt-2 max-w-medida-corta">{children}</div>}
     </div>

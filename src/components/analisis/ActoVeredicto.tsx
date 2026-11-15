@@ -29,11 +29,11 @@ export function ActoVeredicto({ a }: { a: Analisis }) {
   const nota = v.estado === "ausente" ? a.validacion.motivo : referencia ? t.veredicto.referenciaNota : t.veredicto.propiaNota;
   const uAciertos = v.meses ? umbralesAciertos(v.meses) : null;
   const medidores = [
-    { clave: "r2Sol", rotulo: t.medidores.r2Sol, valor: a.modelo.r2.sol_el_deg ?? null, umbrales: CONFIANZA.R2, max: 1, formato: r2, unidad: undefined,
+    { clave: "r2Sol", rotulo: t.medidores.r2Sol, valor: a.modelo.r2.sol_el_deg ?? null, umbrales: CONFIANZA.R2, max: 1, formato: r2, unidad: undefined, niveles: t.medidores.nivelesR2,
       ayuda: t.medidores.umbralesR2(r2(CONFIANZA.R2.reservas), r2(CONFIANZA.R2.viable)), mision: t.medidores.r2Mision },
-    { clave: "r2Tierra", rotulo: t.medidores.r2Tierra, valor: a.modelo.r2.tierra_el_deg ?? null, umbrales: CONFIANZA.R2, max: 1, formato: r2, unidad: undefined,
+    { clave: "r2Tierra", rotulo: t.medidores.r2Tierra, valor: a.modelo.r2.tierra_el_deg ?? null, umbrales: CONFIANZA.R2, max: 1, formato: r2, unidad: undefined, niveles: t.medidores.nivelesR2,
       ayuda: t.medidores.umbralesR2(r2(CONFIANZA.R2.reservas), r2(CONFIANZA.R2.viable)), mision: t.medidores.r2Mision },
-    { clave: "aciertos", rotulo: t.medidores.aciertos, valor: uAciertos ? v.aciertos : null, umbrales: uAciertos ?? CONFIANZA.ACIERTOS_FRACCION, max: v.meses ?? 1, formato: entero,
+    { clave: "aciertos", rotulo: t.medidores.aciertos, valor: uAciertos ? v.aciertos : null, umbrales: uAciertos ?? CONFIANZA.ACIERTOS_FRACCION, max: v.meses ?? 1, formato: entero, niveles: undefined,
       unidad: v.meses ? t.medidores.deMeses(v.meses) : undefined,
       ayuda: uAciertos && v.meses ? t.medidores.umbralesAciertos(uAciertos.reservas, uAciertos.viable, v.meses) : null,
       mision: referencia ? t.medidores.aciertosReferencia : t.medidores.aciertosMision },
@@ -60,7 +60,7 @@ export function ActoVeredicto({ a }: { a: Analisis }) {
           {medidores.map((m) => (
             <li key={m.clave} className="relative min-w-0 px-1 pt-2">
               {m.ayuda && <NotaAyuda etiqueta={t.medidores.ayuda(m.rotulo)}>{m.ayuda}</NotaAyuda>}
-              <Medidor valor={m.valor} umbrales={m.umbrales} rotulo={m.rotulo} min={0} max={m.max} formato={m.formato} unidad={m.unidad}>{m.mision}</Medidor>
+              <Medidor valor={m.valor} umbrales={m.umbrales} rotulo={m.rotulo} min={0} max={m.max} formato={m.formato} unidad={m.unidad} nombresNivel={m.niveles}>{m.mision}</Medidor>
             </li>
           ))}
         </ul>

@@ -25,6 +25,14 @@ describe("ActoVeredicto", () => {
     expect(screen.getAllByRole("meter")).toHaveLength(3);
     expect(screen.getAllByRole("tooltip")).toHaveLength(3);
   });
+  it("el R² se rotula como ajuste (alto, medio o bajo), nunca «Viable»: es interno, no acierto fuera de los datos", () => {
+    render(<ActoVeredicto a={analisis()} />);
+    expect(screen.getByRole("meter", { name: "Ajuste R² · elevación del Sol" }).getAttribute("aria-valuetext")).toBe("0,999 · Ajuste alto");
+    expect(screen.getByRole("meter", { name: "Ajuste R² · elevación de la Tierra" }).getAttribute("aria-valuetext")).toBe("0,950 · Ajuste medio");
+    expect(screen.getByRole("meter", { name: "Aciertos del semáforo" }).getAttribute("aria-valuetext")).toBe("12 / 12 · Viable");
+    expect(screen.getAllByText("Viable")).toHaveLength(1);
+    expect(screen.getAllByRole("tooltip")[0].textContent).toMatch(/ajuste alto desde 0,990, medio desde 0,900 y bajo por debajo/);
+  });
   it("una validación con otros datos se rotula «de referencia» y nunca «confianza alta»", () => {
     render(<ActoVeredicto a={analisis({ vigente: false })} />);
     expect(screen.getByText("De referencia")).toBeTruthy();

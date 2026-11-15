@@ -325,13 +325,14 @@ export const T = {
         r2Sol: "Ajuste R² · elevación del Sol",
         r2Tierra: "Ajuste R² · elevación de la Tierra",
         aciertos: "Aciertos del semáforo",
+        nivelesR2: { verde: "Ajuste alto", amarillo: "Ajuste medio", rojo: "Ajuste bajo" },
         deMeses: (meses: number) => `/ ${meses}`,
         r2Mision: "Cuánto calca el modelo los datos que ya tiene. No dice cuánto acertará después.",
         aciertosMision: "Meses en los que la proyección dio el mismo semáforo que JPL Horizons.",
         aciertosReferencia: "Medido con otros datos: sirve de referencia, no describe los tuyos.",
         ayuda: (rotulo: string) => `Cómo se lee: ${rotulo}`,
         umbralesR2: (reservas: string, viable: string) =>
-          `Umbrales de lectura de esta pantalla: verde desde ${viable}, ámbar desde ${reservas} y rojo por debajo. El R² es un ajuste interno: mide el parecido con los datos ya conocidos, no el acierto futuro.`,
+          `Umbrales de lectura de esta pantalla: ajuste alto desde ${viable}, medio desde ${reservas} y bajo por debajo. El R² es un ajuste interno: mide el parecido con los datos ya conocidos, no el acierto futuro.`,
         umbralesAciertos: (reservas: number, viable: number, meses: number) =>
           `Umbrales de lectura de esta pantalla: verde con ${viable} o más meses acertados de ${meses}, ámbar con ${reservas} o más y rojo por debajo.`,
       },
