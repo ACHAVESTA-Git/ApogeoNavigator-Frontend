@@ -109,10 +109,12 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
 
       {/* 2 · El mismo instante en cada horizonte, con un único control de tiempo. */}
       <section className="mt-8">
-        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
-          <h2 className="rotulo">{visibles.length > 1 ? t.mismoInstante(visibles.length) : t.horizonteDe(visibles[0].etiqueta)}</h2>
-          <p className="text-texto-3 text-[0.75rem]">{t.mismoInstanteAyuda}</p>
-        </div>
+        {visibles.length > 1 && (
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
+            <h2 className="rotulo">{t.mismoInstante(visibles.length)}</h2>
+            <p className="text-texto-3 text-[0.75rem]">{t.mismoInstanteAyuda}</p>
+          </div>
+        )}
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
           <button type="button" className={clasesBoton("primario", "px-0")} aria-label={reproduciendo ? t.pausar : t.reproducir} onClick={() => setReproduciendo((v) => !v)}>
             <IconoReproducir aria-hidden="true" className="size-4" />

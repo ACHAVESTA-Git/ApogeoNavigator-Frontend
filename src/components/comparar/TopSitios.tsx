@@ -18,7 +18,7 @@ const UMBRALES = {
   comunicacion: { viable: SEMAFORO.COMUNICACION.VERDE_MIN, reservas: SEMAFORO.COMUNICACION.AMARILLO_MIN },
 };
 /** Alto reservado de una fila (también del hueco de carga): nada salta cuando llegan los datos. */
-const ALTO_FILA = "min-h-[27rem] md:min-h-[15.5rem] lg:min-h-[13.5rem]";
+const ALTO_FILA = "min-h-[28.75rem] lg:min-h-[15.1875rem]";
 const REJILLA = "grid items-center gap-x-8 gap-y-5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(13rem,auto)]";
 
 /** La cifra decisiva: horas seguidas con Sol y Tierra a la vez. Interpola solo cuando cambia el periodo. */
@@ -30,7 +30,7 @@ function CifraDecisiva({ fila }: { fila: PuestoRanking }) {
   const cortada = esTruncada(fila.ventana);
   const leido = horas(valor);
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 max-lg:order-2">
       <p className="text-dato-xl text-texto font-mono font-medium whitespace-nowrap" data-dato>
         <span className="sr-only">{t.top.decisivaLeida(cortada ? t.podio.alMenosLeido(leido) : leido)}</span>
         <span aria-hidden="true">
@@ -87,7 +87,7 @@ function Fila({ fila, elegido, alAlternar }: { fila: PuestoRanking; elegido: boo
             </div>
           </div>
         </div>
-        <div className="flex justify-center gap-4 sm:gap-8 lg:justify-end">
+        <div className="flex justify-center gap-4 max-lg:order-3 sm:gap-8 lg:justify-end">
           <Medidor valor={metrica.pct_sol} umbrales={UMBRALES.energia} rotulo={t.filas.energia} unidad="%" tamano="md" animar={false} />
           <Medidor valor={metrica.pct_tierra} umbrales={UMBRALES.comunicacion} rotulo={t.filas.comunicacion} unidad="%" tamano="md" animar={false} />
         </div>
