@@ -131,6 +131,13 @@ const CODIGOS_BACKEND = [
   "SITIO_NO_ENCONTRADO", "EFEMERIDES_NO_ENCONTRADAS", "MANIFIESTO_NO_GENERADO", "TIPO_DATOS_DESCONOCIDO", "USUARIO_NO_ENCONTRADO", "CLAVE_NO_ENCONTRADA",
   "CLAVE_INVALIDA", "RANGO_FECHAS_INVALIDO", "VARIABLE_INVALIDA", "RANGO_DEMASIADO_LARGO", "CSV_INVALIDO", "DATOS_NO_DISPONIBLES", "BD_NO_DISPONIBLE",
   "ALMACEN_NO_DISPONIBLE", "FIRMA_NO_DISPONIBLE", "CLAVE_DUPLICADA", "CLAVE_YA_REVOCADA", "USUARIO_INACTIVO",
+  "CREDENCIALES_INVALIDAS", "SESION_INVALIDA", "ROL_INSUFICIENTE", "ORIGEN_NO_PERMITIDO", "DEMASIADOS_INTENTOS", // login (app/routers/auth.py)
+  // backend PR 41: fechas y rangos, Horizons, carga y datos no disponibles
+  "PASO_HORAS_INVALIDO", "DEMASIADOS_PUNTOS", "FECHA_FUERA_DE_DATOS", "FECHA_ANTES_DE_LOS_DATOS", "FECHA_FUERA_DE_PROYECCION",
+  "RANGO_SIN_DATOS", "SITIO_REQUERIDO", "COMPARACION_SITIOS_INVALIDA", "HORIZONS_FECHAS_FUERA_DE_RANGO", "HORIZONS_LIMITE",
+  "HORIZONS_OCUPADO", "HORIZONS_TIEMPO_AGOTADO", "HORIZONS_NO_DISPONIBLE", "HORIZONS_RESPUESTA_INVALIDA", "HORIZONS_RESULTADO_NO_VALIDO",
+  "CARGA_EN_CONFLICTO", "AUDITORIA_NO_DISPONIBLE", "CATALOGO_NO_DISPONIBLE", "CATALOGO_INVALIDO", "EFEMERIDES_INVALIDAS",
+  "METRICAS_INVALIDAS", "SIMULACION_NO_DISPONIBLE",
 ];
 describe("catálogo de códigos de error del backend", () => {
   const catalogo = (m: typeof es | typeof en) => ({ ...Object.fromEntries(Object.values(m.ERRORES_POR_ESTADO).map((e) => [e.codigo, e])), ...m.ERRORES_DE_DOMINIO });
@@ -157,5 +164,14 @@ describe("catálogo de códigos de error del backend", () => {
     expect(t).toMatchObject({ codigo: "SITIO_NO_ENCONTRADO", titulo: es.ERRORES_DE_DOMINIO.SITIO_NO_ENCONTRADO.titulo, mensaje: es.ERRORES_DE_DOMINIO.SITIO_NO_ENCONTRADO.mensaje, accion: "sitios" });
     expect(t.mensaje).not.toMatch(/«x»/);
     expect(traducirError(new ApiError(404, "", { ...backend, codigo: "constructor" }), "en").titulo).toBe(es.ERRORES_POR_ESTADO[404].titulo);
+  });
+  it("login: el 429 dice cuánto esperar y un rol insuficiente no ofrece introducir una clave", () => {
+    const e = (codigo: string, estado: number) => ({ codigo, estado, titulo: "t", mensaje: "m", accion: "a" });
+    const intentos = traducirError(new ApiError(429, "", e("DEMASIADOS_INTENTOS", 429), undefined, 42), "en");
+    expect(intentos).toMatchObject({ codigo: "DEMASIADOS_INTENTOS", titulo: es.ERRORES_DE_DOMINIO.DEMASIADOS_INTENTOS.titulo, accion: "reintentar", esperaS: 42 });
+    expect(intentos.sugerencia).toContain("42");
+    expect(traducirError(new ApiError(403, "", e("ROL_INSUFICIENTE", 403)), "es")).toMatchObject({ titulo: "t", accion: "ninguna" });
+    expect(traducirError(new ApiError(403, "", e("ORIGEN_NO_PERMITIDO", 403)), "en")).toMatchObject({ titulo: es.ERRORES_DE_DOMINIO.ORIGEN_NO_PERMITIDO.titulo, accion: "reintentar" });
+    expect(traducirError(new ApiError(403, "", e("PROHIBIDO", 403)), "es").accion).toBe("clave");
   });
 });

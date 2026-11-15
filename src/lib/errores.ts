@@ -97,7 +97,11 @@ export const CODIGO_SIN_CONEXION = "SIN_CONEXION";
 export const CODIGO_DESCONOCIDO = "ERROR_DESCONOCIDO";
 const CODIGO_POR_ESTADO: Record<number, string> = Object.fromEntries(Object.entries(ERRORES_POR_ESTADO).map(([estado, e]) => [estado, e.codigo]));
 
-function accionDe(estado: number): TipoAccion {
+/** Códigos cuyo botón no es el de su estado: con un rol insuficiente o un origen rechazado no sirve pedir una clave. */
+const ACCION_POR_CODIGO: Partial<Record<string, TipoAccion>> = { ROL_INSUFICIENTE: "ninguna", ORIGEN_NO_PERMITIDO: "reintentar", CREDENCIALES_INVALIDAS: "ninguna", SESION_INVALIDA: "ninguna" };
+function accionDe(estado: number, codigo?: string): TipoAccion {
+  const propia = codigo ? ACCION_POR_CODIGO[codigo] : undefined;
+  if (propia) return propia;
   if (estado === API.NO_AUTORIZADO || estado === API.PROHIBIDO) return "clave";
   if (estado === API.NO_ENCONTRADO) return "sitios";
   if (estado === 0 || estado === 409 || estado === 429 || estado >= 500) return "reintentar";
@@ -110,9 +114,13 @@ const detalleLegible = (detail: unknown): string | null =>
 export const CODIGO_MES_SIN_DATOS = "MES_SIN_DATOS";
 /** Frase con la que la API dice que «desde» o «hasta» caen fuera de los datos cargados (T.errores.fueraDeDatos). */
 const FUERA_DE_DATOS = /fuera del rango de datos/i;
+/** Códigos con los que el backend dice que el periodo pedido no tiene datos. */
+const CODIGOS_MES_SIN_DATOS: readonly string[] = ["RANGO_SIN_DATOS", "FECHA_FUERA_DE_DATOS"];
 /** 422 de un periodo sin datos: no es un fallo ni algo que corregir en un formulario, es un mes que no existe en los datos. */
 export function esMesSinDatos(error: unknown): boolean {
-  return error instanceof ApiError && error.esNoProcesable && FUERA_DE_DATOS.test(`${error.error?.mensaje ?? ""} ${typeof error.detail === "string" ? error.detail : ""}`);
+  if (!(error instanceof ApiError) || !error.esNoProcesable) return false;
+  // El backend lo dice con el código; las respuestas anteriores (RANGO_FECHAS_INVALIDO o sin objeto `error`), con la frase.
+  return CODIGOS_MES_SIN_DATOS.includes(error.error?.codigo ?? "") || FUERA_DE_DATOS.test(`${error.error?.mensaje ?? ""} ${typeof error.detail === "string" ? error.detail : ""}`);
 }
 
 /** Catálogo por código: con él se traducen los textos del backend, que llegan en español, cuando la interfaz está en otro idioma. */
@@ -137,7 +145,7 @@ export function traducirError(error: unknown, idioma: Idioma = IDIOMA): ErrorTra
     return {
       codigo: b?.codigo ?? base.codigo, estado: error.status, titulo: propio.titulo, mensaje: propio.mensaje,
       sugerencia: error.esperaS ? esperaYReintenta(error.esperaS) : propio.accion,
-      accion: accionDe(error.status), requestId: error.requestId, esperaS: error.esperaS,
+      accion: accionDe(error.status, b?.codigo), requestId: error.requestId, esperaS: error.esperaS,
     };
   }
   return {
@@ -146,7 +154,7 @@ export function traducirError(error: unknown, idioma: Idioma = IDIOMA): ErrorTra
     titulo: b?.titulo ?? base.titulo,
     mensaje: b?.mensaje ?? detalleLegible(error.detail) ?? base.mensaje,
     sugerencia: error.esperaS ? esperaYReintenta(error.esperaS) : b?.accion || base.accion,
-    accion: accionDe(error.status),
+    accion: accionDe(error.status, b?.codigo),
     requestId: error.requestId,
     esperaS: error.esperaS,
   };
