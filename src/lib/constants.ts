@@ -290,6 +290,21 @@ export const COMPARAR = {
   FONDO_MAX: 0.7, UNA_DE_CADA: 2, // rocas y cráteres que se dibujan en la escena pequeña: los lejanos, uno de cada dos
 } as const;
 
+/** Ranking de Comparar: cuántos puestos se muestran y dónde empieza la «región polar sur» (etiqueta y conmutador). */
+export const RANKING = {
+  PUESTOS: 5,
+  POLAR_SUR_LAT_MAX_DEG: -80, // latitud ≤ −80°: del paralelo 80° S al polo
+  MONOGRAMA_MAX: 4,           // caracteres del monograma de un sitio
+  /**
+   * Parches auténticos de misión disponibles en `public/insignias/<site_id>.jpg` (sin modificar). Vacío: todos los
+   * sitios llevan monograma. Para revertir, basta con borrar el archivo: la insignia cae sola al monograma.
+   */
+  INSIGNIAS: [] as readonly string[],
+  RUTA_INSIGNIA: (siteId: string) => `/insignias/${siteId}.jpg`,
+  /** Si existe la pantalla «Ventana de alunizaje» (`/sitios/:id/ventana`). Mientras no esté en las rutas, el acceso no se pinta. */
+  VENTANA_ALUNIZAJE: false,
+} as const;
+
 /** Espera de un 429 (Retry-After): hasta 90 s se dice en segundos; por encima, en minutos (redondeando hacia arriba). */
 export const ESPERA = { EN_MINUTOS_DESDE_S: 90, S_POR_MINUTO: 60 } as const;
 
@@ -318,7 +333,7 @@ export const MAPA = {
   LAT_BORDE: 30,
   LAT_POLO: -90,
   ANILLOS: [-80, -60, -30, 0, 20],
-  ANILLO_ARTEMIS: -80,
+  ANILLO_POLAR_SUR: -80,
   MERIDIANOS_CADA: 30,
   LADO: 640,
   MARGEN: 34,
@@ -359,6 +374,7 @@ export const RUTAS = {
   VENTANAS: (id: string) => `/sitios/${id}/ventanas`,
   DIA_LUNAR: (id: string) => `/sitios/${id}/dia-lunar`,
   ANALISIS: (id: string) => `/sitios/${id}/analisis`,
+  VENTANA_ALUNIZAJE: (id: string) => `/sitios/${id}/ventana`,
   COMPARAR: "/comparar",
   ACCESO: "/acceso",
   CLAVES: "/admin/claves",
@@ -375,7 +391,7 @@ export const PUNTO_PROPIO = {
   CACHE_MAX: 6, // respuestas de /api/horizons que se guardan en memoria (una por punto y periodo)
 } as const;
 
-export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", VARIABLE: "variable" } as const;
+export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", ZONA: "zona", VARIABLE: "variable" } as const;
 
 export const ENLACES = {
   HORIZONS: "https://ssd.jpl.nasa.gov/horizons/",
