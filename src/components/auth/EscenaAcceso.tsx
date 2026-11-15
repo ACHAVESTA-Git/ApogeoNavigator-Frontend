@@ -17,7 +17,7 @@ export function EscenaAcceso() {
         {ESTRELLAS.map((e, i) => (
           <span key={i} className="bg-texto absolute rounded-full" style={{ left: `${e.x}%`, top: `${e.y}%`, width: e.d, height: e.d, opacity: e.opacidad }} />
         ))}
-        <div className="bg-sol/20 absolute bottom-0 -left-[12%] h-44 w-[48%] translate-y-1/2 rounded-full blur-3xl" />
+        <div className="bg-sol absolute bottom-0 opacity-20 -left-[12%] h-44 w-[48%] translate-y-1/2 rounded-full blur-3xl" />
         <div className="acceso-tierra absolute bottom-0 left-[14%] size-28 translate-y-[24%] lg:left-[20%] lg:size-48">
           <svg viewBox="-10 -10 20 20" className="shadow-glow-tierra size-full rounded-full">
             <circle r={R} className="fill-vacio" />
