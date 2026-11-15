@@ -298,12 +298,9 @@ export const HERO = {
   ROTULO_MEDIO_PX: 44, // media anchura del rótulo de un glifo
   ROTULO_ALTO_PX: 26,
   CLAVE_SESION_INTRO: "apogeo.introVista",
-  // Relato con scroll: tramo del desplazamiento (0…1) de cada acto y fecha en la que termina.
-  RELATO: {
-    // MARGEN: fracción del scroll que dura cada entrada o salida de un acto
-    ACTO: { MARGEN: 0.06, DESPLAZAMIENTO_PX: 16, DESENFOQUE_PX: 4 },
-    ALTO_SVH: 340, CORTES: [0.34, 0.7], FECHAS: ["2026-12-13T00:00Z", "2026-12-28T00:00Z"], CONTEO_MS: 900, VENTANA_DEG: { movil: 150, escritorio: 360 },
-    ROTULO: { SOBRE_PX: 30, BAJO_PX: 8 } }, // separación del rótulo de cada astro: encima si está visible, bajo su fantasma si no
+  // Encuadre de la escena de la portada: grados de azimut que caben en pantalla y separación del rótulo de cada astro
+  // (encima si está visible, bajo su fantasma si no).
+  RELATO: { VENTANA_DEG: { movil: 150, escritorio: 360 }, ROTULO: { SOBRE_PX: 30, BAJO_PX: 8 } },
 } as const;
 
 export const MAPA = {
@@ -393,6 +390,20 @@ export const ANALISIS_GRAFICO = {
 } as const;
 
 /** Primitivas del rediseño «Lujo inmersivo» (src/components/lujo). Duraciones en ms; espejo de --dur-lujo-* en index.css. */
+// Portada (Inicio): la escena recorre el día real en bucle y debajo van las cifras del catálogo y el recorrido.
+export const PORTADA = {
+  // El día (24 h) avanza a 1 h por segundo, se detiene y vuelve al inicio con una curva suave.
+  CICLO: { AVANCE_MS: 24_000, PAUSA_MS: 1_600, RETORNO_MS: 900 },
+  SALTO_MAX_MS: 100, // tras un cuadro largo (pestaña en segundo plano) el día no da un salto
+  HOLGURA_VENTANA: 0.7, // el Sol y la Tierra se centran juntos si su separación cabe en esta fracción de la ventana
+  HORIZONTE_FRACCION: { movil: 0.74, escritorio: 0.7 }, // altura del horizonte en la escena
+  TIERRA_FRACCION_X: { movil: 0.72, escritorio: 0.7 }, // dónde cae la Tierra cuando no se centra con el Sol
+  LUPA_MAX_PX: 320,
+  ROTULO_MARGEN_PX: 70, // el rótulo de un astro no se sale de la pantalla
+  HUELLA_CARACTERES: 8, // caracteres de la huella SHA3-256 que se muestran como cifra
+  REVELADO_MARGEN: "0px 0px -12% 0px", // un bloque se revela cuando ha entrado un 12 % en pantalla
+} as const;
+
 export const LUJO = {
   CONTEO_MS: 600, // una cifra héroe cuenta hacia su valor UNA vez; techo del plan (≤ 600 ms)
   COPIADO_MS: 2000, // cuánto se mantiene el aviso «Huella copiada»

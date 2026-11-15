@@ -92,46 +92,54 @@ export const T = {
   },
   inicio: {
     documento: "Inicio",
-    rotulo: (coordenada: string, periodo: string) => `Cráter Shackleton · ${coordenada} · ${periodo}`,
-    // El acento de color va solo en «el Sol». La frase vale para el mes del relato: con más meses de datos, el Sol
-    // de Shackleton sí llega a ponerse (27/01/2027), así que no se afirma que no se ponga «nunca».
-    titular: { antes: "En Shackleton, junto al polo\u00a0sur, ", acento: "el Sol", despues: " no se pone en diciembre: rueda por el horizonte." },
-    apoyo: "Un cambio pequeño de lugar o de fecha puede decidir si un módulo tiene energía y línea directa con la Tierra. Compáralo en minutos.",
-    // Relato con scroll en tres actos. Todas las cifras salen de hero-shackleton.json (CSV reales).
+    // El acento de color va solo en «el Sol». La frase vale para todo el periodo con datos: junto al polo el Sol nunca
+    // se aleja del horizonte, y con más meses sí llega a ponerse (27/01/2027), así que no se afirma que no se ponga «nunca».
+    titular: { antes: "Junto al polo\u00a0sur de la Luna, ", acento: "el Sol", despues: " apenas se levanta: rueda por el horizonte." },
+    apoyo: "Un cambio pequeño de lugar o de fecha decide si un módulo tiene energía y línea directa con la Tierra.",
+    cta: "Elige un sitio",
+    // Escena de la portada: el día real (UTC) de Shackleton. Si hoy queda fuera del periodo con datos, se dice.
+    hero: {
+      lugar: (dia: string) => `Cráter Shackleton · ${dia}`,
+      escena: (dia: string) => `Panorama del horizonte de Shackleton el ${dia} (UTC): el Sol y la Tierra recorren el día según su efeméride, hora a hora.`,
+      hoy: "El cielo de hoy, hora a hora.",
+      fuera: {
+        antes: (hoy: string, dia: string) => `Hoy (${hoy}) aún no hay datos: se muestra el primer día con datos, ${dia}.`,
+        despues: (hoy: string, dia: string) => `Hoy (${hoy}) ya no hay datos: se muestra el último día con datos, ${dia}.`,
+      },
+      sinEfemeride: "No se pudo cargar la efeméride de este día.",
+    },
+    // Hechos del mes de referencia (diciembre de 2026) que acompañan el recorrido. Salen de hero-shackleton.json (CSV reales).
     actos: {
-      progreso: "Actos del relato",
-      ir: (n: number) => `Ir al acto ${n}`,
-      uno: { rotulo: "Acto 1 · Centro de Shackleton, diciembre de 2026, horizonte ideal", kpi: "Horas con Sol en diciembre", contexto: (min: string, max: string) => `En diciembre el Sol no sube de ${max} ni baja de ${min}: da la vuelta al horizonte sin ponerse. El relieve real puede taparlo.` },
-      dos: {
-        rotulo: "Acto 2 · La exploración",
-        titular: { antes: "Pero ", acento: "la Tierra", despues: " sí se esconde." },
-        kpi: "Horas con enlace directo",
-        contexto: (salida: string, puesta: string, sin: string) => `Sale el ${salida} y se pone el ${puesta} (UTC). El resto del mes, ${sin} sin línea directa con la Tierra.`,
-      },
-      tres: {
-        rotulo: "Acto 3 · La decisión",
-        titular: "Elige dónde aterrizar.",
-        kpi: "Sitios para comparar",
-        contexto: (puesta: string) => `Un cambio de lugar o de fecha lo cambia todo: el ${puesta} (UTC) el Sol de Shackleton también se pone. Compara energía y enlace antes de decidir.`,
-      },
-      de: (total: string) => `de ${total}`,
+      uno: { contexto: (min: string, max: string) => `En diciembre el Sol no sube de ${max} ni baja de ${min}: da la vuelta al horizonte sin ponerse. El relieve real puede taparlo.` },
+      dos: { contexto: (salida: string, puesta: string, sin: string) => `Sale el ${salida} y se pone el ${puesta} (UTC). El resto del mes, ${sin} sin línea directa con la Tierra.` },
+      tres: { contexto: (puesta: string) => `Un cambio de lugar o de fecha lo cambia todo: el ${puesta} (UTC) el Sol de Shackleton también se pone. Compara energía y enlace antes de decidir.` },
       // Día y hora de un cruce dentro de una frase del relato: «14/12 a las 23:00».
       momento: (utc: Utc) => `${diaDelMes(utc)}/${utc.slice(5, 7)} a las ${soloHora(utc)}`,
-      sigue: "Desplázate para avanzar el mes",
     },
-    explorar: "Explorar sitios",
-    verCielo: "Ver el cielo de Shackleton",
-    escena: "Panorama de 360° del horizonte de Shackleton. El Sol recorre el horizonte sin ponerse; la Tierra sale y se pone.",
-    escala: "Escala vertical ampliada cerca del horizonte",
-    regla: "Recorrer el mes en Shackleton",
-    datosReales: "Datos reales de JPL Horizons, una muestra cada 3 h.",
-    preguntas: {
-      titulo: "Tres preguntas antes de alunizar",
-      lista: [
-        { astro: "sol", pregunta: "¿Hay Sol?", respuesta: "Sin Sol sobre el horizonte no hay energía. Medimos cuántas horas lo tiene cada sitio y a qué altura." },
-        { astro: "tierra", pregunta: "¿Se ve la Tierra?", respuesta: "La Tierra es la línea de vida: si no está sobre el horizonte, no hay enlace directo de comunicación." },
-        { astro: "puesta", pregunta: "¿Cuánto falta para la puesta?", respuesta: "Saber cuántas horas quedan antes de que uno de los dos cruce la línea decide el plan de la misión." },
-      ],
+    cifras: {
+      titulo: "El catálogo, en tres cifras",
+      sitios: { rotulo: "Sitios", contexto: "lugares de alunizaje para explorar y comparar" },
+      horas: { rotulo: "Efemérides", contexto: (desde: string, hasta: string) => `de posiciones del Sol y la Tierra en Shackleton, hora a hora, del ${desde} al ${hasta} (UTC)` },
+      huella: { rotulo: "Huella del archivo", contexto: (firma: string) => `SHA3-256 de las efemérides de Shackleton. ${firma}`, completa: (huella: string) => `Huella SHA3-256 que empieza por ${huella}` },
+    },
+    recorrido: {
+      titulo: "Tres pasos para decidir",
+      paso: (n: number, nombre: string) => `Paso ${n} · ${nombre}`,
+      cielo: {
+        nombre: "Cielo", titulo: "Mira dónde están el Sol y la Tierra", enlace: "Ver el cielo de Shackleton",
+        instante: (cuando: string) => `Shackleton · ${cuando} UTC`, tierra: "La Tierra sí se esconde.",
+        elevacion: (astro: string) => `Elevación · ${astro}`, sobre: "sobre el horizonte", bajo: "bajo el horizonte",
+      },
+      comparar: {
+        nombre: "Comparar", titulo: "Compara energía y enlace entre sitios", enlace: "Abrir la comparación",
+        periodo: (mes: string) => `Viabilidad en ${mes}`,
+        fila: (sol: string, tierra: string) => `${sol} de Sol · ${tierra} con la Tierra a la vista`,
+      },
+      analisis: {
+        nombre: "Análisis", titulo: "Comprueba de dónde sale cada cifra", enlace: "Abrir el análisis de Shackleton",
+        texto: "Cada archivo de efemérides lleva su huella y la firma del manifiesto. El análisis muestra el camino del dato, del CSV al gráfico, y con qué error se ajusta.",
+      },
+      sinDatos: "No se pudieron cargar estos datos. Vuelve a intentarlo en un momento.",
     },
     polo: {
       titulo: "Por qué el polo es extremo",

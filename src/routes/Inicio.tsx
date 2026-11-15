@@ -1,19 +1,19 @@
-import { ArrowRight, Sunset } from "lucide-react";
-import { GlifoSol, GlifoTierra } from "../components/glifos/Astros";
+import { ArrowRight } from "lucide-react";
+import { Suspense, lazy, useMemo, useState } from "react";
 import { DiagramaPolo } from "../components/hero/DiagramaPolo";
-import { RelatoInicio } from "../components/hero/RelatoInicio";
+import { HeroPortada } from "../components/hero/HeroPortada";
 import { Pie } from "../components/layout/Pie";
 import { TituloPagina } from "../components/layout/TituloPagina";
 import { EnlaceBoton, EnlaceExterno } from "../components/ui/Boton";
 import { Desplegable } from "../components/ui/Desplegable";
-import { DATOS, ENLACES, INCLINACION_EJE_LUNAR_DEG, MUESTRA, PARAM_URL, RUTAS } from "../lib/constants";
-import { soloFecha } from "../lib/fechas";
+import { DATOS, ENLACES, INCLINACION_EJE_LUNAR_DEG, MUESTRA, RUTAS } from "../lib/constants";
+import { aUtc, soloFecha } from "../lib/fechas";
 import { grados } from "../lib/formato";
+import { diaPortada } from "../lib/portada";
 import { T } from "../lib/textos";
 import { cargarSitios } from "../rutas";
 import { unir } from "../components/ui/clases";
 
-const ICONO = { sol: <GlifoSol px={22} />, tierra: <GlifoTierra px={22} />, puesta: <Sunset aria-hidden="true" className="text-texto size-[22px]" strokeWidth={1.5} /> };
 const SECCION = "contenedor grid grid-cols-1 gap-x-6 gap-y-6 py-14 md:grid-cols-12 md:py-20";
 const TITULO_SECCION = "rotulo md:col-span-3";
 const TITULAR_PORTADA = unir(
@@ -24,44 +24,39 @@ const TITULAR_PORTADA = unir(
   "max-[20.43rem]:[:lang(en)_&]:min-h-[6lh] max-[26.99rem]:[:lang(en)_&]:min-h-[5lh] min-[37.3rem]:max-[41.99rem]:[:lang(en)_&]:min-h-[4lh]",
 );
 
+// Bajo la portada: en un trozo aparte para no engordar el JS inicial. Su hueco reserva alto (no hay salto al llegar).
+const RecorridoInicio = lazy(() => import("../components/inicio/RecorridoInicio"));
+
 export default function Inicio() {
   const t = T.inicio;
   const inclinacion = grados(INCLINACION_EJE_LUNAR_DEG, 2);
+  // «Hoy» se lee una vez al entrar: el día de la portada no cambia mientras se mira.
+  const [ahora] = useState(() => Date.now());
+  const dia = useMemo(() => diaPortada(ahora), [ahora]);
   return (
     <>
-      <RelatoInicio
+      <HeroPortada
+        dia={dia}
+        hoy={soloFecha(aUtc(ahora))}
         titulo={
           // Alto reservado en líneas: la fuente de respaldo parte el titular en menos líneas y, al llegar la
-          // definitiva, empujaba la tarjeta de la cifra (CLS 0,10-0,14). La fuente además se precarga (vite.config.ts).
-          // Las líneas por ancho e idioma están medidas con Playwright sobre el build (docs/verificacion.md).
+          // definitiva, empujaría el resto del bloque. Las líneas por ancho e idioma están medidas con Playwright.
           <TituloPagina documento={t.documento} className={TITULAR_PORTADA}>
             {t.titular.antes}<span className="text-sol">{t.titular.acento}</span>{t.titular.despues}
           </TituloPagina>
         }
         cta={
-          <>
-            <EnlaceBoton to={RUTAS.SITIOS} variante="primario" className="px-6" onPointerEnter={() => void cargarSitios()} onFocus={() => void cargarSitios()}>
-              {t.explorar}
-              <ArrowRight aria-hidden="true" className="size-4" />
-            </EnlaceBoton>
-            <EnlaceBoton to={`${RUTAS.CIELO(DATOS.SITIO_DESTACADO)}?${PARAM_URL.T}=${DATOS.T_POR_DEFECTO}`} variante="secundario">{t.verCielo}</EnlaceBoton>
-          </>
+          <EnlaceBoton to={RUTAS.SITIOS} variante="primario" className="px-6" onPointerEnter={() => void cargarSitios()} onFocus={() => void cargarSitios()}>
+            {t.cta}
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </EnlaceBoton>
         }
       />
 
       <div className="bg-regolito">
-        <section aria-labelledby="preguntas" className={SECCION}>
-          <h2 id="preguntas" className={TITULO_SECCION}>{t.preguntas.titulo}</h2>
-          <ol className="grid gap-8 md:col-span-9 md:grid-cols-3 md:gap-6">
-            {t.preguntas.lista.map((p) => (
-              <li key={p.pregunta} className="border-linea border-t pt-5">
-                {ICONO[p.astro]}
-                <h3 className="text-subtitulo text-texto mt-4 font-medium">{p.pregunta}</h3>
-                <p className="text-texto-2 mt-2">{p.respuesta}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
+        <Suspense fallback={<div className="min-h-[120svh]" />}>
+          <RecorridoInicio dia={dia} />
+        </Suspense>
 
         <section aria-labelledby="polo" className={`${SECCION} border-linea border-t`}>
           <h2 id="polo" className={TITULO_SECCION}>{t.polo.titulo}</h2>
