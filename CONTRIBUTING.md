@@ -2,17 +2,20 @@
 
 Proyecto **Lunar Landing Site Navigator** (Apogeo Team · NASA Space Apps 2026). Esta guía vale para este repositorio; el otro repo (ApogeoNavigator-Backend) usa las mismas reglas.
 
-## 1. Flujo de ramas
-- `main` es la rama **protegida**: siempre compila y siempre es publicable. Nadie hace push directo.
-- Todo cambio sale de `main` en una rama propia y vuelve por Pull Request:
+## 1. Flujo de ramas: `dev` → `qa` → `main`
+- `dev`: **todo** el desarrollo. Se trabaja directamente en `dev` o en ramas `feature/HU-XX-descripcion-corta` que se fusionan en `dev`.
+- `qa`: el equipo revisa y corrige. Se actualiza desde `dev` solo cuando lo ordena T1 (orquestador).
+- `main`: solo lo aprobado en QA; es lo que se publica en producción. Siempre compila.
+- **Nunca** se hace push directo a `qa` ni a `main`; llegan por fusión (Pull Request) desde la rama anterior.
+- Ramas de apoyo, siempre salen de `dev` y vuelven a `dev`:
   - `feature/HU-XX-descripcion-corta`: historia de usuario nueva (ej. `feature/HU-02-vista-del-cielo`).
   - `fix/descripcion-corta` o `fix/HU-XX-descripcion`: corrección de un error (ej. `fix/zona-horaria-utc`).
   - `chore/...` y `docs/...`: tareas técnicas y documentación.
 - Ramas pequeñas y cortas: un PR por historia o por parte de ella. Borra la rama al fusionar.
-- Activa en GitHub (Settings → Branches) la protección de `main`: PR obligatorio y al menos 1 aprobación.
+- Activa en GitHub (Settings → Branches) la protección de `main` y `qa`: PR obligatorio y al menos 1 aprobación.
 
 ```bash
-git switch main && git pull
+git switch dev && git pull
 git switch -c feature/HU-02-vista-del-cielo
 ```
 
@@ -28,6 +31,11 @@ Formato: `tipo(HU-XX): descripción en imperativo y en minúsculas`
 | `refactor` | cambio interno sin cambiar el comportamiento |
 | `chore` | configuración, dependencias, Docker |
 
+Reglas:
+- Un commit por **bloque lógico**: no mezcles cosas distintas en el mismo commit (por ejemplo, validación por un lado, utilitarios por otro y pruebas por otro).
+- Asunto de 72 caracteres como máximo, en imperativo; el cuerpo explica el porqué.
+- **No menciones a Claude ni a ninguna IA** en commits, Pull Requests ni tags: nada de `Co-Authored-By: Claude` ni «Generated with Claude Code».
+
 Ejemplos:
 - `feat(HU-02): vista del cielo con azimut y elevación`
 - `fix(HU-05): corrige la puesta del Sol en el último día del rango`
@@ -37,7 +45,8 @@ Ejemplos:
 - Usa la plantilla `.github/pull_request_template.md`: HU, qué cambia, cómo probarlo y checklist de la DoD.
 - **Al menos 1 revisión** de otra persona antes de fusionar. Quien escribe el código no lo aprueba (la DoD pide que lo pruebe alguien distinto).
 - El PR debe ser pequeño, tener las pruebas en verde y no mezclar temas.
-- Se fusiona con *squash* para que `main` tenga un commit por PR; el título del PR sigue el formato de commit.
+- El título del PR sigue el formato de commit y su descripción tampoco menciona a Claude ni a ninguna IA.
+- Los PR van hacia `dev`; `qa` y `main` solo se actualizan por fusión desde la rama anterior.
 - Todo dato nuevo lleva su fuente (URL) registrada.
 
 ## 4. Pruebas antes de abrir el PR

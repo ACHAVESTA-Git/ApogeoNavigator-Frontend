@@ -1,0 +1,252 @@
+@import "tailwindcss";
+@import "./fuentes.css";
+
+@theme {
+  /* Reiniciar la paleta por defecto: solo existen nuestros tokens */
+  --color-*: initial;
+  --color-vacio: #0A0A09;
+  --color-regolito: #14130F;
+  --color-superficie: #1D1C18;
+  --color-elevada: #26241F;
+  --color-linea: #3A3830;
+  --color-horizonte: #77736A;
+  --color-texto: #EDEBE4;
+  --color-texto-2: #ABA79B;
+  --color-texto-3: #918D82;
+  --color-sol: #FFB547;
+  --color-sol-nucleo: #FFF2D9;
+  --color-sol-tenue: rgb(255 181 71 / 0.14);
+  --color-tierra: #5AA9FF;
+  --color-tierra-tenue: rgb(90 169 255 / 0.16);
+  --color-viable: #3FD68F;
+  --color-reservas: #EBD14A;
+  --color-critico: #FF6E5E;
+  --color-foco: #F5F3EC;
+  --color-velo: rgb(10 10 9 / 0.72);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans: "Archivo Variable", "Archivo", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+
+  /* Escala tipográfica fluida: cada tamaño crece en línea recta entre 360 y 1440 px de ancho (sin saltos por
+     punto de corte) y se detiene en su máximo. Suelo de 12 px. El interletraje se cierra al crecer el cuerpo. */
+  --text-display: clamp(2rem, 1.5417rem + 2.037vw, 3.375rem);          /* 32 → 54 px */
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.032em;
+  --text-display--font-weight: 560;
+  --text-titulo: clamp(1.375rem, 1.2083rem + 0.7407vw, 1.875rem);      /* 22 → 30 px */
+  --text-titulo--line-height: 1.14;
+  --text-titulo--letter-spacing: -0.02em;
+  --text-seccion: clamp(1.1875rem, 1.125rem + 0.2778vw, 1.375rem);     /* 19 → 22 px */
+  --text-seccion--line-height: 1.22;
+  --text-seccion--letter-spacing: -0.012em;
+  --text-subtitulo: 1.125rem;
+  --text-subtitulo--line-height: 1.35;
+  --text-subtitulo--letter-spacing: -0.006em;
+  --text-entrada: 1.0625rem;                                           /* párrafo de entrada de una sección */
+  --text-entrada--line-height: 1.55;
+  --text-cuerpo: 1rem;
+  --text-cuerpo--line-height: 1.55;
+  --text-apoyo: 0.875rem;
+  --text-apoyo--line-height: 1.5;
+  --text-rotulo: 0.75rem;
+  --text-rotulo--line-height: 1.2;
+  --text-rotulo--letter-spacing: 0.085em;
+  --text-dato-xl: clamp(2rem, 1.5833rem + 1.8519vw, 3.25rem);          /* 32 → 52 px */
+  --text-dato-xl--line-height: 1;
+  --text-dato-xl--letter-spacing: -0.02em;
+  --text-dato: 1rem;
+  --text-dato--line-height: 1.3;
+  --text-dato-lg: clamp(1.5rem, 1.4167rem + 0.3704vw, 1.75rem);        /* 24 → 28 px */
+  --text-dato-lg--line-height: 1.15;
+  --text-dato-sm: 0.8125rem;
+  --text-dato-sm--line-height: 1.3;
+
+  /* Medida de línea. En Archivo, 1ch (el ancho del «0») equivale a 1,43 caracteres de texto corrido:
+     46ch son unos 66 caracteres por línea; 34ch, unos 48. */
+  --container-medida: 46ch;
+  --container-medida-corta: 34ch;
+
+  --radius-*: initial;
+  --radius-xs: 4px;        /* detalles mínimos (foco, marcas) */
+  --radius-control: 12px;  /* campos, botones cuadrados, filas */
+  --radius-panel: 18px;    /* paneles y fichas */
+  --radius-capa: 22px;     /* popup y hoja */
+  --radius-full: 9999px;
+
+  --breakpoint-sm: 30rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 90rem;
+
+  /* Una sola familia: ease-out fuerte para entrar Y salir (nunca ease-in en la interfaz), in-out para lo que se
+     mueve dentro de la pantalla y la curva de hoja para capas que suben. */
+  --ease-salida: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-entrada: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-orbita: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-hoja: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-frenado: cubic-bezier(0.05, 0.7, 0.1, 1);   /* fallos: el cambio «se clava» */
+
+  --shadow-*: initial;
+  --shadow-glow-sol: 0 0 18px 2px rgb(255 181 71 / 0.45), 0 0 64px 8px rgb(255 181 71 / 0.18);
+  --shadow-glow-tierra: 0 0 10px 1px rgb(90 169 255 / 0.35);
+  /* Profundidad por capas: lo que flota proyecta una sombra suave y lleva un brillo interior de 1 px arriba. */
+  --shadow-flotante: 0 28px 70px -24px rgb(0 0 0 / 0.75), 0 2px 8px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(237 235 228 / 0.08);
+  --shadow-panel: inset 0 1px 0 rgb(237 235 228 / 0.06), 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-boton: inset 0 1px 0 rgb(255 255 255 / 0.55), 0 1px 2px rgb(0 0 0 / 0.5);
+
+  --animate-girar: girar 900ms linear infinite;
+  --animate-aparecer: aparecer var(--dur-corta) var(--ease-salida) both;
+  --animate-crecer: crecer 700ms var(--ease-salida) both;
+  @keyframes crecer {
+    from { transform: scaleX(0); }
+  }
+  @keyframes aparecer {
+    from { opacity: 0; }
+  }
+  @keyframes girar {
+    to { transform: rotate(360deg); }
+  }
+}
+
+:root {
+  color-scheme: dark;
+  /* Duraciones: espejo de MOVIMIENTO en src/lib/constants.ts (no duplicar valores en componentes) */
+  --dur-micro: 140ms;
+  --dur-corta: 200ms;
+  --dur-media: 320ms;
+  --dur-larga: 560ms;
+  --dur-escena: 900ms;
+  --dur-escena-entrada: 480ms;    /* la escena del cielo se abre desde el horizonte */
+  --dur-pliegue: 450ms;
+  --dur-pliegue-opacidad: 250ms;
+  --altura-horizonte: 68svh;      /* posición del horizonte en el hero */
+  --nav-alto: 56px;
+  --nav-alto-movil: 48px;
+  --barra-inferior-alto: 56px;
+  --bandeja-alto: 0px;            /* AppShell la sube a 48px cuando hay sitios fijados */
+  --contenido-max: 1360px;
+  --margen: 16px;
+}
+@media (min-width: 48rem) { :root { --margen: 32px; } }
+@media (min-width: 64rem) { :root { --margen: 40px; } }
+
+@layer base {
+  html { background: var(--color-vacio); color: var(--color-texto); font-family: var(--font-sans);
+         scroll-padding-top: calc(var(--nav-alto) + 8px);
+         scroll-padding-bottom: calc(var(--barra-inferior-alto) + var(--bandeja-alto) + 8px); }
+  body { min-height: 100svh; font-variation-settings: "wdth" 100; -webkit-font-smoothing: antialiased;
+         font-size: var(--text-cuerpo); line-height: 1.55; }
+  .font-mono, [data-dato] { font-variant-numeric: tabular-nums slashed-zero; }
+  p, li, dd { text-wrap: pretty; }   /* sin palabras huérfanas al final del párrafo */
+  .rotulo { font-size: var(--text-rotulo); line-height: 1.2; letter-spacing: var(--text-rotulo--letter-spacing);
+            text-transform: uppercase; font-weight: 600; font-variation-settings: "wdth" 116; color: var(--color-texto-3); }
+  /* Logotipo de la marca: «Apogeo» en Archivo ancha y negrita; la segunda palabra, normal y un tono más bajo. */
+  .logotipo { font-size: 1.0625rem; line-height: 1; font-weight: 700; font-variation-settings: "wdth" 125; letter-spacing: -0.01em; }
+  .logotipo-2 { font-weight: 400; font-variation-settings: "wdth" 112; letter-spacing: 0; color: var(--color-texto-2); }
+  /* Titulares: Archivo algo ancha (112) y seminegra. El peso baja a 560 en el tamaño de portada (token) para
+     que el titular grande no pese más que el dato que acompaña. */
+  .titulo-instrumento { font-variation-settings: "wdth" 112; font-weight: 600; font-kerning: normal; }
+  :focus-visible { outline: 2px solid var(--color-foco); outline-offset: 2px; border-radius: var(--radius-xs); }
+  h1:focus { outline: none; }     /* recibe el foco por código tras navegar; no es un control */
+  ::selection { background: var(--color-sol); color: var(--color-vacio); }
+  button, a, summary, label[for], input[type="range"], input[type="checkbox"] { cursor: pointer; }
+  button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  abbr[title] { text-decoration: underline dotted var(--color-horizonte); text-underline-offset: 3px; cursor: help; }
+}
+
+/* Datos que dependen del relieve real (p. ej. 100 % de sol con el Sol a menos de 3°). */
+@utility rayado-artefacto {
+  background-image: repeating-linear-gradient(135deg,
+    color-mix(in srgb, var(--color-vacio) 70%, transparent) 0 2px, transparent 2px 7px);
+}
+/* Panel: superficie escalonada con borde tenue y brillo superior (sustituye a las líneas rectas). */
+@utility panel {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-superficie) 82%, transparent), color-mix(in srgb, var(--color-regolito) 88%, transparent));
+  border: 1px solid rgb(237 235 228 / 0.08);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+}
+/* Material translúcido: solo en cabeceras y controles sobre la escena, nunca bajo cifras. */
+@utility material {
+  background: rgb(10 10 9 / 0.62);
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+}
+/* Cabecera: más opaca, para que lo que pasa por debajo (cifras del relato) se apague antes de mezclarse con ella. */
+@utility material-denso {
+  background: rgb(10 10 9 / 0.86);
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+}
+/* Capilar: divisor decorativo casi invisible (la única línea fuerte de la app es el horizonte). */
+@utility capilar-b {
+  box-shadow: inset 0 -1px 0 rgb(237 235 228 / 0.07);
+}
+@utility capilar-t {
+  box-shadow: inset 0 1px 0 rgb(237 235 228 / 0.07);
+}
+@utility tactil {
+  min-height: 44px;
+  min-width: 44px;
+}
+@utility contenedor {
+  width: 100%;
+  max-width: calc(var(--contenido-max) + 2 * var(--margen));
+  margin-inline: auto;
+  padding-inline: var(--margen);
+}
+/* Plegado y desplegado sin animar alturas: grid 0fr ↔ 1fr con hijo de min-height 0. */
+@utility plegable {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows var(--dur-pliegue) var(--ease-salida),
+              opacity var(--dur-pliegue-opacidad) var(--ease-salida);
+  &[data-abierto="true"] { grid-template-rows: 1fr; opacity: 1; }
+  & > * { min-height: 0; overflow: hidden; }
+  &[data-rapido="true"] { transition-duration: var(--dur-corta), var(--dur-micro); } /* alto en 200 ms, opacidad en 140 ms */
+}
+
+/* Revelado de izquierda a derecha (el tiempo corre hacia la derecha): bandas de luz. */
+@utility revelar-izq {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 600ms var(--ease-salida);
+  &[data-visto="true"] { clip-path: inset(0 0 0 0); }
+}
+
+/* Capas modales sobre <dialog> nativo (foco atrapado y fondo inerte gratis). El movimiento lo lleva motion con
+   springs interrumpibles; aquí solo se anula el aspecto por defecto del diálogo. */
+.capa { background: transparent; border: 0; padding: 0; margin: 0; max-width: none; max-height: none; width: 100vw; height: 100dvh; overflow: visible; }
+.capa::backdrop { background: transparent; }
+
+/* Pantalla completa de la escena del cielo: el contenido sube por encima de la cabecera, la bandeja y la barra
+   inferior (todas en z-30) y la página deja de desplazarse. */
+html[data-inmersivo] { overflow: hidden; }
+html[data-inmersivo] #contenido { z-index: 60; }
+
+/* Check de confirmación: primero el círculo y luego el trazo (stroke-dashoffset). */
+.check-circulo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 350ms var(--ease-salida) forwards; }
+.check-trazo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 250ms var(--ease-salida) 350ms forwards; }
+@keyframes trazar { to { stroke-dashoffset: 0; } }
+
+/* Regla de tiempo: input range nativo con pista transparente (las marcas se dibujan debajo en SVG). */
+.regla-tiempo { -webkit-appearance: none; appearance: none; background: transparent; width: 100%; height: 44px; margin: 0; }
+.regla-tiempo::-webkit-slider-runnable-track { height: 44px; background: transparent; }
+.regla-tiempo::-moz-range-track { height: 44px; background: transparent; }
+.regla-tiempo::-webkit-slider-thumb { -webkit-appearance: none; width: 3px; height: 44px; border-radius: 0;
+  background: var(--color-texto); box-shadow: 0 0 0 1px var(--color-vacio); cursor: ew-resize; }
+.regla-tiempo::-moz-range-thumb { width: 3px; height: 44px; border: 0; border-radius: 0;
+  background: var(--color-texto); box-shadow: 0 0 0 1px var(--color-vacio); cursor: ew-resize; }
+
+/* Movimiento reducido = más suave, no cero: se quitan desplazamientos y escalas (las animaciones terminan al
+   instante), pero se conservan los fundidos cortos de color y opacidad, que orientan sin marear. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+                           transition-property: opacity, color, background-color, border-color !important;
+                           transition-duration: 120ms !important; scroll-behavior: auto !important; }
+}
