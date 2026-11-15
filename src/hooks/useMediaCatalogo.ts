@@ -18,13 +18,15 @@ export interface MediaCatalogo {
  * Media de todos los sitios del catálogo en un rango: es «con qué se compara» cada cifra. Sale de las mismas
  * métricas de la API (en grupos del máximo que admite por petición); mientras falte alguna, no hay media.
  */
-export function useMediaCatalogo(rango: Rango): MediaCatalogo | null {
+/** `activo: false` aplaza las consultas (p. ej. hasta saber que el periodo tiene datos: así un mes sin datos no dispara un 422 por grupo). */
+export function useMediaCatalogo(rango: Rango, activo = true): MediaCatalogo | null {
   const { data: sitios } = useSites();
   const grupos = useMemo(() => trocear((sitios ?? []).map((s) => s.site_id), DATOS.MAX_COMPARAR), [sitios]);
   const consultas = useQueries({
     queries: grupos.map((ids) => ({
       queryKey: CLAVES.metricas(ids, rango.desde, rango.hasta),
       queryFn: ({ signal }: { signal: AbortSignal }) => obtenerMetricas(ids, rango, { signal }),
+      enabled: activo,
       placeholderData: keepPreviousData, // al cambiar de rango la raya no desaparece: se mueve cuando llega la nueva
     })),
   });
