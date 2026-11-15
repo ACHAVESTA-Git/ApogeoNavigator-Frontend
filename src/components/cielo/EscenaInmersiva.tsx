@@ -5,10 +5,10 @@ import { ESCENA } from "../../lib/constants";
 import { limitar } from "../../lib/fechas";
 import { unir } from "../ui/clases";
 
-/** Alto de la escena dentro de la página para un alto de ventana (en móvil una fracción; desde 768 px, hasta el borde inferior). */
+/** Alto de la escena dentro de la página para un alto de ventana (en móvil, hasta el control de tiempo; desde 768 px, hasta el borde inferior). */
 export function altoDeEscena(altoVentana: number, ancha: boolean): number {
   const { movil, escritorio } = ESCENA.ALTO;
-  return Math.round(ancha ? limitar(altoVentana - escritorio.descuento, escritorio.min, escritorio.max) : limitar(altoVentana * movil.fraccion, movil.min, movil.max));
+  return Math.round(ancha ? limitar(altoVentana - escritorio.descuento, escritorio.min, escritorio.max) : limitar(altoVentana - movil.descuento, movil.min, movil.max));
 }
 
 /** Deja inertes a los hermanos de `el` y a los de sus antepasados (lo que queda tapado). Devuelve cómo deshacerlo. */
