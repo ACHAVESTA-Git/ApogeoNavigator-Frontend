@@ -23,6 +23,7 @@ const GRAFICO = 3; // iconos, bordes con significado y trazos de gráficos
 /** [primer plano, fondos, mínimo] */
 const PARES = [
   ...["texto", "texto-2", "texto-3", "sol", "tierra", "viable", "reservas", "critico"].map((c) => [c, FONDOS, TEXTO]),
+  ["texto", ["calor-1", "calor-2", "calor-3"], TEXTO], // celdas del calendario de calor
   ["foco", FONDOS, GRAFICO],
   ["horizonte", ["vacio", "regolito", "superficie"], GRAFICO],
   ["vacio", ["texto", "sol"], TEXTO], // botón primario y selección de texto

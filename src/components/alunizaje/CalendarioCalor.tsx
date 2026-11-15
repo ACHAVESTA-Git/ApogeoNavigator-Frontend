@@ -12,12 +12,12 @@ import { Desplegable } from "../ui/Desplegable";
 // Una sola luz: el ámbar del Sol, en cinco escalones. El valor va SIEMPRE escrito en la celda (no depende del color).
 const CELDA: Record<NivelCalor, string> = {
   0: "bg-texto/[0.04] text-texto-2",
-  1: "bg-sol/14 text-texto",
-  2: "bg-sol/28 text-texto",
-  3: "bg-sol/45 text-texto",
+  1: "bg-calor-1 text-texto",
+  2: "bg-calor-2 text-texto",
+  3: "bg-calor-3 text-texto",
   4: "bg-sol text-vacio",
 };
-const TIRA: Record<NivelCalor, string> = { 0: "bg-texto/10", 1: "bg-sol/25", 2: "bg-sol/45", 3: "bg-sol/70", 4: "bg-sol" };
+const TIRA: Record<NivelCalor, string> = { 0: "bg-texto/10", 1: "bg-calor-1", 2: "bg-calor-2", 3: "bg-calor-3", 4: "bg-sol" };
 const NIVELES: readonly NivelCalor[] = [0, 1, 2, 3, 4];
 const { CELDA_PX, HUECO_PX, ENTRADA } = ALUNIZAJE;
 
