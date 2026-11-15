@@ -104,3 +104,24 @@ describe("mes sin datos (422 de un periodo fuera de los datos)", () => {
     expect(esMesSinDatos(new Error("fuera del rango de datos"))).toBe(false);
   });
 });
+
+describe("espera de un 429 (Retry-After)", () => {
+  it("hasta 90 s se dice en segundos y, por encima, en minutos hacia arriba", async () => {
+    const { esperaLegible } = await import("./errores");
+    expect(esperaLegible(30)).toEqual({ valor: 30, unidad: "s" });
+    expect(esperaLegible(90)).toEqual({ valor: 90, unidad: "s" });
+    expect(esperaLegible(91)).toEqual({ valor: 2, unidad: "min" });
+    expect(esperaLegible(900)).toEqual({ valor: 15, unidad: "min" });
+    expect(esperaLegible(901)).toEqual({ valor: 16, unidad: "min" }); // nunca se promete menos espera de la pedida
+  });
+  it("la sugerencia del error usa esa unidad", () => {
+    expect(traducirError(new ApiError(429, "", undefined, undefined, 900)).sugerencia).toBe("Espera 15 min y reintenta.");
+    expect(traducirError(new ApiError(429, "", undefined, undefined, 60)).sugerencia).toBe("Espera 60 s y reintenta.");
+  });
+  it("el texto existe en los dos idiomas", async () => {
+    const [es, en] = await Promise.all([import("./textos.es"), import("./textos.en")]);
+    expect(es.esperaYReintenta(15, "min")).toBe("Espera 15 min y reintenta.");
+    expect(en.esperaYReintenta(15, "min")).toBe("Wait 15 min and retry.");
+    expect(en.esperaYReintenta(45, "s")).toBe("Wait 45 s and retry.");
+  });
+});

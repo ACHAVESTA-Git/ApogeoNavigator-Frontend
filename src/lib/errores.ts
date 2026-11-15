@@ -1,5 +1,5 @@
 // Error de la API con el formato de FastAPI: {"detail": ...}.
-import { API } from "./constants";
+import { API, ESPERA } from "./constants";
 import { IDIOMA, type Idioma } from "./idioma";
 import { ERRORES_DE_DOMINIO, ERRORES_POR_ESTADO, T, esperaYReintenta } from "./textos";
 import type { InformeCsv } from "./tipos";
@@ -129,6 +129,17 @@ const ERRORES_POR_CODIGO: Record<string, { titulo: string; mensaje: string; acci
   ...ERRORES_DE_DOMINIO, // los de dominio (SITIO_NO_ENCONTRADO…) son más específicos que el genérico de su estado
 };
 
+/** Espera de un 429 en la unidad en que se lee mejor: segundos hasta 90 s; por encima, minutos hacia arriba (900 s → 15 min). */
+export function esperaLegible(segundos: number): { valor: number; unidad: "s" | "min" } {
+  return segundos > ESPERA.EN_MINUTOS_DESDE_S
+    ? { valor: Math.ceil(segundos / ESPERA.S_POR_MINUTO), unidad: "min" }
+    : { valor: Math.ceil(segundos), unidad: "s" };
+}
+const sugerenciaDeEspera = (segundos: number): string => {
+  const { valor, unidad } = esperaLegible(segundos);
+  return esperaYReintenta(valor, unidad);
+};
+
 /**
  * EL traductor: cualquier error (de la API, de red o inesperado) → título, mensaje, sugerencia y acción.
  * En español se muestran el título y el mensaje del backend tal cual; en otro idioma, los del catálogo propio,
@@ -144,7 +155,7 @@ export function traducirError(error: unknown, idioma: Idioma = IDIOMA): ErrorTra
     const propio = (b && Object.prototype.hasOwnProperty.call(ERRORES_POR_CODIGO, b.codigo) && ERRORES_POR_CODIGO[b.codigo]) || base;
     return {
       codigo: b?.codigo ?? base.codigo, estado: error.status, titulo: propio.titulo, mensaje: propio.mensaje,
-      sugerencia: error.esperaS ? esperaYReintenta(error.esperaS) : propio.accion,
+      sugerencia: error.esperaS ? sugerenciaDeEspera(error.esperaS) : propio.accion,
       accion: accionDe(error.status, b?.codigo), requestId: error.requestId, esperaS: error.esperaS,
     };
   }
@@ -153,7 +164,7 @@ export function traducirError(error: unknown, idioma: Idioma = IDIOMA): ErrorTra
     estado: error.status,
     titulo: b?.titulo ?? base.titulo,
     mensaje: b?.mensaje ?? detalleLegible(error.detail) ?? base.mensaje,
-    sugerencia: error.esperaS ? esperaYReintenta(error.esperaS) : b?.accion || base.accion,
+    sugerencia: error.esperaS ? sugerenciaDeEspera(error.esperaS) : b?.accion || base.accion,
     accion: accionDe(error.status, b?.codigo),
     requestId: error.requestId,
     esperaS: error.esperaS,
