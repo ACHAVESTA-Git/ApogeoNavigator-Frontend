@@ -346,7 +346,8 @@ export const T = {
     verMenos: "ver menos",
     limiteServidor: (mostrados: number, total: number) => `El servidor devuelve los primeros ${mostrados} de ${total}.`,
     detalle: (nombre: string) => `Ver el detalle de ${nombre}`,
-    columnas: ["Fila", "Columna", "Mensaje"],
+    columnas: ["Línea", "Columna", "Mensaje"],
+    notaLinea: "Línea del archivo: la cabecera es la línea 1, así que la línea 13 es la fila de datos 12.",
     errores: "Errores",
     advertencias: "Advertencias",
     archivo: "archivo",
@@ -578,9 +579,16 @@ const cautela = (filas: FilaVeredicto[]): string => {
   return sensibles.length ? `ojo: las horas de sol de ${listar(sensibles)} son del horizonte ideal y dependen del relieve` : "";
 };
 
+/** Veredicto partido para la pantalla: una frase principal (el Sol) y hasta dos matices (la Tierra y la cautela). */
+export interface PartesVeredicto { principal: string; matices: string[] }
+const SIN_VEREDICTO: PartesVeredicto = { principal: "", matices: [] };
+const partes = (principal: string, ...matices: string[]): PartesVeredicto => ({ principal: frases(principal), matices: matices.filter(Boolean).map((m) => frases(m)) });
+const unido = (v: PartesVeredicto): string => [v.principal, ...v.matices].filter(Boolean).join(" ");
+
 /** Sitios distintos en un mismo periodo. Frase generada solo con las métricas: ordena, no opina. */
-export function veredicto(filas: FilaVeredicto[], periodo: string): string {
-  if (filas.length < 2) return "";
+export const veredicto = (filas: FilaVeredicto[], periodo: string): string => unido(partesVeredicto(filas, periodo));
+export function partesVeredicto(filas: FilaVeredicto[], periodo: string): PartesVeredicto {
+  if (filas.length < 2) return SIN_VEREDICTO;
   const porSol = [...filas].sort((a, b) => b.horas_sol - a.horas_sol);
   const [mejor, ultimo] = [porSol[0], porSol[porSol.length - 1]];
   const dif = mejor.horas_sol - ultimo.horas_sol;
@@ -592,16 +600,17 @@ export function veredicto(filas: FilaVeredicto[], periodo: string): string {
   const completos = filas.filter((f) => f.pct_tierra >= 100);
   const sinTierra = filas.filter((f) => f.horas_tierra_visible === 0);
   const parciales = filas.filter((f) => f.pct_tierra < 100 && f.horas_tierra_visible > 0);
-  const partes: string[] = [];
-  if (completos.length) partes.push(`${listar(completos.map((f) => f.nombre))} ${completos.length > 1 ? "ven" : "ve"} la Tierra todo el periodo`);
-  parciales.forEach((f) => partes.push(`${f.nombre} la ve ${horas(f.horas_tierra_visible)} (${pct(f.pct_tierra)})`));
-  if (sinTierra.length) partes.push(`${listar(sinTierra.map((f) => f.nombre))} no ${sinTierra.length > 1 ? "la ven" : "la ve"} en el periodo`);
-  return frases(sol, partes.join("; "), cautela(filas));
+  const tierra: string[] = [];
+  if (completos.length) tierra.push(`${listar(completos.map((f) => f.nombre))} ${completos.length > 1 ? "ven" : "ve"} la Tierra todo el periodo`);
+  parciales.forEach((f) => tierra.push(`${f.nombre} la ve ${horas(f.horas_tierra_visible)} (${pct(f.pct_tierra)})`));
+  if (sinTierra.length) tierra.push(`${listar(sinTierra.map((f) => f.nombre))} no ${sinTierra.length > 1 ? "la ven" : "la ve"} en el periodo`);
+  return partes(sol, tierra.join("; "), cautela(filas));
 }
 
 /** Un mismo sitio en fechas distintas (`nombre` es el periodo de cada fila). */
-export function veredictoFechas(filas: FilaVeredicto[], sitio: string): string {
-  if (filas.length < 2) return "";
+export const veredictoFechas = (filas: FilaVeredicto[], sitio: string): string => unido(partesVeredictoFechas(filas, sitio));
+export function partesVeredictoFechas(filas: FilaVeredicto[], sitio: string): PartesVeredicto {
+  if (filas.length < 2) return SIN_VEREDICTO;
   const porSol = [...filas].sort((a, b) => b.horas_sol - a.horas_sol);
   const [mejor, ultimo] = [porSol[0], porSol[porSol.length - 1]];
   const dif = mejor.horas_sol - ultimo.horas_sol;
@@ -610,7 +619,7 @@ export function veredictoFechas(filas: FilaVeredicto[], sitio: string): string {
       ? `en ${sitio} hay las mismas horas de sol (${horas(mejor.horas_sol)}) en ${listar(filas.map((f) => f.nombre))}`
       : `en ${sitio}, ${mejor.nombre} tiene ${horas(dif)} más de sol que ${ultimo.nombre}`;
   const tierra = `la Tierra se ve ${listar(filas.map((f) => `${horas(f.horas_tierra_visible)} en ${f.nombre}`))}`;
-  return frases(sol, tierra, cautela(filas));
+  return partes(sol, tierra, cautela(filas));
 }
 
 /** 'diciembre de 2026' si el rango es un mes natural completo; si no, '2026-12-01 → 2026-12-08'. */

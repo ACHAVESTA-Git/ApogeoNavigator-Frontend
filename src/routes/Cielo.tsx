@@ -54,7 +54,9 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
 
   const posicion = useValorMotion(useTransform(reloj.t, (ms) => interpolarFila(filas, ms)));
   // «Puesta en N h»: la API cuando está en pausa; mientras se reproduce, el mismo cálculo sobre las filas ya cargadas.
-  const puestas = usePuestas(sitio.site_id, reloj.tUtc, !reloj.reproduciendo);
+  // En un instante proyectado la API no tiene datos (respondería 422): ahí vale solo el cálculo local.
+  const incertidumbre = incertidumbreDe(filas[reloj.indice]);
+  const puestas = usePuestas(sitio.site_id, reloj.tUtc, !reloj.reproduciendo && incertidumbre === 0);
   // La última respuesta de la API se proyecta al instante en curso (la API ve todos los datos del sitio; las filas
   // cargadas, solo este periodo). Si ya no vale, se usa el cálculo local.
   const ultima = useRef(puestas.data);
@@ -77,7 +79,6 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
     return () => clearTimeout(espera);
   }, [reloj.tUtc, reloj.reproduciendo, reloj.indice, filas, anunciar]);
 
-  const incertidumbre = incertidumbreDe(filas[reloj.indice]);
   const teclas = useTeclasTiempo(reloj);
   const alPulsarTecla = useCallback(
     (e: KeyboardEvent, girar: (g: number) => void) => {

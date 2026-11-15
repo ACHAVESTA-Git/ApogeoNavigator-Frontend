@@ -21,7 +21,7 @@ import { esSensibleAlRelieve } from "../lib/astro";
 import { DATOS, HORAS_POR_DIA, PARAM_URL } from "../lib/constants";
 import { aMs, fechaHora, horasEntre, limitar, mesLargo, sumarHoras, sumarMeses } from "../lib/fechas";
 import { latitud, nombreCorto } from "../lib/formato";
-import { T, periodoLegible, veredicto, veredictoFechas } from "../lib/textos";
+import { T, partesVeredicto, partesVeredictoFechas, periodoLegible } from "../lib/textos";
 import type { Site, Utc } from "../lib/tipos";
 
 type Modo = "sitios" | "fechas";
@@ -41,9 +41,9 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
   const horasMax = Math.max(...filas.map((f) => horasEntre(f.desde, f.hasta))) - 1;
 
   const frase = useMemo(() => {
-    if (!listo) return "";
+    if (!listo) return null;
     const lineas = datos.map((d) => ({ nombre: d.etiqueta, ...d.metrica!, sensible: esSensibleAlRelieve(d.metrica!) }));
-    return modo === "sitios" ? veredicto(lineas, periodoLegible(filas[0].desde, filas[0].hasta)) : veredictoFechas(lineas, filas[0].detalle);
+    return modo === "sitios" ? partesVeredicto(lineas, periodoLegible(filas[0].desde, filas[0].hasta)) : partesVeredictoFechas(lineas, filas[0].detalle);
   }, [listo, datos, filas, modo]);
 
   const mover = (delta: number) => setHora((h) => limitar((h ?? 0) + delta, 0, horasMax));
@@ -68,7 +68,15 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
   const instante = hora === null ? null : modo === "sitios" ? `${fechaHora(sumarHoras(filas[0].desde, hora))} ${T.utc}` : t.hora(hora + 1);
   return (
     <>
-      <p key={frase} aria-live="polite" className="text-subtitulo text-texto animate-aparecer mt-5 max-w-[60ch] text-balance">{frase}</p>
+      {/* Una frase principal (el Sol) y, en menor jerarquía, los matices (la Tierra y la cautela del relieve). */}
+      <div key={frase?.principal} aria-live="polite" className="animate-aparecer mt-5 max-w-[60ch]">
+        <p className="text-subtitulo text-texto text-balance">{frase?.principal}</p>
+        {frase && frase.matices.length > 0 && (
+          <ul className="text-apoyo text-texto-2 mt-2 space-y-1">
+            {frase.matices.map((m) => <li key={m} className="flex gap-2"><span aria-hidden="true" className="bg-texto-3 mt-[0.6em] size-1 shrink-0 rounded-full" />{m}</li>)}
+          </ul>
+        )}
+      </div>
       <CifrasLider filas={datos} />
       <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
         <p className="text-dato-sm text-texto-2 min-h-[1.3em] font-mono" data-dato>

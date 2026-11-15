@@ -78,8 +78,8 @@ function Entrega({ claves, alTerminar }: { claves: ClaveEntregada[]; alTerminar:
 }
 
 /** Confirmación de una acción (generar, rotar, revocar, descargar la pública) con su formulario mínimo. */
-function Confirmacion({ accion, claveAdmin, ejemplo, alCerrar, alEntregar }: {
-  accion: Accion; claveAdmin: string; ejemplo: boolean; alCerrar: () => void; alEntregar: (claves: ClaveEntregada[]) => void;
+function Confirmacion({ accion, claveAdmin, ejemplo, alCerrar, alEntregar, alIntroducirClave }: {
+  accion: Accion; claveAdmin: string; ejemplo: boolean; alCerrar: () => void; alEntregar: (claves: ClaveEntregada[]) => void; alIntroducirClave: () => void;
 }) {
   const id = useId();
   const queryClient = useQueryClient();
@@ -144,7 +144,8 @@ function Confirmacion({ accion, claveAdmin, ejemplo, alCerrar, alEntregar }: {
             {accion.tipo === "revocar" && <span className="text-texto-3 mt-1 block text-[0.8125rem]">{t.confirmarRevocar.motivoAyuda(CLAVES_PQC.MOTIVO.MIN, CLAVES_PQC.MOTIVO.MAX)}</span>}
           </label>
         )}
-        {mutacion.error && <EstadoError error={mutacion.error} compacto />}
+        {/* Un 401 aquí (clave caducada o cambiada) lleva de vuelta al formulario de la clave. */}
+        {mutacion.error && <EstadoError error={mutacion.error} compacto alIntroducirClave={alIntroducirClave} />}
       </form>
     </Popup>
   );
@@ -269,7 +270,7 @@ export default function GestorClaves() {
         </div>
       )}
 
-      {accion && <Confirmacion accion={accion} claveAdmin={claveAdmin} ejemplo={ejemplo} alCerrar={() => setAccion(null)}
+      {accion && <Confirmacion accion={accion} claveAdmin={claveAdmin} ejemplo={ejemplo} alCerrar={() => setAccion(null)} alIntroducirClave={() => { setAccion(null); borrar(); }}
         alEntregar={(claves) => { setAccion(null); setEntrega(claves); }} />}
       {entrega && <Entrega claves={entrega} alTerminar={() => setEntrega(null)} />}
     </div>

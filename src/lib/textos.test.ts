@@ -100,3 +100,28 @@ describe("frases prohibidas por la validación de coherencia", () => {
     expect(NOMBRE_CATEGORIA.artemis).not.toMatch(/^artemis$/i);
   });
 });
+
+describe("veredicto en partes", () => {
+  it("da una frase principal y, como mucho, dos matices", async () => {
+    const { partesVeredicto, partesVeredictoFechas } = await import("./textos");
+    const v = partesVeredicto(
+      [
+        { nombre: "Cráter Shackleton", horas_sol: 744, pct_sol: 100, horas_tierra_visible: 291, pct_tierra: 39.11, sensible: true },
+        { nombre: "Apolo 11", horas_sol: 356, pct_sol: 47.85, horas_tierra_visible: 744, pct_tierra: 100 },
+      ],
+      "diciembre de 2026",
+    );
+    expect(v.principal).toBe("Cráter Shackleton tiene 388 h más de sol que Apolo 11 en diciembre de 2026.");
+    expect(v.matices).toHaveLength(2);
+    expect(v.matices[1]).toMatch(/^Ojo: /);
+    expect(partesVeredicto([], "x")).toEqual({ principal: "", matices: [] });
+    const f = partesVeredictoFechas(
+      [
+        { nombre: "diciembre de 2026", horas_sol: 744, pct_sol: 100, horas_tierra_visible: 291, pct_tierra: 39.11 },
+        { nombre: "abril de 2027", horas_sol: 0, pct_sol: 0, horas_tierra_visible: 328, pct_tierra: 45.56 },
+      ],
+      "Cráter Shackleton",
+    );
+    expect(f.matices).toHaveLength(1);
+  });
+});
