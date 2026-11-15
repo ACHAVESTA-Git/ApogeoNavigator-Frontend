@@ -116,7 +116,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
       <div className="relative mt-2">
         {vista === "panorama" ? (
           <PanoramaCielo filas={filas} t={reloj.t} tUtc={reloj.tUtc} escala={escala} alPulsarTecla={alPulsarTecla} idTitulo={idTitulo}
-            semilla={sitio.site_id} alArrastrarTiempo={reloj.arrastrarA} alSoltarTiempo={reloj.irA} incertidumbre={incertidumbre} />
+            semilla={sitio.site_id} alArrastrarTiempo={reloj.arrastrarA} alSoltarTiempo={reloj.irA} incertidumbre={incertidumbre} eventos={eventos} />
         ) : (
           <Suspense fallback={<EstadoCarga />}>
             <div tabIndex={0} role="group" aria-labelledby={idTitulo} aria-keyshortcuts={t.teclas} onKeyDown={teclas} className="panel py-6 md:pb-40">
