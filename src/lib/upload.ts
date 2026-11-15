@@ -84,16 +84,21 @@ export const soloNoGuardados = (archivos: readonly ArchivoCarga[]): ArchivoCarga
   archivos.filter((a) => a.estado !== "guardado").map((a) => (a.estado === "no_guardado" ? { ...a, estado: "errores" } : a));
 
 type Cambio = Pick<ArchivoCarga, "estado" | "informe" | "mensaje">;
+/** «Título. Mensaje», sin repetir el título si el mensaje ya empieza por él. */
+const conTitulo = (titulo: string, mensaje: string): string =>
+  mensaje.toLowerCase().startsWith(titulo.toLowerCase()) ? mensaje : `${titulo.replace(/[.:]\s*$/, "")}. ${mensaje}`;
 /** Convierte la respuesta (o el error) de un archivo en su nuevo estado. Lanza si hay que parar toda la tanda. */
 function interpretar(error: unknown, siFalla: EstadoArchivo): Cambio {
   if (error instanceof ApiError) {
     if (error.status === API.NO_AUTORIZADO) throw new ClaveInvalida();
     if (error.status >= 500) throw new ServicioNoDisponible();
     // El informe por fila y columna se conserva; el resumen sale del traductor único (nunca un estado a secas).
-    const { mensaje, sugerencia } = traducirError(error);
-    return typeof error.detail === "string"
-      ? { estado: siFalla, informe: null, mensaje: mensaje === error.detail ? mensaje : `${mensaje} ${sugerencia}`.trim() } // el texto del servidor ya dice qué hacer
-      : { estado: siFalla, informe: error.detail, mensaje: error.error?.mensaje ?? null };
+    const { titulo, mensaje, sugerencia } = traducirError(error);
+    // Si la respuesta trae el objeto `error`, su título y su mensaje se muestran tal cual, sin texto propio.
+    const delBackend = error.error ? conTitulo(titulo, mensaje) : null;
+    if (typeof error.detail !== "string") return { estado: siFalla, informe: error.detail, mensaje: delBackend };
+    if (delBackend) return { estado: siFalla, informe: null, mensaje: `${delBackend} ${sugerencia}`.trim() };
+    return { estado: siFalla, informe: null, mensaje: mensaje === error.detail ? mensaje : `${mensaje} ${sugerencia}`.trim() }; // el texto del servidor ya dice qué hacer
   }
   throw new ServicioNoDisponible();
 }

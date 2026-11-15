@@ -1,9 +1,12 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 import { GlifoSemaforo } from "./glifos/GlifoSemaforo";
 import { PanelLectura } from "./cielo/PanelLectura";
 import { Transporte } from "./tiempo/Transporte";
+import { EstadoError } from "./ui/Estados";
 import { ErrorTable } from "./upload/ErrorTable";
+import { ApiError } from "../lib/errores";
 import { sumarHoras } from "../lib/fechas";
 import type { FilaEfemeride } from "../lib/tipos";
 
@@ -81,5 +84,20 @@ describe("ErrorTable", () => {
     expect(screen.getAllByRole("row")).toHaveLength(6); // cabecera + 5
     expect(screen.getByText("12")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ver los 8 errores" })).toHaveAttribute("aria-expanded", "false");
+  });
+});
+
+describe("EstadoError", () => {
+  const backend = { codigo: "SITIO_NO_ENCONTRADO", estado: 404, titulo: "Sitio no encontrado", mensaje: "No hay ningún sitio con el identificador «noexiste».", accion: "Elige un sitio del catálogo." };
+  it("muestra el título y el mensaje del backend tal cual, aunque la pantalla proponga otro título", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    render(<MemoryRouter><EstadoError error={new ApiError(404, "", backend)} titulo="Este sitio no tiene efemérides cargadas" /></MemoryRouter>);
+    expect(screen.getByText("Sitio no encontrado")).toBeInTheDocument();
+    expect(screen.getByText(/No hay ningún sitio con el identificador «noexiste»/)).toBeInTheDocument();
+    expect(screen.queryByText("Este sitio no tiene efemérides cargadas")).not.toBeInTheDocument();
+  });
+  it("sin objeto `error` del backend, vale el título de la pantalla", () => {
+    render(<MemoryRouter><EstadoError error={new ApiError(404, "")} titulo="Este sitio no tiene efemérides cargadas" /></MemoryRouter>);
+    expect(screen.getByText("Este sitio no tiene efemérides cargadas")).toBeInTheDocument();
   });
 });
