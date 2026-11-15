@@ -37,7 +37,7 @@ export function MiniHorizonte({ filas, t, className }: { filas: readonly FilaEfe
   return (
     <div role="img" aria-label={T.sitios.miniHorizonte} className={unir("bg-vacio rounded-control relative overflow-hidden", className)}
       style={{ height: MINI_HORIZONTE.ALTO_PX }} data-mini-horizonte={filas ? "vivo" : "sin-serie"}>
-      <span className="bg-regolito absolute inset-x-0 bottom-0" style={{ top: pct(MINI_HORIZONTE.HORIZONTE) }} />
+      <span className="bg-texto/6 absolute inset-x-0 bottom-0" style={{ top: pct(MINI_HORIZONTE.HORIZONTE) }} />
       <span className="bg-texto/25 absolute inset-x-0 h-px" style={{ top: pct(MINI_HORIZONTE.HORIZONTE) }} />
       {filas && (
         <>

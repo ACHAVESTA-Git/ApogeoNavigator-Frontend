@@ -29,8 +29,10 @@ const elevacion = (el: number) => grados(el, Math.abs(el) < 10 ? 1 : 0, true);
  * Sol, elevación de la Tierra y la próxima puesta. Salen de la fila de la efeméride de esa hora y de
  * `proxima_puesta_*_utc`; fuera del periodo o sin serie, queda el hueco («Sin dato»), nunca un valor.
  */
-export function CifrasAhora({ filas, indicadores, className }: {
-  filas: readonly FilaEfemeride[] | undefined; indicadores?: IndicadoresAstronauta | null; className?: string;
+export function CifrasAhora({ filas, indicadores, sensible = false, className }: {
+  filas: readonly FilaEfemeride[] | undefined; indicadores?: IndicadoresAstronauta | null;
+  /** Aviso de la API «sensible al relieve»: su línea va aquí, siempre a la vista (también con la cabecera plegada). */
+  sensible?: boolean; className?: string;
 }) {
   const t = T.mision;
   const ahora = useInstanteGlobal();
@@ -41,7 +43,12 @@ export function CifrasAhora({ filas, indicadores, className }: {
   const hueco = filas && !dentro ? t.fueraDePeriodo : T.lujo.sinDato;
   return (
     <div className={className}>
-      <div className="grid min-h-[8.75rem] grid-cols-3 gap-x-3 sm:min-h-[6.75rem] sm:gap-x-8">
+      {/* Alto reservado (dos líneas en móvil): qué es «ahora», el horizonte ideal y, si la API lo avisa, el asterisco. */}
+      <p className="text-texto-2 -mt-1 mb-3 min-h-10 text-[0.75rem] sm:min-h-5" data-linea-mision>
+        {sensible && <span className="text-texto" data-aviso-relieve>* <span className="inline-block first-letter:uppercase">{T.semaforo.sensible}</span> · </span>}
+        {t.instante(fechaHora(ahora))} · {T.avisoHorizonteCorto}
+      </p>
+      <div className="grid min-h-[8.25rem] grid-cols-3 gap-x-3 sm:min-h-[6.25rem] sm:gap-x-8">
         {(["sol", "tierra"] as const).map((astro) => {
           const el = fila?.[`${astro}_el_deg`];
           return (
@@ -54,7 +61,6 @@ export function CifrasAhora({ filas, indicadores, className }: {
           {evento ? t.puestaDe(evento.astro, fechaHora(evento.utc)) : fila ? t.sinEvento : hueco}
         </Cifra>
       </div>
-      <p className="text-texto-2 mt-1 text-[0.75rem]">{t.instante(fechaHora(ahora))} · {T.avisoHorizonteCorto}</p>
     </div>
   );
 }
