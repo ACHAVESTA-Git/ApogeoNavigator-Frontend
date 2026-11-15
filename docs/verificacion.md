@@ -1,20 +1,20 @@
 # Verificación del frontend · dom 15/11/2026 (cierre de la entrega)
 
-Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 62, una rama y un worktree por bloque).
+Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 63, una rama y un worktree por bloque).
 
 | Comprobación | Resultado |
 |---|---|
 | `npm run build` | En verde. Incluye `scripts/contraste.mjs`: 41 pares de tokens cumplen WCAG AA (el más justo, `texto-3` sobre `elevada`, 4,68:1) |
-| `npm run test:run` | 241 pruebas en verde |
-| JS inicial (gzip) | 192,1 kB (`index-*.js`, 570,4 kB sin comprimir). Eran 177,7 kB antes del PR 60: los textos de los dos idiomas viajan en el paquete inicial. Sin límite por decisión del usuario |
-| Chunks diferidos (gzip) | d3 13,1 · Cielo 9,3 · GestorClaves 7,2 · Analisis 6,5 · Sitios 6,1 · UploadDialog 5,9 · Comparar 5,4 · DiaLunar 3,7 · Ventanas 3,1 · CifraRelato 3,1 · DialogoConfiguracion 0,5 kB |
+| `npm run test:run` | 254 pruebas en verde |
+| JS inicial (gzip) | 199,2 kB (`index-*.js`, 592,8 kB sin comprimir). Eran 177,7 kB antes del PR 60: los textos de los dos idiomas viajan en el paquete inicial (unos 14 kB) y el estado de sesión de la cabecera añade unos 7 kB. Sin límite por decisión del usuario |
+| Chunks diferidos (gzip) | d3 13,1 · Cielo 9,3 · GestorClaves 7,2 · Analisis 6,5 · Sitios 6,1 · UploadDialog 5,9 · Comparar 5,4 · DiaLunar 3,7 · Ventanas 3,1 · CifraRelato 3,1 · Acceso 1,6 · Perfil 0,6 · DialogoConfiguracion 0,5 kB |
 | Fuentes | Solo latino y latino extendido de Archivo y JetBrains Mono; la de texto se precarga |
 | Tamaño mínimo de texto | 12 px efectivos medidos en navegador (incluidos los rótulos SVG) en Inicio, Sitios, ficha, Cielo, Día lunar, Ventanas, Comparar y Análisis, a 1440 y a 360 px |
 | Capturas | `docs/frontend/capturas/` (1440×900 y 360×780). Regeneradas el 15/11 con la API real: inicio (acto 1), sitios, ficha, cielo (Shackleton y Apolo 11), cielo en proyección, día lunar, ventanas, comparar, análisis, análisis con firma no válida, mes sin datos (Ventanas y Comparar) y coordenadas propias (cielo y ventanas). `cielo-proyeccion-azimut-poco-fiable` usa la respuesta real con `azimut_solar_fiable: false` e incertidumbre de 180° añadidos por interceptación, porque el backend #28 aún no está fusionado |
 | Desplazamiento horizontal a 360 px | 0 px en todas las rutas capturadas |
 | Errores de consola | 0 en todas las capturas. En un mes sin datos el navegador anota el 422 de la propia petición (la interfaz lo muestra como estado vacío) |
 
-## Qué entró en el cierre (PR 54 a 62)
+## Qué entró en el cierre (PR 54 a 63)
 | PR | Contenido |
 |---|---|
 | 54 | Documentación: verificación con los PR 51 a 53 y el estado del gestor de claves |
@@ -26,6 +26,7 @@ Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 62, una rama 
 | 60 | Configuración en la cabecera con idioma español/inglés: `textos.en.ts`, fechas y cifras por idioma, errores del backend traducidos por código, `<html lang>` |
 | 61 | El título y el mensaje del backend se muestran tal cual (aviso de error y popup de carga) |
 | 62 | Identidad de marca: símbolo, logotipo, favicon, icono de 180 px y metadatos para compartir. Ver `docs/marca.md` |
+| 63 | Inicio de sesión: formulario de Acceso, avatar con menú en la cabecera, «Mi perfil» con las huellas de las claves post-cuánticas; el popup de carga y el gestor de claves usan la sesión si existe |
 
 ## Recorridos del cierre (15/11, Playwright, API real en localhost:8080)
 - **Idioma (PR 60):** con el navegador en español, Sitios → Configuración → «English»: la página se recarga en la misma ruta con `lang="en"`, el título «Sites» y la descripción en inglés; la elección queda en `localStorage`. Escape devuelve el foco al botón de ajustes. Con el navegador en francés y sin elección guardada, arranca en inglés. Capturas en inglés a 1440×900 y 360×780 de inicio, configuración, sitios, cielo, ventanas, análisis, comparar y «Upload data»: 0 px de desplazamiento horizontal y 0 errores de consola.
@@ -33,6 +34,7 @@ Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 62, una rama 
 - **Reglas de presentación del análisis en inglés:** con prueba unitaria (origen subido o modificado sin mencionar a NASA, R² como ajuste dentro de los datos, RMSE «optimistic; not an interval», observado y ajustado solo dentro de los datos y `cargado_por` limitado a tres categorías).
 - **Error del backend (PR 61):** con un 404 `SITIO_NO_ENCONTRADO` inyectado en el Cielo, el aviso muestra «Sitio no encontrado» y el mensaje del backend, a 1440 y a 360 px. El popup de carga se comprobó con pruebas unitarias, no en navegador. La ruta «(/api/sites)» y el texto «…el informe completo va en detail» vienen del backend y se ven tal cual hasta que se corrijan allí.
 - **Marca (PR 62):** inicio y sitios (español) y cielo (inglés) a 1440×900 y 360×780: la portada conserva su disposición, 0 px de desplazamiento horizontal y 0 errores de consola. En menos de 400 px la cabecera muestra el símbolo y «Apogeo».
+- **Sesión (PR 63), con el backend SIMULADO** (las rutas `/api/auth/*` aún no existen): acceso, error de credenciales, sesión iniciada, menú y perfil a 1440×900 y 360×780, sin desplazamiento horizontal ni errores de página. Con rol analista, `/admin/claves` vuelve a `/acceso`; con rol admin, el gestor no pide clave y envía `X-Requested-With` sin `X-API-Key`; el popup de carga no pide clave. Tras iniciar sesión, en `localStorage` solo queda el indicio `apogeo.sesion = 1`; ni contraseña ni token. Usuario ficticio en las capturas.
 - **Gestor de claves (pasada del PR 58):** ciclo completo contra la API real: generar → listar → rotar → revocar. Quedaron 3 claves de prueba revocadas y 0 activas, y ningún PEM en disco.
 
 ## Qué entró en la pasada anterior (PR 38 a 53)
@@ -82,6 +84,7 @@ Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 62, una rama 
 
 ## Pendiente
 - **Pulido sin hacer:** muestra de respaldo partida por mes (hoy un JSON de unos 180 kB por sitio con los seis meses) y relato del inicio diferido. Se dejaron fuera por riesgo de regresión en la primera pantalla y en el respaldo.
+- **Sesión contra el backend real:** el PR 63 está tipado con el contrato anunciado (`POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me → {id, nombre, rol, huellas}`). Falta probarlo con la API real y ajustar la forma de las huellas cuando el backend publique el contrato (`leerHuellas` en `src/lib/sesion.ts`).
 - **Reproducción a 30 fps** (auditoría 04, A3): sin hacer. `lienzoLunar.ts` lo comparte el relato del inicio, así que no se toca sin medir antes en el portátil de la demo.
 - **`og:image` con dirección completa:** el HTML lleva `/marca/og.png`; falta el dominio de producción para que las redes lo recojan.
 - **Idioma sin recarga:** cambiar de idioma recarga la página. Los dos idiomas viajan en el JS inicial (unos 14 kB gzip más); cargar solo el activo queda sin hacer por no arriesgar la primera pantalla.
@@ -91,6 +94,7 @@ Rama integrada: `origin/dev` de `ApogeoNavigator-Frontend` (PR 1 a 62, una rama 
 ## No verificado
 - Dispositivo físico, Lighthouse, lector de pantalla y medición de fps.
 - La tarjeta para compartir (`og:`) en una red real y el icono de 180 px en un iPhone.
+- El inicio de sesión contra el backend real y la cookie de sesión entre orígenes distintos (CORS con credenciales).
 - El cambio de idioma con el almacenamiento del navegador bloqueado (solo con prueba unitaria).
 - La cabecera `Retry-After` real a través de CORS en producción (el 429 se probó interceptado).
 - El despliegue en Cloudflare Pages con el build nuevo (el script de contraste se ejecuta con `node`, sin dependencias).
