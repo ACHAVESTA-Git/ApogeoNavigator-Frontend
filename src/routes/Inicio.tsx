@@ -92,9 +92,11 @@ export default function Inicio() {
           <h2 id="equipo" className={TITULO_SECCION}>{t.equipo.titulo}</h2>
           <div className="md:col-span-9">
             <p className="text-texto text-[1.0625rem]">{t.equipo.texto}</p>
-            <ul className="text-texto-2 mt-4 space-y-1">
-              {t.equipo.roles.map((rol) => <li key={rol}>{rol}</li>)}
-            </ul>
+            {t.equipo.roles.length > 0 && (
+              <ul className="text-texto-2 mt-4 space-y-1">
+                {t.equipo.roles.map((rol) => <li key={rol}>{rol}</li>)}
+              </ul>
+            )}
           </div>
         </section>
         <Pie />

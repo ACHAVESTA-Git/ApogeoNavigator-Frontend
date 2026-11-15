@@ -11,7 +11,7 @@ export const DEL_ASTRO: Record<Astro, string> = { sol: "del Sol", tierra: "de la
 export const NOMBRE_NIVEL: Record<NivelSemaforo, string> = { verde: "Viable", amarillo: "Con reservas", rojo: "Crítico" };
 export const FORMA_NIVEL: Record<NivelSemaforo, string> = { verde: "círculo", amarillo: "triángulo", rojo: "cuadrado con aspa" };
 export const NOMBRE_CATEGORIA: Record<Categoria, string> = {
-  apolo: "Apolo", artemis: "Artemis", clps: "CLPS", internacional: "Internacional",
+  apolo: "Apolo", artemis: "Región polo sur", clps: "CLPS", internacional: "Internacional",
   historico: "Histórico", personalizado: "Personalizado",
 };
 export const FORMA_CATEGORIA: Record<Categoria, string> = {
@@ -79,13 +79,13 @@ export const T = {
     rotulo: (coordenada: string, periodo: string) => `Cráter Shackleton · ${coordenada} · ${periodo}`,
     // El acento de color va solo en «el Sol». La frase vale para el mes del relato: con más meses de datos, el Sol
     // de Shackleton sí llega a ponerse (27/01/2027), así que no se afirma que no se ponga «nunca».
-    titular: { antes: "En el polo sur, ", acento: "el Sol", despues: " no se pone en todo el mes: rueda por el horizonte." },
-    apoyo: "Un paso de unos kilómetros o de unos días decide si un módulo tiene energía y línea directa con la Tierra. Compáralo en minutos.",
+    titular: { antes: "En Shackleton, junto al polo sur, ", acento: "el Sol", despues: " no se pone en diciembre: rueda por el horizonte." },
+    apoyo: "Un cambio pequeño de lugar o de fecha puede decidir si un módulo tiene energía y línea directa con la Tierra. Compáralo en minutos.",
     // Relato con scroll en tres actos. Todas las cifras salen de hero-shackleton.json (CSV reales).
     actos: {
       progreso: "Actos del relato",
       ir: (n: number) => `Ir al acto ${n}`,
-      uno: { rotulo: "Acto 1 · El problema", kpi: "Horas con Sol en diciembre", contexto: (min: string, max: string) => `El Sol nunca sube de ${max} ni baja de ${min}: da la vuelta al horizonte sin ponerse. Cualquier colina puede taparlo.` },
+      uno: { rotulo: "Acto 1 · Centro de Shackleton, diciembre de 2026, horizonte ideal", kpi: "Horas con Sol en diciembre", contexto: (min: string, max: string) => `En diciembre el Sol no sube de ${max} ni baja de ${min}: da la vuelta al horizonte sin ponerse. El relieve real puede taparlo.` },
       dos: {
         rotulo: "Acto 2 · La exploración",
         titular: { antes: "Pero ", acento: "la Tierra", despues: " sí se esconde." },
@@ -96,7 +96,7 @@ export const T = {
         rotulo: "Acto 3 · La decisión",
         titular: "Elige dónde aterrizar.",
         kpi: "Sitios para comparar",
-        contexto: (puesta: string) => `Unos kilómetros o unos días lo cambian todo: el ${puesta} (UTC) el Sol de Shackleton también se pone. Compara energía y enlace antes de decidir.`,
+        contexto: (puesta: string) => `Un cambio de lugar o de fecha lo cambia todo: el ${puesta} (UTC) el Sol de Shackleton también se pone. Compara energía y enlace antes de decidir.`,
       },
       de: (total: string) => `de ${total}`,
       sigue: "Desplázate para avanzar el mes",
@@ -118,7 +118,7 @@ export const T = {
     polo: {
       titulo: "Por qué el polo es extremo",
       texto: (inclinacion: string) =>
-        `El eje de la Luna está inclinado solo ${inclinacion} respecto a su órbita alrededor del Sol. Por eso, visto desde el polo, el Sol nunca se aleja del horizonte: da la vuelta completa en un día lunar, de unos 29,5 días terrestres, siempre rasante. Cualquier colina puede taparlo, y la Tierra asoma y se esconde por la libración.`,
+        `El eje de la Luna está inclinado solo ${inclinacion} respecto a la eclíptica, el plano de la órbita de la Tierra alrededor del Sol. Por eso, visto desde el polo, el Sol nunca se aleja del horizonte: da la vuelta completa en un día lunar, de unos 29,5 días terrestres, siempre rasante. Cualquier colina puede taparlo, y la Tierra asoma y se esconde por la libración.`,
       diagrama: (inclinacion: string) => `Diagrama: el eje de la Luna, inclinado ${inclinacion}, y la luz del Sol que llega casi horizontal al polo sur.`,
       eje: "Eje lunar",
       luz: "Luz del Sol",
@@ -134,26 +134,23 @@ export const T = {
     },
     datos: {
       titulo: "Datos NASA",
-      texto: "Todas las cifras salen de fuentes públicas. Nada se inventa ni se estima a ojo.",
+      texto: "Las cifras salen de fuentes públicas de NASA y de cálculos reproducibles. Lo que no es dato de NASA está marcado: las proyecciones, los umbrales del semáforo y el relieve ilustrativo.",
       fuentes: [
         { nombre: "JPL Horizons", uso: "Posición del Sol y la Tierra (azimut y elevación), hora a hora", clave: "HORIZONS" },
         { nombre: "NSSDC", uso: "Coordenadas de los sitios Apolo", clave: "NSSDC" },
         { nombre: "LROC", uso: "Coordenadas de los alunizajes recientes y de Shackleton", clave: "LROC" },
-        { nombre: "Moon Trek", uso: "Contexto cartográfico de la superficie", clave: "MOON_TREK" },
+        { nombre: "NASA/LRO", uso: "Coordenadas de IM-1 Odysseus", clave: "LRO" },
       ],
       periodo: (desde: string, hasta: string, generado: string) => `Periodo con datos: ${desde} a ${hasta} (UTC). Generados el ${generado}.`,
     },
     equipo: {
-      titulo: "Equipo Apogeo",
+      // Sin nombres ni roles hasta que el equipo confirme sus datos (docs/entrega/equipo.md).
+      titulo: "Apogeo Team",
       texto: "Proyecto para el NASA Space Apps Challenge 2026.",
-      roles: [
-        "Análisis de datos: efemérides, validación con Horizons y métricas",
-        "Interfaz: visualización del cielo, comparación y accesibilidad",
-        "API y datos: lectura, carga validada de CSV y auditoría",
-      ],
+      roles: [] as string[],
     },
     pie: {
-      aviso: "NASA no respalda ni patrocina este proyecto ni a ninguna entidad, producto o servicio de terceros. Los datos provienen de fuentes públicas de NASA y de JPL; el análisis y la interfaz son del equipo Apogeo.",
+      aviso: "NASA no respalda ni patrocina este proyecto ni a ninguna entidad, producto o servicio de terceros. Los datos provienen de fuentes públicas de NASA y de JPL. Apogeo Team · NASA Space Apps Challenge 2026.",
       licencia: "Código bajo licencia MIT © 2026 Apogeo Team.",
       repoFrontend: "Repositorio del frontend",
       repoBackend: "Repositorio del backend",
@@ -163,7 +160,7 @@ export const T = {
   sitios: {
     documento: "Sitios",
     rotulo: "Catálogo",
-    titulo: "Diez sitios, un polo",
+    titulo: "Diez sitios, vistos desde el polo sur",
     entrada: "El polo sur está en el centro y la Tierra queda hacia arriba. Cuanto más cerca del centro, más rasante es el Sol.",
     mapa: (n: number) => `Mapa polar de la Luna centrado en el polo sur con ${n} sitios de alunizaje. La lista de al lado contiene los mismos sitios.`,
     haciaTierra: "0° · hacia la Tierra",
@@ -228,7 +225,7 @@ export const T = {
     centrar: (astro: string) => `Centrar la vista en ${astro}`,
     arrastra: "Arrastra el cielo para girar la mirada · arrastra el suelo para mover el tiempo",
     relieve: "Relieve ilustrativo. Las cifras son de horizonte ideal (sin relieve).",
-    tamanos: "Tamaños de los astros ampliados; la Tierra se ve casi 4 veces mayor que el Sol.",
+    tamanos: "Tamaños de los astros ampliados; la Tierra se ve unas 3,6 veces mayor que el Sol.",
     horizonteIdeal: "horizonte ideal",
     faseTierra: (pct: string) => `Tierra iluminada al ${pct}`,
     proyeccion: "Proyección",
@@ -272,11 +269,11 @@ export const T = {
     // Relato de cada cifra: con qué se compara (días equivalentes) y por qué importa (la consecuencia operativa).
     relato: {
       sol: (dias: string, sin: string, todo: boolean, nada: boolean) =>
-        nada ? "Sin Sol en todo el periodo: el módulo depende por completo de baterías o de una fuente de calor."
-          : todo ? `Equivale a ${dias} días seguidos de luz: no hay noche que sobrevivir en este periodo.`
-          : `Equivale a ${dias} días de luz. Quedan ${sin} a oscuras: ese tramo hay que pasarlo con baterías.`,
+        nada ? "Sin Sol en todo el periodo: el módulo necesitaría baterías u otra fuente de energía."
+          : todo ? `Equivale a ${dias} días seguidos de luz: no hay noche en este periodo.`
+          : `Equivale a ${dias} días de luz. Quedan ${sin} a oscuras: ese tramo requiere baterías u otra fuente.`,
       tierra: (dias: string, sin: string, todo: boolean, nada: boolean) =>
-        nada ? "La Tierra nunca asoma: sin satélite de retransmisión no hay comunicación."
+        nada ? "La Tierra nunca asoma en este periodo: sin satélite de retransmisión no hay comunicación directa."
           : todo ? "La Tierra está siempre a la vista: enlace directo durante todo el periodo."
           : `Equivale a ${dias} días de enlace directo. Quedan ${sin} sin línea con la Tierra: hace falta un repetidor o esperar.`,
     },
@@ -391,7 +388,7 @@ export const T = {
     relato: {
       sol: (mejor: string, peor: string, horas: string, dias: string, empate: boolean) =>
         empate ? "Empate en horas de sol: la energía no decide entre estas opciones."
-          : `${mejor} suma ${horas} más de sol que ${peor}: ${dias} días menos de noche que cubrir con baterías.`,
+          : `${mejor} suma ${horas} más de sol que ${peor}: ${dias} días menos de noche.`,
       tierra: (mejor: string, peor: string, horas: string, dias: string, empate: boolean) =>
         empate ? "Empate en horas de enlace: la comunicación no decide entre estas opciones."
           : `${mejor} suma ${horas} más de enlace directo que ${peor}: ${dias} días menos dependiendo de un repetidor.`,
@@ -598,7 +595,7 @@ export function veredicto(filas: FilaVeredicto[], periodo: string): string {
   const partes: string[] = [];
   if (completos.length) partes.push(`${listar(completos.map((f) => f.nombre))} ${completos.length > 1 ? "ven" : "ve"} la Tierra todo el periodo`);
   parciales.forEach((f) => partes.push(`${f.nombre} la ve ${horas(f.horas_tierra_visible)} (${pct(f.pct_tierra)})`));
-  if (sinTierra.length) partes.push(`${listar(sinTierra.map((f) => f.nombre))} no ${sinTierra.length > 1 ? "la ven" : "la ve"} nunca`);
+  if (sinTierra.length) partes.push(`${listar(sinTierra.map((f) => f.nombre))} no ${sinTierra.length > 1 ? "la ven" : "la ve"} en el periodo`);
   return frases(sol, partes.join("; "), cautela(filas));
 }
 
