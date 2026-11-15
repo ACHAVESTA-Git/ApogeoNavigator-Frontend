@@ -200,7 +200,6 @@ export const T = {
     titulo: "Cómo analizamos los datos",
     entrada: "Siete pasos, del archivo a la proyección. Cada cifra de esta página sale de los datos de este sitio; nada está escrito a mano.",
     cargando: "Calculando el análisis…",
-    ejemplo: "Ejemplo guardado: este servidor todavía no publica el análisis. Lo que ves es una respuesta real del análisis de este sitio, guardada el 14/11/2026; puede no coincidir con los datos actuales.",
     enlace: "Cómo analizamos estos datos",
     enlaceProyeccion: "Cómo se calcula esta proyección",
     trasCarga: (fecha: string) => `Tus datos (${fecha}) alimentan este análisis.`,

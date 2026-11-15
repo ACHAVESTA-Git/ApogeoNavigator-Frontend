@@ -61,7 +61,6 @@ export const MUESTRA = {
   EFEMERIDES: (id: string) => `${RUTA_MUESTRA}/efemerides/${encodeURIComponent(id)}.json`,
   REFERENCIA: `${RUTA_MUESTRA}/metricas-referencia.json`,
   // Respuesta real de /api/analisis guardada como ejemplo (solo de este sitio). Se quita cuando el endpoint esté desplegado.
-  ANALISIS: { SITIO: "shackleton", RUTA: `${RUTA_MUESTRA}/analisis_shackleton.json` },
   FECHA_INSTANTANEA: "14/11/2026",
 } as const;
 

@@ -52,30 +52,42 @@ function Origen({ a }: { a: DatosAnalisis }) {
   const { origen, calidad } = a.entrada;
   const { titulo, texto, esNasa } = textoOrigen(origen, fechaLarga);
   const huella = `${origen.sha3_256.slice(0, ANALISIS_GRAFICO.DECIMALES_HUELLA)}…`;
+  // Una firma que no valida es un aviso de primer orden: se dice con icono y texto, y la tarjeta deja de ir en verde.
+  const firmaInvalida = origen.manifiesto?.firmado === false;
+  const partido = "whitespace-nowrap";
   return (
-    <section aria-label={t.rotulo} className={unir("panel mt-6 max-w-3xl border-l-2 p-4 md:p-5", esNasa ? "border-l-viable" : "border-l-reservas")}>
+    <section aria-label={t.rotulo} className={unir("panel mt-6 max-w-3xl border-l-2 p-4 md:p-5", esNasa && !firmaInvalida ? "border-l-viable" : "border-l-reservas")}>
       <p className="rotulo">{t.rotulo}</p>
       <p className="text-subtitulo text-texto mt-2 font-semibold">{titulo}</p>
       <p className="text-texto-2 mt-1.5 max-w-[64ch]">{texto}</p>
-      <dl className="text-apoyo mt-4 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
-        {[
+      <dl className="text-apoyo mt-4 grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+        {([
           [t.archivo, a.entrada.archivo],
-          [t.filas, `${numeroCorto(calidad.filas_validas)} / ${numeroCorto(a.entrada.filas)}`],
-          [t.rango, `${soloFecha(a.entrada.inicio_utc)} → ${soloFecha(a.entrada.fin_utc)}`],
-          [t.huella, huella],
-        ].map(([k, v]) => (
+          [t.filas, <span key="f" className={partido}>{numeroCorto(calidad.filas_validas)} / {numeroCorto(a.entrada.filas)}</span>],
+          // El rango solo se parte entre las dos fechas, nunca dentro de una.
+          [t.rango, <span key="r"><span className={partido}>{soloFecha(a.entrada.inicio_utc)} →</span> <span className={partido}>{soloFecha(a.entrada.fin_utc)}</span></span>],
+          [t.huella, <span key="h" className={partido}>{huella}</span>],
+        ] as [string, ReactNode][]).map(([k, v]) => (
           <div key={k} className="min-w-0">
             <dt className="text-texto-3">{k}</dt>
-            <dd className="text-texto font-mono break-all" data-dato title={k === t.huella ? origen.sha3_256 : undefined}>{v}</dd>
+            <dd className="text-texto font-mono wrap-anywhere" data-dato title={k === t.huella ? origen.sha3_256 : undefined}>{v}</dd>
           </div>
         ))}
       </dl>
-      {origen.manifiesto && (
+      {origen.manifiesto && (firmaInvalida ? (
+        <p role="note" className="border-reservas/40 text-apoyo text-texto mt-4 flex items-start gap-2 border-t pt-3">
+          <TriangleAlert aria-hidden="true" className="text-reservas mt-0.5 size-4 shrink-0" />
+          <span>
+            <strong className="text-reservas font-semibold">{t.manifiesto}: {textoFirma(false)}.</strong>
+            {origen.manifiesto.firma_nota && <span className="text-texto-2"> {origen.manifiesto.firma_nota}</span>}
+          </span>
+        </p>
+      ) : (
         <p className="text-apoyo text-texto-2 mt-3">
           {t.manifiesto}: <span className={origen.manifiesto.firmado === true ? "text-viable" : "text-reservas"}>{textoFirma(origen.manifiesto.firmado)}</span>
           {origen.manifiesto.firma_nota && <>. {origen.manifiesto.firma_nota}</>}
         </p>
-      )}
+      ))}
     </section>
   );
 }
@@ -138,9 +150,7 @@ function detalleDe(id: string, a: DatosAnalisis, variable: VariableAnalisis, alC
   if (id === "proyeccion") {
     return (
       <>
-        {/* La muestra guardada solo trae una variable: las demás quedan desactivadas, no se simulan. */}
-        <Segmentado comoRadio etiqueta={T.analisis.serie.variable} valor={a.ejemplo ? a.serie.variable : variable} alCambiar={alCambiarVariable} className="mt-4"
-          opciones={VARIABLES.map((v) => ({ ...v, desactivada: Boolean(a.ejemplo) && v.valor !== a.serie.variable }))} />
+        <Segmentado comoRadio etiqueta={T.analisis.serie.variable} valor={variable} alCambiar={alCambiarVariable} className="mt-4" opciones={VARIABLES} />
         <GraficoSerie analisis={a} />
       </>
     );
@@ -235,7 +245,6 @@ function AnalisisSitio() {
       <p className="rotulo">{t.rotulo}</p>
       <TituloPagina documento={t.documento(sitio.nombre)} className="text-titulo! mt-2">{t.titulo}</TituloPagina>
       <p className="text-texto-2 mt-3 max-w-[64ch]">{t.entrada}</p>
-      {data?.ejemplo && <p role="status" className="panel border-l-reservas text-apoyo text-texto mt-5 max-w-3xl border-l-2 p-3">{t.ejemplo}</p>}
       {isPending && <EstadoCarga texto={t.cargando} className="min-h-[40svh]" />}
       {error && !data && <EstadoError error={error} className="mt-8" alReintentar={() => void refetch()} />}
       {data && <Contenido a={data} variable={variable} alCambiarVariable={(v) => escribir({ [PARAM_URL.VARIABLE]: v === "sol_el_deg" ? null : v })} />}

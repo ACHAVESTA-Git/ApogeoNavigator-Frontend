@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { obtenerEfemerides, obtenerMetricas, obtenerSitios, urlApi, validarCsv } from "./api";
+import { obtenerAnalisis, obtenerEfemerides, obtenerMetricas, obtenerSitios, urlApi, validarCsv } from "./api";
 import { ApiError, ErrorDeRed, esApiAusente } from "./errores";
 import { reiniciarMuestra } from "./muestra";
 
@@ -36,6 +36,21 @@ describe("urlApi", () => {
     expect(urlApi("/api/metricas", { site_id: ["a11", "b22"], desde: "2026-12-01T00:00Z" }, "")).toBe(
       "/api/metricas?site_id=a11&site_id=b22&desde=2026-12-01T00%3A00Z",
     );
+  });
+});
+
+describe("análisis: siempre la API real", () => {
+  it("devuelve la respuesta de /api/analisis/{id} con la variable pedida", async () => {
+    const llamadas = simularFetch(() => json({ site_id: "apollo11" }));
+    expect(await obtenerAnalisis("apollo11", "tierra_el_deg")).toEqual({ site_id: "apollo11" });
+    expect(llamadas).toEqual(["/api/analisis/apollo11?variable=tierra_el_deg"]);
+  });
+  it("con la red caída o la ruta sin registrar es un error, nunca un ejemplo guardado", async () => {
+    simularFetch(() => { throw new TypeError("Failed to fetch"); });
+    await expect(obtenerAnalisis("shackleton")).rejects.toBeInstanceOf(ErrorDeRed);
+    const llamadas = simularFetch(() => json({ detail: "Not Found" }, 404));
+    await expect(obtenerAnalisis("shackleton")).rejects.toMatchObject({ status: 404 });
+    expect(llamadas).toEqual(["/api/analisis/shackleton"]);
   });
 });
 
