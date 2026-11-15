@@ -17,9 +17,10 @@ import { consultaEfemerides } from "../hooks/useEfemerides";
 import { useDesde } from "../hooks/useMedia";
 import { useMovimientoReducido } from "../hooks/useMovimientoReducido";
 import { useEscribirUrl } from "../hooks/useParametrosUrl";
+import { useMetricasCatalogo } from "../hooks/useMetricasCatalogo";
 import { useSites } from "../hooks/useSites";
 import { CATEGORIAS, MAPA, MOVIMIENTO, PARAM_URL, RANGO_POR_DEFECTO } from "../lib/constants";
-import { NOMBRE_CATEGORIA, T } from "../lib/textos";
+import { NOMBRE_CATEGORIA, T, periodoLegible } from "../lib/textos";
 import type { Categoria } from "../lib/tipos";
 
 const TODAS = "todas";
@@ -41,6 +42,11 @@ export default function Sitios() {
   const visibles = useMemo(() => (sitios ?? []).filter((s) => filtro === TODAS || s.categoria === filtro), [sitios, filtro]);
   const seleccionado = sitios?.find((s) => s.site_id === params.get(PARAM_URL.SITIO)) ?? null;
 
+  // Las cifras de las tarjetas: todas las métricas del catálogo en el periodo por defecto (un grupo por petición).
+  const ids = useMemo(() => (sitios ?? []).map((s) => s.site_id), [sitios]);
+  const metricas = useMetricasCatalogo(ids, RANGO_POR_DEFECTO);
+  const periodo = periodoLegible(RANGO_POR_DEFECTO.desde, RANGO_POR_DEFECTO.hasta);
+
   const queryClient = useQueryClient();
   const seleccionar = useCallback((id: string | null) => escribir({ [PARAM_URL.SITIO]: id }, { reemplazar: false }), [escribir]);
   // Prefetch con intención: quien se detiene en un sitio suele abrir su ficha y después su cielo.
@@ -58,13 +64,14 @@ export default function Sitios() {
     <>
       <Segmentado etiqueta={t.filtro} opciones={opciones} valor={filtro}
         alCambiar={(v) => escribir({ [PARAM_URL.CATEGORIA]: v === TODAS ? null : v })} className="mb-5" />
-      <ListaSitios compartir={esEscritorio && !reducido} sitios={visibles} activo={activo} alActivar={activar} alSeleccionar={seleccionar} />
+      <ListaSitios compartir={esEscritorio && !reducido} sitios={visibles} metricas={metricas} periodo={periodo} activo={activo} alActivar={activar} alSeleccionar={seleccionar} />
     </>
   );
 
   return (
     <div className="contenedor grid grid-cols-1 gap-x-6 gap-y-8 py-8 lg:grid-cols-12 lg:py-12">
-      <div className="min-w-0 lg:col-span-7">
+      {/* El mapa acompaña al recorrer las tarjetas: señalar una tarjeta enciende su punto, y tiene que estar a la vista. */}
+      <div className="min-w-0 lg:sticky lg:top-[calc(var(--nav-alto)+1.5rem)] lg:col-span-7 lg:self-start">
         <p className="rotulo">{t.rotulo}</p>
         <TituloPagina documento={t.documento} className="mt-2">{t.titulo}</TituloPagina>
         <p className="text-texto-2 mt-3 max-w-medida">{t.entrada}</p>
@@ -78,8 +85,8 @@ export default function Sitios() {
 
       <div className="relative min-w-0 lg:col-span-5 lg:col-start-8 lg:pt-2">
         {isPending && (
-          <ul role="status" aria-busy="true" aria-label={T.cargando}>
-            {Array.from({ length: MAPA.ESQUELETO_FILAS }, (_, i) => <li key={i} className="bg-superficie border-vacio h-14 border-b-4" />)}
+          <ul role="status" aria-busy="true" aria-label={T.cargando} className="grid grid-cols-1 gap-3 min-[30rem]:grid-cols-2">
+            {Array.from({ length: MAPA.ESQUELETO_FILAS }, (_, i) => <li key={i} className="vidrio h-64" />)}
           </ul>
         )}
         {isError && <EstadoError error={error} alReintentar={() => void refetch()} />}

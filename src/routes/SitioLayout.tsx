@@ -1,4 +1,5 @@
-import { Outlet, useOutletContext, useParams } from "react-router";
+import { Outlet, useMatch, useOutletContext, useParams } from "react-router";
+import { EstadoMision } from "../components/mision/EstadoMision";
 import { BotonComparar } from "../components/mapa/BotonComparar";
 import { EnlaceBoton } from "../components/ui/Boton";
 import { EstadoCarga, EstadoError, EstadoVacio } from "../components/ui/Estados";
@@ -30,6 +31,8 @@ export default function SitioLayout() {
   const t = T.sitio;
   const propio = esPuntoPropio(siteId);
   const nombre = useLlegadaCompartida<HTMLParagraphElement>(ID_NOMBRE_SITIO(siteId ?? ""));
+  // En el Cielo manda la escena: el estado de misión queda plegado (la franja con el veredicto y el resumen).
+  const enCielo = useMatch(RUTAS.CIELO(":siteId")) !== null;
 
   if (estado === "cargando") return <div className="contenedor min-h-[60svh]"><EstadoCarga /></div>;
   if (estado === "error") return <div className="contenedor py-12"><EstadoError alReintentar={reintentar} /></div>;
@@ -70,6 +73,9 @@ export default function SitioLayout() {
           {!propio && <BotonComparar siteId={id} compacto className="max-sm:px-2.5" />}
         </div>
       </header>
+      <div className="contenedor mt-3 md:mt-4">
+        <EstadoMision key={id} sitio={sitio} desde={periodo.desde} hasta={periodo.hasta} plegado={enCielo} />
+      </div>
       <div className="material sticky top-(--nav-alto-movil) z-20 mt-1 md:top-(--nav-alto) md:mt-2">
         <div className="contenedor">
           <PestanasRuta etiqueta={t.pestanas} pestanas={pestanas} />
