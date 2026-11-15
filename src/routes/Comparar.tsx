@@ -1,12 +1,11 @@
 import { ChevronsLeft, ChevronsRight, Pause, Play } from "lucide-react";
-import { AnimatePresence, m } from "motion/react";
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useSearchParams } from "react-router";
 import { FilaHorizonte } from "../components/comparar/FilaHorizonte";
+import { PodioDuelo } from "../components/comparar/PodioDuelo";
 import { HorizontesSincronizados } from "../components/comparar/HorizontesSincronizados";
 import { SelectorMultiple, type Opcion } from "../components/comparar/SelectorSitios";
 import { TablaComparacion } from "../components/comparar/TablaComparacion";
-import { GlifoSemaforo } from "../components/glifos/GlifoSemaforo";
 import { AvisoHorizonteIdeal } from "../components/layout/AvisoHorizonteIdeal";
 import { TituloPagina } from "../components/layout/TituloPagina";
 import { Boton } from "../components/ui/Boton";
@@ -20,12 +19,13 @@ import { useFilasComparacion, type DatosFila, type FilaComparacion } from "../ho
 import { useMovimientoReducido } from "../hooks/useMovimientoReducido";
 import { useEscribirUrl, usePeriodo, useSitiosUrl } from "../hooks/useParametrosUrl";
 import { useSites } from "../hooks/useSites";
-import { esSensibleAlRelieve } from "../lib/astro";
-import { decidir, diferencias } from "../lib/comparar";
-import { COMPARAR, DATOS, HORAS_POR_DIA, MOVIMIENTO, PARAM_URL } from "../lib/constants";
+import { esSensibleAlRelieve, sobreHorizonte } from "../lib/astro";
+import { interpolarFila } from "../lib/interpolar";
+import { decidir } from "../lib/comparar";
+import { COMPARAR, DATOS, HORAS_POR_DIA, MOVIMIENTO, MS_POR_HORA, PARAM_URL } from "../lib/constants";
 import { aMs, fechaHora, horaLima, horasEntre, limitar, mesLargo, sumarHoras, sumarMeses } from "../lib/fechas";
 import { latitud, nombreCorto } from "../lib/formato";
-import { T, horaLocal, partesDecision, periodoLegible, relatoDiferencia } from "../lib/textos";
+import { T, horaLocal, periodoLegible } from "../lib/textos";
 import type { Site, Utc } from "../lib/tipos";
 
 type Modo = "sitios" | "fechas";
@@ -79,50 +79,21 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
   if (error) return <EstadoError error={error} alReintentar={reintentar} className="mt-8" />;
   if (!visibles) return <EstadoCarga texto={t.cargando} className="min-h-[40svh]" />;
   const lineas = visibles.map((d) => ({ nombre: d.etiqueta, ...d.metrica!, sensible: esSensibleAlRelieve(d.metrica!) }));
-  const frase = partesDecision(lineas, modo === "sitios" ? periodoLegible(visibles[0].desde, visibles[0].hasta) : visibles[0].detalle);
   const recomendadas = new Set(decidir(lineas)?.recomendadas.map((i) => visibles[i].clave));
-  const difs = diferencias(lineas);
   const utc = sumarHoras(visibles[0].desde, hora);
   const instante = modo === "sitios" ? `${fechaHora(utc)} ${T.utc} · ${horaLocal(horaLima(utc))}` : t.hora(hora + 1);
+  // Cuántas filas tienen cada astro sobre el horizonte ideal en el instante del cursor (misma interpolación que las escenas).
+  const ahora = visibles.map((d) => interpolarFila(d.efemerides!.filas, aMs(d.desde) + hora * MS_POR_HORA));
+  const conSol = ahora.filter((p) => sobreHorizonte(p.sol_el_deg)).length;
+  const conTierra = ahora.filter((p) => sobreHorizonte(p.tierra_el_deg)).length;
   const IconoReproducir = reproduciendo ? Pause : Play;
   return (
     <div aria-busy={!listo} className={unir("transition-opacity duration-(--dur-corta)", !listo && "opacity-60")}>
       {!listo && <p role="status" className="sr-only">{t.actualizando}</p>}
-      {/* 1 · Veredicto: una frase que decide (según el semáforo de la API) y dos matices: lo que cuesta y la cautela. */}
-      <section key={frase.principal} aria-live="polite" className="animate-aparecer mt-6 max-w-medida">
-        <h2 className="rotulo">{t.veredicto}</h2>
-        <p className="titulo-instrumento text-seccion text-texto mt-2 text-balance">{frase.principal}</p>
-        {frase.matices.length > 0 && (
-          <ul className="text-apoyo text-texto-2 mt-3 space-y-1">
-            {frase.matices.map((m) => <li key={m} className="flex gap-2"><span aria-hidden="true" className="bg-texto-3 mt-[0.6em] size-1 shrink-0 rounded-full" />{m}</li>)}
-          </ul>
-        )}
-      </section>
+      {/* 1 · Podio: el veredicto (según el semáforo de la API), la diferencia que lo explica y el duelo en barras. */}
+      <PodioDuelo filas={visibles} modo={modo} />
 
-      {/* 2 · La diferencia como relato: lo que cada fila gana o pierde frente a la mejor de las demás, con cifras de la API. */}
-      <section className="mt-8">
-        <h2 className="rotulo">{t.diferencias}</h2>
-        <ul className="mt-2 grid gap-x-8 gap-y-3 md:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {visibles.map((d, i) => (
-              <m.li key={d.clave} layout={!reducido} transition={{ layout: MOVIMIENTO.SPRING_SUAVE }}
-                initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: MOVIMIENTO.CORTA / 1000 } }} exit={{ opacity: 0, transition: { duration: MOVIMIENTO.MICRO / 1000 } }}
-                className="min-w-0">
-                <p className="text-texto-2 flex items-center gap-2 text-apoyo first-letter:uppercase">
-                  <GlifoSemaforo nivel={d.metrica!.semaforo.global} conTexto={false} />
-                  <span className="truncate first-letter:uppercase">{d.etiqueta}</span>
-                </p>
-                <p className="text-texto text-entrada mt-1 font-medium text-balance first-letter:uppercase" data-dato>{relatoDiferencia(difs[i])}</p>
-                <p className="text-texto-3 mt-0.5 text-[0.75rem]">
-                  {difs[i].rivalSol === difs[i].rivalTierra ? t.frenteAlMejor(difs[i].rivalSol) : t.frenteADos(difs[i].rivalSol, difs[i].rivalTierra)}
-                </p>
-              </m.li>
-            ))}
-          </AnimatePresence>
-        </ul>
-      </section>
-
-      {/* 3 · El mismo instante en cada horizonte, con un único control de tiempo. */}
+      {/* 2 · El mismo instante en cada horizonte, con un único control de tiempo. */}
       <section className="mt-9">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
           <h2 className="rotulo">{t.mismoInstante(visibles.length)}</h2>
@@ -145,6 +116,7 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
           </div>
           <p className="text-dato-sm text-texto font-mono max-md:w-full" data-dato><span className="rotulo">{t.instante}</span> {instante}</p>
         </div>
+        <p className="text-apoyo text-texto-2 mt-2" data-dato>{t.podio.ahora(conSol, conTierra, visibles.length)}</p>
         <HorizontesSincronizados filas={visibles} hora={hora} recomendadas={recomendadas} />
         <p className="text-texto-3 mt-2 text-[0.75rem]">{T.cielo.relieve}</p>
       </section>
