@@ -1,5 +1,6 @@
 // Error de la API con el formato de FastAPI: {"detail": ...}.
 import { API } from "./constants";
+import { IDIOMA, type Idioma } from "./idioma";
 import { ERRORES_POR_ESTADO, T, esperaYReintenta } from "./textos";
 import type { InformeCsv } from "./tipos";
 
@@ -114,13 +115,28 @@ export function esMesSinDatos(error: unknown): boolean {
   return error instanceof ApiError && error.esNoProcesable && FUERA_DE_DATOS.test(`${error.error?.mensaje ?? ""} ${typeof error.detail === "string" ? error.detail : ""}`);
 }
 
-/** EL traductor: cualquier error (de la API, de red o inesperado) → título, mensaje, sugerencia y acción. */
-export function traducirError(error: unknown): ErrorTraducido {
+/** Catálogo por código: con él se traducen los textos del backend, que llegan en español, cuando la interfaz está en otro idioma. */
+const ERRORES_POR_CODIGO = Object.fromEntries(Object.values(ERRORES_POR_ESTADO).map((e) => [e.codigo, e]));
+
+/**
+ * EL traductor: cualquier error (de la API, de red o inesperado) → título, mensaje, sugerencia y acción.
+ * En español se muestran el título y el mensaje del backend tal cual; en otro idioma, los del catálogo propio,
+ * buscados por el código del error (y, si el código no está, por el estado HTTP).
+ */
+export function traducirError(error: unknown, idioma: Idioma = IDIOMA): ErrorTraducido {
   if (error instanceof ErrorDeRed) return { codigo: CODIGO_SIN_CONEXION, estado: 0, ...T.errores.sinConexion, accion: "reintentar" };
   if (!(error instanceof ApiError)) return { codigo: CODIGO_DESCONOCIDO, estado: 0, ...T.errores.inesperado, accion: "reintentar" };
   if (esMesSinDatos(error)) return { codigo: CODIGO_MES_SIN_DATOS, estado: error.status, ...T.errores.mesSinDatos, accion: "mes", requestId: error.requestId };
   const base = ERRORES_POR_ESTADO[error.status] ?? (error.status >= 500 ? ERRORES_POR_ESTADO[500] : ERRORES_POR_ESTADO[400]);
   const b = error.error;
+  if (idioma !== "es") {
+    const propio = (b && ERRORES_POR_CODIGO[b.codigo]) || base;
+    return {
+      codigo: b?.codigo ?? base.codigo, estado: error.status, titulo: propio.titulo, mensaje: propio.mensaje,
+      sugerencia: error.esperaS ? esperaYReintenta(error.esperaS) : propio.accion,
+      accion: accionDe(error.status), requestId: error.requestId, esperaS: error.esperaS,
+    };
+  }
   return {
     codigo: b?.codigo ?? base.codigo,
     estado: error.status,

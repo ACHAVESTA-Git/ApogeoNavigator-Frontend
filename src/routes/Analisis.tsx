@@ -30,7 +30,7 @@ const VARIABLES = VARIABLES_ANALISIS.map((v) => ({ valor: v, etiqueta: T.analisi
 
 function valorMedida(m: MedidaPaso): string {
   if (m.valor === null) return "—";
-  if (typeof m.valor === "boolean") return m.valor ? "sí" : "no";
+  if (typeof m.valor === "boolean") return m.valor ? T.analisis.si : T.analisis.no;
   if (typeof m.valor === "string") return m.valor;
   if (m.unidad === "bytes") return tamanoArchivo(m.valor);
   return `${numeroCorto(m.valor)}${m.unidad === "°" ? "°" : m.unidad ? ` ${m.unidad}` : ""}`;

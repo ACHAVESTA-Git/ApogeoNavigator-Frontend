@@ -14,7 +14,7 @@ const R = C - MAPA.MARGEN;
 const RAD = Math.PI / 180;
 const pct = (v: number) => `${(v / L) * 100}%`;
 const ROTULO_ANILLO: Partial<Record<number, string>> = { [MAPA.ANILLO_ARTEMIS]: T.sitios.zonaArtemis, 0: T.sitios.ecuador };
-const ROTULO_MERIDIANO: Record<number, string> = { 0: T.sitios.haciaTierra, 90: "90° E", 180: "180°", 270: "90° O" };
+const ROTULO_MERIDIANO: Record<number, string> = { 0: T.sitios.haciaTierra, 90: "90° E", 180: "180°", 270: `90° ${T.oeste}` };
 
 /**
  * Proyección azimutal equidistante centrada en el polo sur: 0° de longitud hacia arriba (hacia la Tierra),

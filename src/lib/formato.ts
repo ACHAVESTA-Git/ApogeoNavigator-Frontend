@@ -1,7 +1,9 @@
 // Formato de cifras para la interfaz (coma decimal). En la API y los CSV sigue el punto.
 import { LOCALE_NUMEROS, MAPA } from "./constants";
+import { IDIOMA } from "./idioma";
 
 const MENOS = "−";
+export const OESTE = IDIOMA === "en" ? "W" : "O";
 const cache = new Map<number, Intl.NumberFormat>();
 function fmt(decimales: number): Intl.NumberFormat {
   let f = cache.get(decimales);
@@ -22,11 +24,12 @@ export function grados(valor: number, decimales = 2, conSigno = false): string {
   const signo = conSigno && valor >= 0 ? "+" : "";
   return `${signo}${numero(valor, decimales)}°`;
 }
-export const pct = (valor: number): string => `${numeroCorto(valor)} %`;
+/** '39,11 %' en español; '39.11%' en inglés. */
+export const pct = (valor: number): string => `${numeroCorto(valor)}${IDIOMA === "en" ? "" : " "}%`;
 export const horas = (valor: number): string => `${numeroCorto(valor)} h`;
 
 export const latitud = (lat: number, decimales = 2): string => `${numero(Math.abs(lat), decimales)}° ${lat < 0 ? "S" : "N"}`;
-export const longitud = (lon: number, decimales = 2): string => `${numero(Math.abs(lon), decimales)}° ${lon < 0 ? "O" : "E"}`;
+export const longitud = (lon: number, decimales = 2): string => `${numero(Math.abs(lon), decimales)}° ${lon < 0 ? OESTE : "E"}`;
 export const coordenadas = (lat: number, lon: number): string => `${latitud(lat)} · ${longitud(lon)}`;
 
 /** 'Apolo 11' de 'Apolo 11 - Mar de la Tranquilidad'. */

@@ -39,17 +39,17 @@ export function PanelLectura({ utc, posicion, eventos, periodo, azimutFiable, cl
             </dt>
             <dd className="text-dato text-texto flex flex-wrap gap-x-4">
               <span className={azDudoso ? "text-texto-2" : undefined} title={azDudoso ? t.azimutPocoFiable(astro) : undefined}>
-                <abbr title="Azimut: dirección sobre el horizonte, desde el norte y en sentido horario" className="text-texto-3 no-underline">{t.az}</abbr>{" "}
+                <abbr title={t.abbrAzimut} className="text-texto-3 no-underline">{t.az}</abbr>{" "}
                 {azDudoso && <span aria-hidden="true">≈ </span>}{grados(posicion[CLAVE_AZIMUT[astro]], azDudoso ? 0 : 2)}
                 {azDudoso && <span className="border-reservas text-reservas ml-2 rounded-full border border-dashed px-1.5 py-px align-middle font-sans text-[0.75rem] font-semibold whitespace-nowrap">{t.pocoFiable}</span>}
               </span>
-              <span><abbr title="Elevación: altura sobre el horizonte ideal" className="text-texto-3 no-underline">{t.el}</abbr> {grados(el, 2, true)}</span>
+              <span><abbr title={t.abbrElevacion} className="text-texto-3 no-underline">{t.el}</abbr> {grados(el, 2, true)}</span>
             </dd>
-            <dt className="sr-only">Estado</dt>
+            <dt className="sr-only">{t.estado}</dt>
             <dd className={unir("col-start-2 text-[0.75rem] font-semibold tracking-[0.08em] uppercase", visible ? COLOR[astro] : "text-texto-2")}>
               {visible ? T.sobreHorizonte : T.bajoHorizonte}
             </dd>
-            <dt className="sr-only">Próximo cambio</dt>
+            <dt className="sr-only">{t.proximoCambio}</dt>
             <dd className="text-dato-sm text-texto-2 col-start-2 min-h-[1.3em]">{e ? proximoCambio(e, periodo) : "…"}</dd>
           </dl>
         );
