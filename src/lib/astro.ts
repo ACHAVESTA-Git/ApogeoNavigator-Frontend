@@ -2,12 +2,10 @@
 // métricas, semáforo, cruces del horizonte y próximos eventos. Sirven de respaldo y para los gráficos.
 import { AVISO, DATOS, HORAS_POR_DIA, MS_POR_HORA, SEMAFORO, UMBRAL_RASANTE_DEG } from "./constants";
 import { aMs, soloFecha } from "./fechas";
+import { IDIOMA } from "./idioma";
+import { T } from "./textos";
 import type { Astro, Aviso, EventosAstro, FilaEfemeride, NivelSemaforo, Semaforo, Utc, ValoresMetricas } from "./tipos";
 
-// Mismo texto que MSG_AVISO_RELIEVE del backend.
-const AVISO_RELIEVE_RESPALDO =
-  `Sensible al relieve: el Sol no supera ${UMBRAL_RASANTE_DEG}° sobre el horizonte ideal, ` +
-  "así que una colina puede taparlo y las horas de sol reales ser menores";
 
 type ClaveElevacion = "sol_el_deg" | "tierra_el_deg";
 export const CLAVE_ELEVACION: Record<Astro, ClaveElevacion> = { sol: "sol_el_deg", tierra: "tierra_el_deg" };
@@ -74,7 +72,7 @@ export function esSemaforo(valor: unknown): valor is Semaforo {
 }
 /** Misma regla que warnings_for() del backend: el Sol nunca supera el umbral rasante. Solo para el respaldo. */
 export function avisosDe(m: Pick<ValoresMetricas, "sol_el_max_deg">): Aviso[] {
-  return m.sol_el_max_deg < UMBRAL_RASANTE_DEG ? [{ codigo: AVISO.RELIEVE, mensaje: AVISO_RELIEVE_RESPALDO }] : [];
+  return m.sol_el_max_deg < UMBRAL_RASANTE_DEG ? [{ codigo: AVISO.RELIEVE, mensaje: T.semaforo.avisoRelieve }] : [];
 }
 /** ¿La API marcó la métrica como sensible al relieve? */
 export const esSensibleAlRelieve = (m: { avisos?: readonly Aviso[] }): boolean =>
@@ -228,3 +226,7 @@ export function mediasNoches(desdeMs: number, hastaMs: number): number[] {
   for (let t = Math.ceil(desdeMs / dia) * dia; t <= hastaMs; t += dia) marcas.push(t);
   return marcas;
 }
+
+/** Los avisos de la API llegan en español: en otro idioma se sustituye el texto de los que se conocen por su código. */
+export const avisosTraducidos = (avisos: Aviso[]): Aviso[] =>
+  IDIOMA === "es" ? avisos : avisos.map((a) => (a.codigo === AVISO.RELIEVE ? { ...a, mensaje: T.semaforo.avisoRelieve } : a));

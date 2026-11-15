@@ -73,11 +73,10 @@ export interface Analisis {
 
 // ---------------------------------------------------------------- reglas de presentación (fijadas con pruebas)
 export const CODIGO_VALIDACION_AJENA = "validacion_de_otros_datos";
-const QUIENES = ["clave de API", "usuario registrado", "anónimo"] as const;
 
 /** Regla 5 · Quién cargó: solo una de las tres categorías del contrato; cualquier otra cosa (una identidad) no se muestra. */
 export const quienCargo = (cargadoPor: string | null | undefined): string =>
-  (QUIENES as readonly string[]).includes(cargadoPor ?? "") ? (cargadoPor as string) : T.analisis.origen.quienNoConsta;
+  (cargadoPor && Object.prototype.hasOwnProperty.call(T.analisis.origen.quienes, cargadoPor) ? T.analisis.origen.quienes[cargadoPor] : undefined) ?? T.analisis.origen.quienNoConsta;
 
 /** Regla 2 · Texto del origen: solo `semilla_nasa` menciona a NASA; subido y modificado dicen que NO son la semilla. */
 export function textoOrigen(origen: OrigenDatos, fecha: (utc: Utc) => string): { titulo: string; texto: string; esNasa: boolean } {

@@ -1,4 +1,5 @@
-import { CloudUpload } from "lucide-react";
+import { CloudUpload, Settings } from "lucide-react";
+import { Suspense, lazy, useState } from "react";
 import { Link, NavLink } from "react-router";
 import { RUTAS } from "../../lib/constants";
 import { T } from "../../lib/textos";
@@ -11,6 +12,33 @@ const enlace = ({ isActive }: { isActive: boolean }) =>
     "tactil inline-flex items-center px-3 text-apoyo font-semibold transition-colors duration-(--dur-micro)",
     isActive ? "text-texto" : "text-texto-2 hover:text-texto",
   );
+
+// El diálogo de configuración se descarga al pasar el ratón o el foco por el botón y se monta al pulsar.
+const cargarConfiguracion = () => import("./DialogoConfiguracion");
+const DialogoConfiguracion = lazy(cargarConfiguracion);
+
+/** Botón de ajustes de la cabecera: abre la configuración (idioma). */
+function BotonConfiguracion() {
+  const [abierta, setAbierta] = useState(false);
+  const precargar = () => void cargarConfiguracion();
+  return (
+    <>
+      <button
+        type="button"
+        aria-label={T.config.abrir}
+        title={T.config.abrir}
+        aria-haspopup="dialog"
+        onClick={() => setAbierta(true)}
+        onPointerEnter={precargar}
+        onFocus={precargar}
+        className="tactil text-texto-2 hover:bg-texto/[0.07] hover:text-texto inline-flex shrink-0 items-center justify-center rounded-full transition-[background-color,color,transform] duration-(--dur-micro) ease-salida active:scale-[0.97]"
+      >
+        <Settings aria-hidden="true" className="size-5" />
+      </button>
+      {abierta && <Suspense fallback={null}><DialogoConfiguracion alCerrar={() => setAbierta(false)} /></Suspense>}
+    </>
+  );
+}
 
 /** El único botón «Subir datos» de la app: abre el popup de carga (no hay pantalla de carga). */
 export function BotonSubirDatos() {
@@ -51,6 +79,7 @@ export function NavPrincipal() {
           <span className="hidden md:block">
             <NavLink to={RUTAS.ACCESO} className={enlace}>{T.nav.acceso}</NavLink>
           </span>
+          <BotonConfiguracion />
         </div>
       </div>
     </header>

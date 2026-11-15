@@ -1,5 +1,5 @@
 // Cliente HTTP de la API. Es el ÚNICO archivo que construye URL de la API (a partir de constants.ts).
-import { avisosDe, esSemaforo, semaforo } from "./astro";
+import { avisosDe, avisosTraducidos, esSemaforo, semaforo } from "./astro";
 import type { Analisis, VariableAnalisis } from "./analisis";
 import { API, API_BASE_URL, DATOS, MODO_MUESTRA, MUESTRA, PUNTO_PROPIO } from "./constants";
 import { ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
@@ -72,7 +72,7 @@ function normalizarMetrica(m: Metrica): Metrica {
   if (!coincide && import.meta.env.DEV) {
     console.warn(`Semáforo de la API distinto de los umbrales del cliente para ${m.site_id}`, m.semaforo, propio);
   }
-  return { ...m, semaforo: coincide ? m.semaforo : propio, avisos: Array.isArray(m.avisos) ? m.avisos : avisosDe(m) };
+  return { ...m, semaforo: coincide ? m.semaforo : propio, avisos: Array.isArray(m.avisos) ? avisosTraducidos(m.avisos) : avisosDe(m) };
 }
 
 export interface Opciones {

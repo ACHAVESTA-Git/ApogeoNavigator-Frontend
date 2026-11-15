@@ -2,6 +2,10 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
 
+// Las pruebas fijan los textos en español (jsdom se presenta como en-US y la app elegiría inglés). La clave va
+// escrita aquí, sin importar `lib/idioma`: importarlo resolvería el idioma antes de poder fijarlo.
+window.localStorage.setItem("apogeo.idioma", "es");
+
 afterEach(cleanup);
 
 // jsdom no implementa matchMedia ni los observadores que usan los componentes.

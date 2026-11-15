@@ -6,12 +6,12 @@ import { Desplegable } from "../ui/Desplegable";
 import { Lectura } from "../ui/Lectura";
 
 const CAMPOS: { clave: keyof ValoresMetricas; nombre: string; formato: (v: number) => string }[] = [
-  { clave: "horas_sol", nombre: "horas de sol", formato: horas },
-  { clave: "pct_sol", nombre: "% de sol", formato: pct },
-  { clave: "sol_el_max_deg", nombre: "altura máxima", formato: (v) => grados(v, 2, true) },
-  { clave: "sol_el_media_deg", nombre: "altura media", formato: (v) => grados(v, 2, true) },
-  { clave: "horas_tierra_visible", nombre: "horas de Tierra", formato: horas },
-  { clave: "pct_tierra", nombre: "% de Tierra", formato: pct },
+  { clave: "horas_sol", nombre: T.ventanas.campos.horas_sol, formato: horas },
+  { clave: "pct_sol", nombre: T.ventanas.campos.pct_sol, formato: pct },
+  { clave: "sol_el_max_deg", nombre: T.ventanas.campos.sol_el_max_deg, formato: (v) => grados(v, 2, true) },
+  { clave: "sol_el_media_deg", nombre: T.ventanas.campos.sol_el_media_deg, formato: (v) => grados(v, 2, true) },
+  { clave: "horas_tierra_visible", nombre: T.ventanas.campos.horas_tierra_visible, formato: horas },
+  { clave: "pct_tierra", nombre: T.ventanas.campos.pct_tierra, formato: pct },
 ];
 
 /** Revelado bajo demanda: alturas del Sol y trazabilidad contra metricas.csv (HU-12). */
