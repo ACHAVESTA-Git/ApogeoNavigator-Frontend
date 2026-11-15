@@ -22,6 +22,8 @@ export const API = {
   DETALLE_RUTA_INEXISTENTE: "Not Found", // 404 por defecto de FastAPI ≠ 404 de «sitio sin efemérides»
   ESTADOS_SIN_SERVICIO: [502, 503, 504],
   NO_AUTORIZADO: 401,
+  PROHIBIDO: 403,
+  CABECERA_SEGUIMIENTO: "X-Request-ID",
   NO_ENCONTRADO: 404,
   NO_PROCESABLE: 422,
   TIMEOUT_MS: 15_000,

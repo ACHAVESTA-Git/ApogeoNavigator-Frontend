@@ -477,6 +477,12 @@ export const T = {
     volver: "Volver a Sitios",
   },
   errores: {
+    sinConexion: { titulo: "No hay conexión con el servidor", mensaje: "No pudimos llegar al servidor de datos.", sugerencia: "Comprueba tu conexión y vuelve a intentarlo." },
+    inesperado: { titulo: "Algo no salió como esperábamos", mensaje: "La aplicación encontró un problema al mostrar estos datos.", sugerencia: "Vuelve a intentarlo; si se repite, recarga la página." },
+    acciones: { reintentar: "Reintentar", clave: "Introducir clave", sitios: "Elegir otro sitio" },
+    seguimiento: "Código de seguimiento",
+    copiar: "Copiar",
+    copiado: "Copiado",
     generico: "Algo no salió como esperábamos.",
     sinServicio: "Los datos no están disponibles ahora.",
     sitioDesconocido: "No conocemos este sitio.",
@@ -487,6 +493,27 @@ export const T = {
     rangoMaximo: `El rango máximo es de ${DATOS.RANGO_MAX_DIAS} días.`,
   },
 } as const;
+
+/**
+ * Catálogo base por estado (estándar de respuestas HTTP §2): lo que se muestra cuando la respuesta no trae el
+ * objeto `error`. `mensaje` es qué pasó y `accion`, qué puede hacer el usuario.
+ */
+export const ERRORES_POR_ESTADO: Record<number, { codigo: string; titulo: string; mensaje: string; accion: string }> = {
+  400: { codigo: "PETICION_INVALIDA", titulo: "Petición inválida", mensaje: "El servidor no pudo entender lo que se le pidió.", accion: "Revisa los datos enviados." },
+  401: { codigo: "NO_AUTORIZADO", titulo: "Falta autorización", mensaje: "Esta acción necesita una clave válida.", accion: "Introduce una clave válida." },
+  403: { codigo: "PROHIBIDO", titulo: "Sin permiso", mensaje: "La clave indicada no permite esta acción.", accion: "Usa una clave con permiso para esta acción." },
+  404: { codigo: "NO_ENCONTRADO", titulo: "No encontrado", mensaje: "No encontramos lo que buscabas.", accion: "Revisa la dirección o elige un sitio del catálogo." },
+  405: { codigo: "METODO_NO_PERMITIDO", titulo: "Método no permitido", mensaje: "Esta operación no está disponible aquí.", accion: "Vuelve atrás e inténtalo desde la pantalla correspondiente." },
+  409: { codigo: "CONFLICTO", titulo: "Conflicto", mensaje: "Los datos cambiaron mientras tanto.", accion: "Recarga y vuelve a intentarlo." },
+  413: { codigo: "ARCHIVO_DEMASIADO_GRANDE", titulo: "Archivo demasiado grande", mensaje: "El archivo supera el tamaño permitido.", accion: "Máximo 5 MB y 10 000 filas; divide el archivo." },
+  415: { codigo: "TIPO_NO_SOPORTADO", titulo: "Tipo de archivo no soportado", mensaje: "El archivo no tiene un formato que podamos leer.", accion: "Sube un archivo .csv en UTF-8." },
+  422: { codigo: "DATOS_INVALIDOS", titulo: "Datos inválidos", mensaje: "Algunos datos no tienen el formato o el rango esperado.", accion: "Corrige los campos indicados y vuelve a intentarlo." },
+  429: { codigo: "DEMASIADAS_PETICIONES", titulo: "Demasiadas peticiones", mensaje: "Se hicieron demasiadas peticiones en poco tiempo.", accion: "Espera unos segundos y reintenta." },
+  500: { codigo: "ERROR_INTERNO", titulo: "Error inesperado", mensaje: "El servidor tuvo un problema al responder.", accion: "Reintenta; si persiste, comparte el código de seguimiento." },
+  502: { codigo: "SERVICIO_EXTERNO_FALLO", titulo: "Fallo de un servicio externo", mensaje: "Un servicio del que dependemos no respondió bien.", accion: "Reintenta en unos minutos." },
+  503: { codigo: "SERVICIO_NO_DISPONIBLE", titulo: "Servicio no disponible", mensaje: "El servicio de datos no está disponible ahora.", accion: "Reintenta en unos minutos." },
+  504: { codigo: "TIEMPO_AGOTADO", titulo: "Tiempo de espera agotado", mensaje: "El servidor tardó demasiado en responder.", accion: "Reduce el rango de fechas o reintenta." },
+};
 
 const redondo = (v: number): string => numero(v, 0);
 

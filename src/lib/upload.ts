@@ -2,7 +2,7 @@
 // guardado EN SECUENCIA (un archivo por petición), agrupación y contadores. Sin React.
 import { guardarCsv, validarCsv } from "./api";
 import { API, CARGA, REGEX, TIPOS_ARCHIVO } from "./constants";
-import { ApiError } from "./errores";
+import { ApiError, traducirError } from "./errores";
 import { T } from "./textos";
 import type { InformeCsv, ResultadoGuardado, TipoArchivo } from "./tipos";
 
@@ -89,9 +89,11 @@ function interpretar(error: unknown, siFalla: EstadoArchivo): Cambio {
   if (error instanceof ApiError) {
     if (error.status === API.NO_AUTORIZADO) throw new ClaveInvalida();
     if (error.status >= 500) throw new ServicioNoDisponible();
+    // El informe por fila y columna se conserva; el resumen sale del traductor único (nunca un estado a secas).
+    const { mensaje, sugerencia } = traducirError(error);
     return typeof error.detail === "string"
-      ? { estado: siFalla, informe: null, mensaje: error.detail }
-      : { estado: siFalla, informe: error.detail, mensaje: null };
+      ? { estado: siFalla, informe: null, mensaje: mensaje === error.detail ? mensaje : `${mensaje} ${sugerencia}`.trim() } // el texto del servidor ya dice qué hacer
+      : { estado: siFalla, informe: error.detail, mensaje: error.error?.mensaje ?? null };
   }
   throw new ServicioNoDisponible();
 }

@@ -1,7 +1,7 @@
 // Cliente HTTP de la API. Es el ÚNICO archivo que construye URL de la API (a partir de constants.ts).
 import { avisosDe, esSemaforo, semaforo } from "./astro";
 import { API, API_BASE_URL, MODO_MUESTRA } from "./constants";
-import { ApiError, ErrorDeRed, esApiAusente } from "./errores";
+import { ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
 import { efemeridesMuestra, marcarMuestraActiva, metricasMuestra, puestasMuestra, sitiosMuestra } from "./muestra";
 import type { Efemerides, InformeCsv, Metrica, Puestas, Rango, RespuestaMetricas, ResultadoGuardado, Simulacion, Site, TipoArchivo, Utc } from "./tipos";
 
@@ -27,7 +27,7 @@ async function enviar(url: string, init: RequestInit, signal?: AbortSignal): Pro
     return await fetch(url, { ...init, signal: control.signal });
   } catch (error) {
     if (signal?.aborted) throw error; // cancelación de la consulta: no es un fallo de red
-    throw new ErrorDeRed(error);
+    throw new ErrorDeRed(error, url);
   } finally {
     clearTimeout(reloj);
     signal?.removeEventListener("abort", abortar);
@@ -36,10 +36,7 @@ async function enviar(url: string, init: RequestInit, signal?: AbortSignal): Pro
 
 async function leerRespuesta<T>(respuesta: Response): Promise<T> {
   const cuerpo: unknown = await respuesta.json().catch(() => null);
-  if (!respuesta.ok) {
-    const detalle = (cuerpo as { detail?: string | InformeCsv } | null)?.detail;
-    throw new ApiError(respuesta.status, detalle ?? respuesta.statusText);
-  }
+  if (!respuesta.ok) throw errorDeRespuesta(respuesta, cuerpo, respuesta.url);
   return cuerpo as T;
 }
 
