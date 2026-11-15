@@ -58,7 +58,7 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
           <circle cx={C} cy={C} r={radioLatitud(resaltado.lat_deg, R)} className="stroke-texto fill-none transition-opacity duration-(--dur-corta)" strokeWidth={1} opacity={0.7} />
         )}
         {/* Rótulos de anillos, sobre el meridiano 315° para no pisar los sitios */}
-        <g aria-hidden="true" className="fill-texto-3 font-mono text-[11px] max-sm:text-[22px]">
+        <g aria-hidden="true" className="fill-texto-3 font-mono text-[12px] max-sm:text-[24px]">
           {MAPA.ANILLOS.map((lat) => {
             const r = radioLatitud(lat, R);
             // El anillo de Artemis es tan pequeño que su rótulo va fuera, abajo a la derecha del polo.

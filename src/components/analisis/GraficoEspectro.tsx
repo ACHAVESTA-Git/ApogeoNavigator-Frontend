@@ -1,43 +1,48 @@
 import { scaleLinear, scaleLog } from "d3-scale";
 import { useId } from "react";
-import type { Analisis } from "../../lib/analisis";
+import { lienzoGrafico, type Analisis } from "../../lib/analisis";
 import { ANALISIS_GRAFICO } from "../../lib/constants";
 import { numero } from "../../lib/formato";
+import { useDimensiones } from "../../hooks/useDimensiones";
 import { T } from "../../lib/textos";
 import { Desplegable } from "../ui/Desplegable";
 
-const { ANCHO, ALTO, MARGEN, PERIODO_MIN_DIAS } = ANALISIS_GRAFICO.ESPECTRO;
+const { PERIODO_MIN_DIAS } = ANALISIS_GRAFICO;
 const MARCAS = [7, 14, 30, 60, 120, 240];
 
 /** Espectro de una variable: cada pico es un ritmo (periodo en días) con su peso relativo. Barras, no curva: son pocos picos. */
 export function GraficoEspectro({ serie, sinodico }: { serie: Analisis["espectro"]["series"][number]; sinodico: number }) {
   const t = T.analisis.espectro;
   const idTitulo = useId();
+  const [refLienzo, { ancho }] = useDimensiones();
+  const { ANCHO, ALTO, MARGEN } = lienzoGrafico(ancho, ANALISIS_GRAFICO.ESPECTRO);
   const picos = [...serie.picos].sort((a, b) => b.amplitud_rel - a.amplitud_rel);
   if (!picos.length) return null;
   const maxPeriodo = Math.max(...picos.map((p) => p.periodo_dias), sinodico * 2);
   const x = scaleLog([Math.min(PERIODO_MIN_DIAS, ...picos.map((p) => p.periodo_dias)), maxPeriodo * 1.15], [MARGEN.izq, ANCHO - MARGEN.der]);
   const y = scaleLinear([0, 1], [ALTO - MARGEN.inf, MARGEN.sup]);
+  // El rótulo del mes sinódico se escribe hacia el lado con sitio: en el gráfico estrecho, a la izquierda de la línea.
+  const rotuloALaIzquierda = x(sinodico) > ANCHO / 2;
   const nombres = (candidatos: string[]) => (candidatos.length ? candidatos.map((c) => t.candidatos[c] ?? c).join(", ") : t.ninguno);
   return (
     <figure className="mt-4">
       <figcaption className="text-apoyo text-texto font-semibold">{serie.nombre}</figcaption>
-      <div className="overflow-x-auto overscroll-x-contain" tabIndex={0} role="group" aria-labelledby={idTitulo}>
-      <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} role="img" aria-labelledby={idTitulo} className="mt-1 h-auto w-full min-w-[34rem]">
+      <div ref={refLienzo}>
+      <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} role="img" aria-labelledby={idTitulo} className="mt-1 h-auto w-full">
         <title id={idTitulo}>{t.alt(serie.nombre, picos.length, numero(picos[0].periodo_dias, 1))}</title>
         {[0, 0.5, 1].map((v) => (
           <g key={v}>
             <line x1={MARGEN.izq} x2={ANCHO - MARGEN.der} y1={y(v)} y2={y(v)} className={v === 0 ? "stroke-horizonte" : "stroke-linea"} strokeWidth={v === 0 ? 1.25 : 0.5} />
-            <text x={MARGEN.izq - 6} y={y(v)} dy="0.32em" textAnchor="end" className="fill-texto-3 font-mono text-[11px]">{numero(v, 1)}</text>
+            <text x={MARGEN.izq - 6} y={y(v)} dy="0.32em" textAnchor="end" className="fill-texto-3 font-mono text-[12px]">{numero(v, 1)}</text>
           </g>
         ))}
         {MARCAS.filter((d) => d < maxPeriodo * 1.15).map((d) => (
-          <text key={d} x={x(d)} y={ALTO - 14} textAnchor="middle" className="fill-texto-3 font-mono text-[11px]">{d}</text>
+          <text key={d} x={x(d)} y={ALTO - 22} textAnchor="middle" className="fill-texto-3 font-mono text-[12px]">{d}</text>
         ))}
-        <text x={ANCHO - MARGEN.der} y={ALTO - 1} textAnchor="end" className="fill-texto-3 text-[11px]">{t.ejeX}</text>
+        <text x={ANCHO - MARGEN.der} y={ALTO - 4} textAnchor="end" className="fill-texto-3 text-[12px]">{t.ejeX}</text>
         {/* Referencia física: el mes sinódico teórico */}
         <line x1={x(sinodico)} x2={x(sinodico)} y1={MARGEN.sup - 8} y2={y(0)} className="stroke-texto-2" strokeDasharray="2 3" />
-        <text x={x(sinodico) + 6} y={MARGEN.sup - 10} className="fill-texto-2 text-[11px]">{t.sinodico(numero(sinodico, 2))}</text>
+        <text x={x(sinodico) + (rotuloALaIzquierda ? -6 : 6)} y={MARGEN.sup - 10} textAnchor={rotuloALaIzquierda ? "end" : "start"} className="fill-texto-2 text-[12px]">{t.sinodico(numero(sinodico, 2))}</text>
         {picos.map((p) => (
           <g key={p.periodo_dias}>
             <line x1={x(p.periodo_dias)} x2={x(p.periodo_dias)} y1={y(0)} y2={y(p.amplitud_rel)} className={p.es_sinodico ? "stroke-sol" : "stroke-texto-2"} strokeWidth={p.es_sinodico ? 3 : 2} strokeLinecap="round" />

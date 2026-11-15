@@ -11,7 +11,7 @@ export function RelojUtc({ className }: { className?: string }) {
       <span className="text-dato-sm text-texto font-mono" data-dato>
         <time dateTime={utc}>{fechaHora(utc)}</time> <abbr title="Tiempo universal coordinado" className="text-texto-2 no-underline">{T.utc}</abbr>
       </span>
-      <span className="text-texto-3 font-mono text-[0.6875rem]" data-dato>{horaLocal(horaLima(utc))}</span>
+      <span className="text-texto-3 font-mono text-[0.75rem]" data-dato>{horaLocal(horaLima(utc))}</span>
     </p>
   );
 }

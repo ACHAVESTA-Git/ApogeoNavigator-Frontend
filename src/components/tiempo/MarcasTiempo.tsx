@@ -46,7 +46,7 @@ export function MarcasTiempo({ filas, desdeMs, hastaMs, conHoras = false }: {
         ))}
       </svg>
       {dias.filter((_, i) => esSemana(i)).map((ms, i) => (
-        <span key={ms} className="text-texto-3 absolute top-[46px] font-mono text-[0.6875rem] whitespace-nowrap" data-dato
+        <span key={ms} className="text-texto-3 absolute top-[46px] font-mono text-[0.75rem] whitespace-nowrap" data-dato
           style={{ left: `${(x(ms) / ANCHO) * 100}%`, transform: x(ms) > ANCHO * 0.95 ? "translateX(-100%)" : undefined }}>
           {/* el mes solo en la primera etiqueta y al cambiar de mes: las demás son el día */}
           {i === 0 || diaDelMes(aUtc(ms)) <= BANDA.DIAS_ETIQUETA ? diaCorto(aUtc(ms)) : diaDelMes(aUtc(ms))}

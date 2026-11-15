@@ -23,7 +23,7 @@ export function BarraInferior() {
           to={a}
           end={exacto}
           className={({ isActive }) =>
-            unir("flex h-(--barra-inferior-alto) flex-col items-center justify-center gap-1 text-[0.6875rem] font-semibold tracking-wide",
+            unir("flex h-(--barra-inferior-alto) flex-col items-center justify-center gap-1 text-[0.75rem] font-semibold tracking-wide",
               isActive ? "text-texto" : "text-texto-3")
           }
         >

@@ -1,8 +1,6 @@
+import { ANALISIS_GRAFICO } from "./constants";
 import { describe, expect, it } from "vitest";
-import {
-  CODIGO_VALIDACION_AJENA, textoFirma, estadoValidacion, limitacionesQueAplican, quienCargo, rmseDeValidacion, textoOrigen, tramosSerie,
-  type OrigenDatos, type TipoOrigen, type ValidacionAnalisis,
-} from "./analisis";
+import { CODIGO_VALIDACION_AJENA, estadoValidacion, lienzoGrafico, limitacionesQueAplican, quienCargo, rmseDeValidacion, textoFirma, textoOrigen, tramosSerie, type OrigenDatos, type TipoOrigen, type ValidacionAnalisis } from "./analisis";
 import { T } from "./textos";
 
 const origen = (tipo: TipoOrigen, cargadoPor = "clave de API"): OrigenDatos => ({
@@ -100,5 +98,21 @@ describe("firma del manifiesto", () => {
     expect(textoFirma(null)).toBe("firma no verificable");
     expect(textoFirma(undefined)).toBe("firma no verificable");
     expect(textoFirma(false)).not.toMatch(/^firmado/);
+  });
+});
+
+describe("lienzoGrafico", () => {
+  const cfg = ANALISIS_GRAFICO.SERIE;
+  it("antes de medir usa el ancho por defecto", () => {
+    expect(lienzoGrafico(0, cfg)).toMatchObject({ ANCHO: cfg.ANCHO, MARGEN: cfg.MARGEN });
+  });
+  it("a 360 px de pantalla el viewBox mide lo que el contenedor: los rótulos no se encogen", () => {
+    const l = lienzoGrafico(328, cfg);
+    expect(l).toMatchObject({ ANCHO: 328, ALTO: cfg.ALTO_MIN, MARGEN: cfg.MARGEN_COMPACTO, marcasX: ANALISIS_GRAFICO.MARCAS_X.compacto });
+  });
+  it("nunca baja del ancho mínimo ni pasa del alto máximo", () => {
+    expect(lienzoGrafico(120, cfg).ANCHO).toBe(ANALISIS_GRAFICO.ANCHO_MIN);
+    expect(lienzoGrafico(2000, cfg).ALTO).toBe(cfg.ALTO_MAX);
+    expect(lienzoGrafico(2000, cfg).marcasX).toBe(ANALISIS_GRAFICO.MARCAS_X.amplio);
   });
 });
