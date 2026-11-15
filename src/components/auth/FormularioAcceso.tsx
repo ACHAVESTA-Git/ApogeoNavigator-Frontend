@@ -123,7 +123,7 @@ export function FormularioAcceso({ entrar, entrando, error, enfocar = false }: P
           {entrando ? t.entrando : t.entrar}
         </Boton>
       </form>
-      <p className="text-apoyo text-texto mt-6 flex items-center gap-2 font-semibold">
+      <p className="text-apoyo text-texto mt-6 flex items-center gap-2 font-semibold text-balance">
         <ShieldCheck aria-hidden="true" className="text-viable size-4 shrink-0" />
         {t.seguridad}
       </p>
