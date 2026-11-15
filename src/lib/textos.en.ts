@@ -660,7 +660,7 @@ export const T: Textos = {
 };
 
 /** Suggestion for a 429 when the response says how long to wait (Retry-After header). */
-export const esperaYReintenta = (segundos: number): string => `Wait ${segundos} s and retry.`;
+export const esperaYReintenta = (valor: number, unidad: "s" | "min"): string => `Wait ${valor} ${unidad} and retry.`;
 /** Base catalogue by status; the codes are the backend's and are how its Spanish messages get translated. */
 export const ERRORES_POR_ESTADO: Record<number, { codigo: string; titulo: string; mensaje: string; accion: string }> = {
   400: { codigo: "PETICION_INVALIDA", titulo: "Invalid request", mensaje: "The server could not understand what it was asked.", accion: "Check the data you sent." },

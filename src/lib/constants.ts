@@ -276,6 +276,9 @@ export const COMPARAR = {
   FONDO_MAX: 0.7, UNA_DE_CADA: 2, // rocas y cráteres que se dibujan en la escena pequeña: los lejanos, uno de cada dos
 } as const;
 
+/** Espera de un 429 (Retry-After): hasta 90 s se dice en segundos; por encima, en minutos (redondeando hacia arriba). */
+export const ESPERA = { EN_MINUTOS_DESDE_S: 90, S_POR_MINUTO: 60 } as const;
+
 export const HERO = {
   PASO_HORAS: 3,
   HORIZONTE_FRACCION: { movil: 0.66, escritorio: 0.68 },

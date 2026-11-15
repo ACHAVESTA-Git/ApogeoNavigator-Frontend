@@ -675,7 +675,7 @@ export type Textos = Ancho<typeof T>;
  * objeto `error`. `mensaje` es qué pasó y `accion`, qué puede hacer el usuario.
  */
 /** Sugerencia de un 429 cuando la respuesta dice cuánto esperar (cabecera Retry-After). */
-export const esperaYReintenta = (segundos: number): string => `Espera ${segundos} s y reintenta.`;
+export const esperaYReintenta = (valor: number, unidad: "s" | "min"): string => `Espera ${valor} ${unidad} y reintenta.`;
 export const ERRORES_POR_ESTADO: Record<number, { codigo: string; titulo: string; mensaje: string; accion: string }> = {
   400: { codigo: "PETICION_INVALIDA", titulo: "Petición inválida", mensaje: "El servidor no pudo entender lo que se le pidió.", accion: "Revisa los datos enviados." },
   401: { codigo: "NO_AUTORIZADO", titulo: "Falta autorización", mensaje: "Esta acción necesita una clave válida.", accion: "Introduce una clave válida." },
