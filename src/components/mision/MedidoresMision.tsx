@@ -14,16 +14,16 @@ const entero = (valor: number) => numero(Math.floor(valor), 0);
  * nada se mueve cuando llega el dato.
  */
 export function MedidoresMision({ metrica, tamano = "sm", animar = false, sensible = false, etiqueta, className }: {
-  metrica: Pick<Metrica, "pct_sol" | "pct_tierra"> | undefined; tamano?: MedidorProps["tamano"]; animar?: boolean;
+  metrica: (Pick<Metrica, "pct_sol" | "pct_tierra"> & { semaforo?: Metrica["semaforo"] }) | undefined; tamano?: MedidorProps["tamano"]; animar?: boolean;
   /** Aviso de la API «sensible al relieve»: la energía lleva su asterisco y la línea que lo explica. */
   sensible?: boolean; etiqueta?: string; className?: string;
 }) {
   return (
     <div role="group" aria-label={etiqueta ?? T.mision.medidores} className={unir("flex items-start justify-center gap-4", className)}>
-      <Medidor valor={metrica?.pct_sol ?? null} umbrales={UMBRALES_MISION.ENERGIA} rotulo={T.mision.energia} unidad="%" formato={entero} tamano={tamano} animar={animar}>
+      <Medidor valor={metrica?.pct_sol ?? null} nivel={metrica?.semaforo?.energia} umbrales={UMBRALES_MISION.ENERGIA} rotulo={T.mision.energia} unidad="%" formato={entero} tamano={tamano} animar={animar}>
         {sensible && <span data-aviso-relieve>* {T.semaforo.sensible}</span>}
       </Medidor>
-      <Medidor valor={metrica?.pct_tierra ?? null} umbrales={UMBRALES_MISION.COMUNICACION} rotulo={T.mision.comunicacion} unidad="%" formato={entero} tamano={tamano} animar={animar} />
+      <Medidor valor={metrica?.pct_tierra ?? null} nivel={metrica?.semaforo?.comunicacion} umbrales={UMBRALES_MISION.COMUNICACION} rotulo={T.mision.comunicacion} unidad="%" formato={entero} tamano={tamano} animar={animar} />
     </div>
   );
 }

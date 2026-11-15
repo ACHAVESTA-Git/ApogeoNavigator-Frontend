@@ -132,7 +132,7 @@ export const ID_MEDIDORES_SITIO = (siteId: string) => `medidores-sitio-${siteId}
  */
 export const MINI_HORIZONTE = { HORIZONTE: 0.68, HUNDIDO: 1.6, ALTO_PX: 56, REFRESCO_RELOJ_HZ: 6 } as const;
 /** Línea de tiempo de ventanas: ancho mínimo de una banda en pantalla (una ventana de 1 h sigue siendo pulsable). */
-export const LINEA_VENTANAS = { MIN_ANCHO_PX: 10 } as const;
+export const LINEA_VENTANAS = { MIN_ANCHO_PX: 10, MIN_PULSABLE_PX: 44 } as const;
 // El semáforo y los avisos los calcula la API. Estos umbrales existen SOLO para el respaldo con datos de
 // ejemplo y la prueba de oro (deben coincidir con app/core/config.py); los componentes no los aplican.
 export const UMBRAL_RASANTE_DEG = 3; // sol_el_max < 3° ⇒ aviso «sensible al relieve»
@@ -301,10 +301,10 @@ export const RANKING = {
   POLAR_SUR_LAT_MAX_DEG: -80, // latitud ≤ −80°: del paralelo 80° S al polo
   MONOGRAMA_MAX: 4,           // caracteres del monograma de un sitio
   /**
-   * Parches auténticos de misión disponibles en `public/insignias/<site_id>.jpg` (sin modificar). Vacío: todos los
-   * sitios llevan monograma. Para revertir, basta con borrar el archivo: la insignia cae sola al monograma.
+   * Parches auténticos de misión disponibles en `public/insignias/<site_id>.jpg` (sin modificar; fuentes y condiciones en
+   * `public/insignias/README.md`). Los demás sitios llevan monograma. Para revertir, basta con borrar el archivo: la insignia cae sola al monograma.
    */
-  INSIGNIAS: [] as readonly string[],
+  INSIGNIAS: ["apollo11", "apollo15", "apollo17"] as readonly string[],
   RUTA_INSIGNIA: (siteId: string) => `/insignias/${siteId}.jpg`,
   /** Si existe la pantalla «Ventana de alunizaje» (`/sitios/:id/ventana`). Mientras no esté en las rutas, el acceso no se pinta. */
   VENTANA_ALUNIZAJE: false,
@@ -346,7 +346,8 @@ export const MAPA = {
   ESCALA_ACTIVO: 1.6,
   LON_CARA_OCULTA: 90,
   ANILLO_HORIZONTE: 0, // visto desde el polo sur, el limbo de la Luna es el ecuador
-  RADIO_ETIQUETA_IZQ: 30, // los sitios pegados al polo se rotulan a la izquierda
+  RADIO_ETIQUETA_IZQ: 30,
+  ETIQUETA_IZQ_DESDE_X: 0.6, // fracción del radio: más a la derecha, el nombre del punto va hacia dentro // los sitios pegados al polo se rotulan a la izquierda
   MERIDIANOS_ROTULADOS: [0, 90, 180, 270],
   INTERLINEA_ROTULO_MOVIL: 28, // unidades del viewBox entre las dos líneas de un rótulo de anillo en móvil (texto de 24)
   SEPARADOR_NOMBRE: " - ",

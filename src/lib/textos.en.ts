@@ -795,6 +795,7 @@ export const T: Textos = {
       sitio: "Site",
       insignia: (nombre: string) => `${nombre} mission insignia`,
       creditoInsignia: "Insignia: NASA",
+      avalInsignias: "Mission insignias: NASA, unmodified. NASA does not endorse this project.",
     },
     podio: {
       sensible: "Terrain-sensitive",
@@ -1163,6 +1164,7 @@ export function describirInstante(utc: Utc, fila: FilaCielo): string {
 
 export const horaLocal = (hora: string): string => `${hora} ${ZONA_HORARIA_LOCAL.NOMBRE}, ${ZONA_HORARIA_LOCAL.DESFASE}`;
 
+export const AGENCIAS_CONOCIDAS: Record<string, string> = { "Referencia (JPL Horizons)": "Reference (JPL Horizons)" };
 export const SIN_LINEA_DIRECTA = "No direct line to Earth: it needs a relay satellite.";
 
 const listar = (nombres: string[]): string =>

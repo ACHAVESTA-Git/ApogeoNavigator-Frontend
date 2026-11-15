@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { DATOS } from "../../lib/constants";
 import { latitud } from "../../lib/formato";
-import { NOMBRE_CATEGORIA, T } from "../../lib/textos";
+import { NOMBRE_CATEGORIA, T, agenciaLegible } from "../../lib/textos";
 import type { Site } from "../../lib/tipos";
 import { GlifoCategoria } from "../glifos/GlifoCategoria";
 import { Boton } from "../ui/Boton";
@@ -42,7 +42,7 @@ export function SelectorMultiple({ titulo, opciones, inicial, alComparar }: {
                   {o.sitio && (
                     <span className="text-texto-3 flex items-center gap-1.5 text-[0.8125rem]">
                       <GlifoCategoria categoria={o.sitio.categoria} className="size-2.5" />
-                      {NOMBRE_CATEGORIA[o.sitio.categoria]} · {o.sitio.agencia}
+                      {NOMBRE_CATEGORIA[o.sitio.categoria]} · {agenciaLegible(o.sitio.agencia)}
                     </span>
                   )}
                 </span>
