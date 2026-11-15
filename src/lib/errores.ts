@@ -1,7 +1,7 @@
 // Error de la API con el formato de FastAPI: {"detail": ...}.
 import { API } from "./constants";
 import { IDIOMA, type Idioma } from "./idioma";
-import { ERRORES_POR_ESTADO, T, esperaYReintenta } from "./textos";
+import { ERRORES_DE_DOMINIO, ERRORES_POR_ESTADO, T, esperaYReintenta } from "./textos";
 import type { InformeCsv } from "./tipos";
 
 /** Objeto `error` que el backend añade junto a `detail` (estándar de respuestas HTTP §1). */
@@ -116,7 +116,10 @@ export function esMesSinDatos(error: unknown): boolean {
 }
 
 /** Catálogo por código: con él se traducen los textos del backend, que llegan en español, cuando la interfaz está en otro idioma. */
-const ERRORES_POR_CODIGO = Object.fromEntries(Object.values(ERRORES_POR_ESTADO).map((e) => [e.codigo, e]));
+const ERRORES_POR_CODIGO: Record<string, { titulo: string; mensaje: string; accion: string }> = {
+  ...Object.fromEntries(Object.values(ERRORES_POR_ESTADO).map((e) => [e.codigo, e])),
+  ...ERRORES_DE_DOMINIO, // los de dominio (SITIO_NO_ENCONTRADO…) son más específicos que el genérico de su estado
+};
 
 /**
  * EL traductor: cualquier error (de la API, de red o inesperado) → título, mensaje, sugerencia y acción.
@@ -130,7 +133,7 @@ export function traducirError(error: unknown, idioma: Idioma = IDIOMA): ErrorTra
   const base = ERRORES_POR_ESTADO[error.status] ?? (error.status >= 500 ? ERRORES_POR_ESTADO[500] : ERRORES_POR_ESTADO[400]);
   const b = error.error;
   if (idioma !== "es") {
-    const propio = (b && ERRORES_POR_CODIGO[b.codigo]) || base;
+    const propio = (b && Object.prototype.hasOwnProperty.call(ERRORES_POR_CODIGO, b.codigo) && ERRORES_POR_CODIGO[b.codigo]) || base;
     return {
       codigo: b?.codigo ?? base.codigo, estado: error.status, titulo: propio.titulo, mensaje: propio.mensaje,
       sugerencia: error.esperaS ? esperaYReintenta(error.esperaS) : propio.accion,

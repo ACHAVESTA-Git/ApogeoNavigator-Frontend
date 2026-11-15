@@ -688,6 +688,28 @@ export const ERRORES_POR_ESTADO: Record<number, { codigo: string; titulo: string
   504: { codigo: "TIEMPO_AGOTADO", titulo: "Tiempo de espera agotado", mensaje: "El servidor tardó demasiado en responder.", accion: "Reduce el rango de fechas o reintenta." },
 };
 
+/** Códigos de dominio, más específicos que su estado. En español la interfaz muestra los textos del backend; estos son el respaldo y la referencia de la traducción. */
+export const ERRORES_DE_DOMINIO: Record<string, { titulo: string; mensaje: string; accion: string }> = {
+  SITIO_NO_ENCONTRADO: { titulo: "Sitio no encontrado", mensaje: "No hay ningún sitio con ese identificador.", accion: "Revisa el identificador o elige un sitio del catálogo." },
+  EFEMERIDES_NO_ENCONTRADAS: { titulo: "Sin efemérides", mensaje: "Este sitio no tiene efemérides cargadas.", accion: "Elige otro sitio o carga sus efemérides." },
+  MANIFIESTO_NO_GENERADO: { titulo: "Aún no hay manifiesto", mensaje: "Todavía no se ha firmado ningún manifiesto de los datos.", accion: "Se genera con la primera carga válida; vuelve a intentarlo después." },
+  TIPO_DATOS_DESCONOCIDO: { titulo: "Tipo de datos desconocido", mensaje: "Ese tipo de datos no existe.", accion: "Usa sites, efemerides o metricas." },
+  USUARIO_NO_ENCONTRADO: { titulo: "Usuario no encontrado", mensaje: "No existe ese usuario.", accion: "Revisa el identificador del usuario." },
+  CLAVE_NO_ENCONTRADA: { titulo: "Clave no encontrada", mensaje: "No existe esa clave.", accion: "Revisa el identificador de la clave." },
+  CLAVE_INVALIDA: { titulo: "Clave inválida o ausente", mensaje: "La clave de acceso no es válida o no se envió.", accion: "Introduce una clave de acceso válida." },
+  RANGO_FECHAS_INVALIDO: { titulo: "Rango de fechas inválido", mensaje: "Las fechas pedidas no son válidas o quedan fuera de los datos disponibles.", accion: "Usa fechas UTC con el formato AAAA-MM-DDTHH:MMZ y que la fecha final sea posterior a la inicial." },
+  VARIABLE_INVALIDA: { titulo: "Variable no válida", mensaje: "Esa variable no se puede consultar.", accion: "Elige la elevación o el azimut del Sol o de la Tierra." },
+  RANGO_DEMASIADO_LARGO: { titulo: "Rango demasiado largo", mensaje: "El rango pedido supera el máximo permitido.", accion: `Pide un rango de ${DATOS.RANGO_MAX_DIAS} días como máximo y consulta por tramos.` },
+  CSV_INVALIDO: { titulo: "CSV inválido", mensaje: "El archivo tiene filas que no se pueden guardar.", accion: "Revisa las líneas marcadas en el informe y vuelve a subirlo." },
+  DATOS_NO_DISPONIBLES: { titulo: "Datos no disponibles", mensaje: "No se pueden leer los datos en este momento.", accion: "Reintenta en unos minutos; si persiste, avisa al equipo con el código de seguimiento." },
+  BD_NO_DISPONIBLE: { titulo: "Base de datos no disponible", mensaje: "La base de datos no responde o no está configurada.", accion: "Reintenta en unos minutos; si persiste, avisa al equipo con el código de seguimiento." },
+  ALMACEN_NO_DISPONIBLE: { titulo: "Almacenamiento no disponible", mensaje: "No se pudo acceder al almacenamiento de datos; no se guardó nada.", accion: "Reintenta en unos minutos." },
+  FIRMA_NO_DISPONIBLE: { titulo: "Firma no disponible", mensaje: "La firma post-cuántica no está disponible; no se guardó nada.", accion: "Avisa al equipo con el código de seguimiento: faltan las claves de firma." },
+  CLAVE_DUPLICADA: { titulo: "Clave ya activa", mensaje: "Ya hay una clave activa para ese usuario y tipo.", accion: "Revócala o rótala en lugar de generar otra." },
+  CLAVE_YA_REVOCADA: { titulo: "Clave ya revocada", mensaje: "La clave ya está revocada.", accion: "No hace falta revocarla de nuevo; rota o genera una nueva." },
+  USUARIO_INACTIVO: { titulo: "Usuario desactivado", mensaje: "El usuario está desactivado; no se le pueden emitir claves.", accion: "Activa al usuario antes de emitirle claves." },
+};
+
 const redondo = (v: number): string => numero(v, 0);
 
 /** 'en 291 h' */

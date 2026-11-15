@@ -123,3 +123,39 @@ describe("errores del backend según el idioma", () => {
     expect(JSON.stringify([porCodigo, porEstado])).not.toMatch(/latitud|detalle en español/);
   });
 });
+
+/** Códigos del catálogo del backend (`app/core/mensajes.py`: BASE + DOMINIO). Si allí se añade uno, se añade aquí y en los dos idiomas. */
+const CODIGOS_BACKEND = [
+  "PETICION_INVALIDA", "NO_AUTORIZADO", "PROHIBIDO", "NO_ENCONTRADO", "METODO_NO_PERMITIDO", "CONFLICTO", "ARCHIVO_DEMASIADO_GRANDE",
+  "TIPO_NO_SOPORTADO", "DATOS_INVALIDOS", "DEMASIADAS_PETICIONES", "ERROR_INTERNO", "SERVICIO_EXTERNO_FALLO", "SERVICIO_NO_DISPONIBLE", "TIEMPO_AGOTADO",
+  "SITIO_NO_ENCONTRADO", "EFEMERIDES_NO_ENCONTRADAS", "MANIFIESTO_NO_GENERADO", "TIPO_DATOS_DESCONOCIDO", "USUARIO_NO_ENCONTRADO", "CLAVE_NO_ENCONTRADA",
+  "CLAVE_INVALIDA", "RANGO_FECHAS_INVALIDO", "VARIABLE_INVALIDA", "RANGO_DEMASIADO_LARGO", "CSV_INVALIDO", "DATOS_NO_DISPONIBLES", "BD_NO_DISPONIBLE",
+  "ALMACEN_NO_DISPONIBLE", "FIRMA_NO_DISPONIBLE", "CLAVE_DUPLICADA", "CLAVE_YA_REVOCADA", "USUARIO_INACTIVO",
+];
+describe("catálogo de códigos de error del backend", () => {
+  const catalogo = (m: typeof es | typeof en) => ({ ...Object.fromEntries(Object.values(m.ERRORES_POR_ESTADO).map((e) => [e.codigo, e])), ...m.ERRORES_DE_DOMINIO });
+  it.each(CODIGOS_BACKEND)("%s tiene título, mensaje y acción en español y en inglés", (codigo) => {
+    for (const entrada of [catalogo(es)[codigo], catalogo(en)[codigo]]) {
+      expect(entrada, codigo).toBeDefined();
+      for (const campo of [entrada.titulo, entrada.mensaje, entrada.accion]) expect(campo.trim().length).toBeGreaterThan(3);
+      expect(entrada.titulo.length).toBeLessThanOrEqual(40);
+      expect(`${entrada.titulo}${entrada.mensaje}${entrada.accion}`).not.toMatch(/[{}]/); // sin plantillas sin rellenar
+    }
+  });
+  it("los dos idiomas tienen exactamente los mismos códigos y ninguno fuera del catálogo del backend", () => {
+    expect(Object.keys(catalogo(en)).sort()).toEqual([...CODIGOS_BACKEND].sort());
+    expect(Object.keys(catalogo(es)).sort()).toEqual([...CODIGOS_BACKEND].sort());
+  });
+  it("el inglés de un código de dominio no repite el español ni el genérico de su estado", () => {
+    for (const [codigo, e] of Object.entries(en.ERRORES_DE_DOMINIO)) expect(e.titulo, codigo).not.toBe(es.ERRORES_DE_DOMINIO[codigo].titulo);
+    expect(en.ERRORES_DE_DOMINIO.SITIO_NO_ENCONTRADO.titulo).not.toBe(en.ERRORES_POR_ESTADO[404].titulo);
+  });
+  it("el traductor usa la entrada del código de dominio, no la genérica del estado", () => {
+    // El catálogo activo en las pruebas es el español: se comprueba que se elige la entrada de dominio.
+    const backend = { codigo: "SITIO_NO_ENCONTRADO", estado: 404, titulo: "Sitio no encontrado", mensaje: "No hay ningún sitio con el identificador «x».", accion: "Revisa" };
+    const t = traducirError(new ApiError(404, "", backend), "en");
+    expect(t).toMatchObject({ codigo: "SITIO_NO_ENCONTRADO", titulo: es.ERRORES_DE_DOMINIO.SITIO_NO_ENCONTRADO.titulo, mensaje: es.ERRORES_DE_DOMINIO.SITIO_NO_ENCONTRADO.mensaje, accion: "sitios" });
+    expect(t.mensaje).not.toMatch(/«x»/);
+    expect(traducirError(new ApiError(404, "", { ...backend, codigo: "constructor" }), "en").titulo).toBe(es.ERRORES_POR_ESTADO[404].titulo);
+  });
+});

@@ -673,6 +673,28 @@ export const ERRORES_POR_ESTADO: Record<number, { codigo: string; titulo: string
   504: { codigo: "TIEMPO_AGOTADO", titulo: "Timed out", mensaje: "The server took too long to respond.", accion: "Narrow the date range or retry." },
 };
 
+/** Domain codes: more specific than their status. The backend sends them in Spanish; here is their English. */
+export const ERRORES_DE_DOMINIO: Record<string, { titulo: string; mensaje: string; accion: string }> = {
+  SITIO_NO_ENCONTRADO: { titulo: "Site not found", mensaje: "There is no site with that identifier.", accion: "Check the identifier or choose a site from the catalogue." },
+  EFEMERIDES_NO_ENCONTRADAS: { titulo: "No ephemeris", mensaje: "This site has no ephemeris loaded.", accion: "Choose another site or upload its ephemeris." },
+  MANIFIESTO_NO_GENERADO: { titulo: "No manifest yet", mensaje: "No manifest of the data has been signed yet.", accion: "It is generated with the first valid upload; try again later." },
+  TIPO_DATOS_DESCONOCIDO: { titulo: "Unknown data type", mensaje: "That type of data does not exist.", accion: "Use sites, efemerides or metricas." },
+  USUARIO_NO_ENCONTRADO: { titulo: "User not found", mensaje: "That user does not exist.", accion: "Check the user identifier." },
+  CLAVE_NO_ENCONTRADA: { titulo: "Key not found", mensaje: "That key does not exist.", accion: "Check the key identifier." },
+  CLAVE_INVALIDA: { titulo: "Invalid or missing key", mensaje: "The access key is not valid or was not sent.", accion: "Enter a valid access key." },
+  RANGO_FECHAS_INVALIDO: { titulo: "Invalid date range", mensaje: "The dates requested are not valid or lie outside the available data.", accion: "Use UTC dates in the format YYYY-MM-DDTHH:MMZ, with the end date later than the start date." },
+  VARIABLE_INVALIDA: { titulo: "Invalid variable", mensaje: "That variable cannot be queried.", accion: "Choose the elevation or the azimuth of the Sun or the Earth." },
+  RANGO_DEMASIADO_LARGO: { titulo: "Range too long", mensaje: "The range requested is longer than allowed.", accion: `Ask for a range of at most ${DATOS.RANGO_MAX_DIAS} days and query in sections.` },
+  CSV_INVALIDO: { titulo: "Invalid CSV", mensaje: "The file has rows that cannot be saved.", accion: "Check the lines marked in the report and upload it again." },
+  DATOS_NO_DISPONIBLES: { titulo: "Data unavailable", mensaje: "The data cannot be read right now.", accion: "Retry in a few minutes; if it persists, tell the team the tracking code." },
+  BD_NO_DISPONIBLE: { titulo: "Database unavailable", mensaje: "The database is not responding or is not configured.", accion: "Retry in a few minutes; if it persists, tell the team the tracking code." },
+  ALMACEN_NO_DISPONIBLE: { titulo: "Storage unavailable", mensaje: "The data storage could not be reached; nothing was saved.", accion: "Retry in a few minutes." },
+  FIRMA_NO_DISPONIBLE: { titulo: "Signing unavailable", mensaje: "The post-quantum signature is not available; nothing was saved.", accion: "Tell the team the tracking code: the signing keys are missing." },
+  CLAVE_DUPLICADA: { titulo: "Key already active", mensaje: "There is already an active key for that user and type.", accion: "Revoke or rotate it instead of generating another." },
+  CLAVE_YA_REVOCADA: { titulo: "Key already revoked", mensaje: "The key is already revoked.", accion: "There is no need to revoke it again; rotate it or generate a new one." },
+  USUARIO_INACTIVO: { titulo: "User deactivated", mensaje: "The user is deactivated; no keys can be issued to them.", accion: "Activate the user before issuing keys." },
+};
+
 const redondo = (v: number): string => numero(v, 0);
 
 /** 'in 291 h' */
