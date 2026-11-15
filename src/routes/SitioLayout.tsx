@@ -8,10 +8,11 @@ import { BarraTiempo } from "../components/tiempo/BarraTiempo";
 import { PestanasRuta } from "../components/ui/Segmentado";
 import { SelectorMes } from "../components/ui/SelectorMes";
 import { usePeriodo } from "../hooks/useParametrosUrl";
+import { useSesion } from "../hooks/useSesion";
 import { useSitio } from "../hooks/useSitio";
 import { useLlegadaCompartida } from "../hooks/useLlegadaCompartida";
 import { useDesde } from "../hooks/useMedia";
-import { ID_NOMBRE_SITIO, RUTAS } from "../lib/constants";
+import { ID_NOMBRE_SITIO, PROYECCION_MODELO, RUTAS } from "../lib/constants";
 import { coordenadas } from "../lib/formato";
 import { esPuntoPropio } from "../lib/puntoPropio";
 import { NOMBRE_CATEGORIA, T } from "../lib/textos";
@@ -31,6 +32,7 @@ export default function SitioLayout() {
   const periodo = usePeriodo();
   const t = T.sitio;
   const propio = esPuntoPropio(siteId);
+  const { usuario } = useSesion();
   const nombre = useLlegadaCompartida<HTMLParagraphElement>(ID_NOMBRE_SITIO(siteId ?? ""));
   // En el Cielo manda la escena, y en móvil el contenido de la pestaña: ahí el estado de misión queda plegado
   // (la franja con el veredicto y el resumen en una línea) y se abre a demanda.
@@ -54,6 +56,8 @@ export default function SitioLayout() {
     { a: `${RUTAS.DIA_LUNAR(id)}${periodo.consulta}`, etiqueta: t.diaLunar },
     // El análisis es del archivo entero, no del mes: los puntos propios (sin archivo) no lo tienen.
     ...(propio ? [] : [{ a: `${RUTAS.ANALISIS(id)}${periodo.consulta}`, etiqueta: t.analisis }]),
+    // La proyección del modelo es solo para la administración: para el resto de roles y sin sesión, la pestaña no existe.
+    ...(!propio && usuario?.rol === PROYECCION_MODELO.ROL ? [{ a: `${RUTAS.PROYECCION(id)}${periodo.consulta}`, etiqueta: t.proyeccion }] : []),
   ];
   return (
     <>
