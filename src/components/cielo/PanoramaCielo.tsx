@@ -32,7 +32,7 @@ export type Escala = "lupa" | "lineal";
  * escala de lupa (el tramo 0–5° ocupa buena parte de la altura, porque en el polo los astros viven ahí).
  * Arriba de la línea, el cielo; debajo, el regolito, donde los astros ocultos se dibujan como fantasmas.
  */
-export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo, semilla, alArrastrarTiempo, alSoltarTiempo, incertidumbre = 0, eventos }: {
+export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo, semilla, alArrastrarTiempo, alSoltarTiempo, incertidumbre = 0, azimutFiable, eventos }: {
   filas: readonly FilaEfemeride[]; t: MotionValue<number>; tUtc: Utc; escala: Escala;
   alPulsarTecla: (e: KeyboardEvent, girar: (grados: number) => void) => void; idTitulo: string;
   /** Texto que fija el paisaje ilustrativo (el id del sitio): cada sitio tiene siempre el mismo relieve. */
@@ -41,6 +41,8 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
   alArrastrarTiempo: (ms: number) => void; alSoltarTiempo: (ms: number) => void;
   /** Incertidumbre de la proyección en grados (0 = dato de Horizons). */
   incertidumbre?: number;
+  /** en una proyección, false donde el azimut no tiene banda acotable: su etiqueta se atenúa y lo avisa */
+  azimutFiable?: Record<Astro, boolean>;
   /** Próximo cruce del horizonte de cada astro (para la tarjeta de datos en contexto). */
   eventos?: Record<Astro, EventosAstro> | null;
 }) {
@@ -213,9 +215,13 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
 
   const rSol = ESCENA.RADIO_SOL_PX;
   const rTierra = rSol * ESCENA.RAZON_TIERRA_SOL;
+  const azDudoso = (astro: Astro) => azimutFiable?.[astro] === false;
   const etiqueta = (astro: Astro) => {
     const el = lectura[CLAVE_ELEVACION[astro]];
-    const texto = T.cielo.etiqueta(NOMBRE_ASTRO[astro], grados(lectura[CLAVE_AZIMUT[astro]], 1), grados(el, 2, true));
+    const az = lectura[CLAVE_AZIMUT[astro]];
+    const texto = azDudoso(astro)
+      ? T.cielo.etiquetaAzDudoso(NOMBRE_ASTRO[astro], grados(az, 0), grados(el, 2, true))
+      : T.cielo.etiqueta(NOMBRE_ASTRO[astro], grados(az, 1), grados(el, 2, true));
     return sobreHorizonte(el) ? texto : `${texto} ${T.cielo.bajo}`;
   };
   const botonGiro = clasesBoton("secundario", "material px-0");
@@ -292,7 +298,7 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
           <EtiquetaAstro key={astro} texto={etiqueta(astro)} xPantalla={xPantalla[astro]} yGlifo={y[astro]} ancho={ancho} alto={alto}
             radio={astro === "sol" ? rSol + 4 : rTierra}
             debajo={!sobreHorizonte(lectura[CLAVE_ELEVACION[astro]])} oculta={contexto === astro} reserva={reserva}
-            className={sobreHorizonte(lectura[CLAVE_ELEVACION[astro]]) ? COLOR_TEXTO[astro] : "text-texto-2"} />
+            className={sobreHorizonte(lectura[CLAVE_ELEVACION[astro]]) && !azDudoso(astro) ? COLOR_TEXTO[astro] : "text-texto-2"} />
         ))}
         {ancho > 0 && ASTROS.map((astro) => (
           <ContextoAstro key={astro} astro={astro} xPantalla={xPantalla[astro]} yGlifo={y[astro]} ancho={ancho} alto={alto - reserva}

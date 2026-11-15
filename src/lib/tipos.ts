@@ -39,6 +39,8 @@ export interface Efemerides {
 export interface PuntoSimulacion extends FilaEfemeride {
   origen: "datos" | "proyeccion";
   incertidumbre_deg: Omit<FilaEfemeride, "utc"> | null;
+  /** false cerca del cénit o del nadir, donde el azimut del Sol está mal condicionado. Opcional: el backend puede no enviarlo. */
+  azimut_solar_fiable?: boolean;
 }
 export interface Simulacion {
   site_id: string;
