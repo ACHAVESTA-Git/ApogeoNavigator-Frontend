@@ -1,9 +1,10 @@
 // Cliente HTTP de la API. Es el ÚNICO archivo que construye URL de la API (a partir de constants.ts).
 import { avisosDe, esSemaforo, semaforo } from "./astro";
-import { API, API_BASE_URL, MODO_MUESTRA } from "./constants";
-import { ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
+import { API, API_BASE_URL, DATOS, MODO_MUESTRA, PUNTO_PROPIO } from "./constants";
+import { ApiError, ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
 import { efemeridesMuestra, marcarMuestraActiva, metricasMuestra, puestasMuestra, sitiosMuestra } from "./muestra";
-import type { Efemerides, InformeCsv, Metrica, Puestas, Rango, RespuestaMetricas, ResultadoGuardado, Simulacion, Site, TipoArchivo, Utc } from "./tipos";
+import { idDePunto, marcarRespaldoHorizons, puntoDeId, type Punto } from "./puntoPropio";
+import type { Efemerides, InformeCsv, Metrica, Puestas, Rango, RespuestaHorizons, RespuestaMetricas, ResultadoGuardado, Simulacion, Site, TipoArchivo, Utc } from "./tipos";
 
 type Params = Record<string, string | readonly string[] | undefined>;
 
@@ -81,10 +82,71 @@ export interface Opciones {
 export const obtenerSitios = ({ signal, modo }: Opciones = {}): Promise<Site[]> =>
   conRespaldo(() => pedir<Site[]>(API.SITES, undefined, signal), sitiosMuestra, modo);
 
-export const obtenerEfemerides = (id: string, rango: Rango = {}, { signal, modo }: Opciones = {}): Promise<Efemerides> =>
+// ---------------------------------------------------------------- coordenadas propias (HU-13)
+const horizonsEnCurso = new Map<string, Promise<RespuestaHorizons>>();
+/** Ruta sin registrar o sin red: el endpoint no existe en este servidor. Un 502/504 SÍ es una respuesta (JPL falló). */
+const horizonsAusente = (error: unknown): boolean =>
+  error instanceof ErrorDeRed || (error instanceof ApiError && error.esNoEncontrado && error.detail === API.DETALLE_RUTA_INEXISTENTE);
+
+// RESPALDO DE EJEMPLO (quitar cuando /api/horizons esté desplegado; ver PUNTO_PROPIO.RESPALDO_EJEMPLO): la muestra
+// del sitio destacado, con el identificador del punto y marcada como ejemplo en la pantalla.
+async function horizonsDeEjemplo(punto: Punto, rango: Rango): Promise<RespuestaHorizons> {
+  const id = DATOS.SITIO_DESTACADO;
+  const [efemerides, metricas, puestas] = await Promise.all([efemeridesMuestra(id, rango), metricasMuestra([id], rango), puestasMuestra(id, rango.desde)]);
+  const site_id = idDePunto(punto);
+  return {
+    ...efemerides, site_id, fuente: "ejemplo", lat_deg: punto.lat, lon_este_deg: punto.lon, en_cache: false, consultado_utc: efemerides.inicio_utc,
+    metricas: { ...metricas.resultados[0], site_id, origen: "ejemplo", referencia: null }, puestas: { ...puestas, site_id }, ejemplo: true,
+  };
+}
+
+/**
+ * Efemérides, métricas y puestas de un punto cualquiera, en vivo desde JPL Horizons (la primera consulta tarda
+ * varios segundos; después el servidor la sirve de caché). Una sola petición por punto y periodo: Cielo y
+ * Ventanas comparten la misma promesa. `desde` y `hasta` son obligatorios y el rango no pasa de 35 días.
+ */
+export function obtenerHorizons(punto: Punto, rango: Required<Rango>): Promise<RespuestaHorizons> {
+  const clave = `${idDePunto(punto)}|${rango.desde}|${rango.hasta}`;
+  const enCurso = horizonsEnCurso.get(clave);
+  if (enCurso) return enCurso;
+  const { LAT, LON } = API.PARAM_HORIZONS;
+  const promesa = pedir<RespuestaHorizons>(API.HORIZONS, { [LAT]: String(punto.lat), [LON]: String(punto.lon), ...rango })
+    .then((r) => { marcarRespaldoHorizons(false); return r; })
+    .catch((error: unknown) => {
+      if (PUNTO_PROPIO.RESPALDO_EJEMPLO && horizonsAusente(error)) {
+        marcarRespaldoHorizons(true);
+        return horizonsDeEjemplo(punto, rango);
+      }
+      horizonsEnCurso.delete(clave); // un error no se queda en la caché: «Reintentar» vuelve a preguntar
+      throw error;
+    });
+  horizonsEnCurso.set(clave, promesa);
+  if (horizonsEnCurso.size > PUNTO_PROPIO.CACHE_MAX) horizonsEnCurso.delete(horizonsEnCurso.keys().next().value as string);
+  return promesa;
+}
+/** Vacía la caché en memoria (pruebas). */
+export const olvidarHorizons = (): void => horizonsEnCurso.clear();
+const rangoCompleto = (rango: Rango): Required<Rango> => ({ desde: rango.desde ?? DATOS.DESDE_POR_DEFECTO, hasta: rango.hasta ?? DATOS.HASTA_POR_DEFECTO });
+
+export const obtenerEfemerides = (id: string, rango: Rango = {}, { signal, modo }: Opciones = {}): Promise<Efemerides> => {
+  const punto = puntoDeId(id);
+  return punto ? obtenerHorizons(punto, rangoCompleto(rango)) : efemeridesDeSitio(id, rango, { signal, modo });
+};
+const efemeridesDeSitio = (id: string, rango: Rango = {}, { signal, modo }: Opciones = {}): Promise<Efemerides> =>
   conRespaldo(() => pedir<Efemerides>(API.EFEMERIDES(id), { ...rango }, signal), () => efemeridesMuestra(id, rango), modo);
 
-export const obtenerMetricas = (ids: string[], rango: Rango = {}, { signal, modo }: Opciones = {}): Promise<RespuestaMetricas> =>
+/** Los puntos propios sacan sus métricas de /api/horizons; los sitios del catálogo, de /api/metricas. Se conserva el orden. */
+export async function obtenerMetricas(ids: string[], rango: Rango = {}, opciones: Opciones = {}): Promise<RespuestaMetricas> {
+  const deCatalogo = ids.filter((id) => !puntoDeId(id));
+  if (deCatalogo.length === ids.length) return metricasDeSitios(ids, rango, opciones);
+  const [catalogo, propios] = await Promise.all([
+    deCatalogo.length ? metricasDeSitios(deCatalogo, rango, opciones) : { resultados: [] },
+    Promise.all(ids.filter((id) => puntoDeId(id)).map(async (id) => normalizarMetrica({ ...(await obtenerHorizons(puntoDeId(id) as Punto, rangoCompleto(rango))).metricas, site_id: id }))),
+  ]);
+  const porId = new Map([...catalogo.resultados, ...propios].map((m) => [m.site_id, m]));
+  return { resultados: ids.flatMap((id) => porId.get(id) ?? []) };
+}
+const metricasDeSitios = (ids: string[], rango: Rango = {}, { signal, modo }: Opciones = {}): Promise<RespuestaMetricas> =>
   conRespaldo(
     () => pedir<RespuestaMetricas>(API.METRICAS, { [API.PARAM.SITE_ID]: ids, ...rango }, signal),
     () => metricasMuestra(ids, rango),

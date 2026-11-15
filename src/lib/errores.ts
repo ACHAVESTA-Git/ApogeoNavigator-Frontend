@@ -1,6 +1,6 @@
 // Error de la API con el formato de FastAPI: {"detail": ...}.
 import { API } from "./constants";
-import { ERRORES_POR_ESTADO, T } from "./textos";
+import { ERRORES_POR_ESTADO, T, esperaYReintenta } from "./textos";
 import type { InformeCsv } from "./tipos";
 
 /** Objeto `error` que el backend añade junto a `detail` (estándar de respuestas HTTP §1). */
@@ -28,6 +28,8 @@ export class ApiError extends Error {
     readonly error?: ErrorBackend,
     /** Código de seguimiento (`error.request_id` o la cabecera X-Request-ID). */
     readonly requestId?: string,
+    /** Segundos de espera que pide un 429 (cabecera Retry-After), si los trae. */
+    readonly esperaS?: number,
   ) {
     super(typeof detail === "string" && detail ? detail : `API ${status}`); // solo para depurar: la interfaz usa traducirError
     this.name = "ApiError";
@@ -53,7 +55,8 @@ export function errorDeRespuesta(respuesta: { status: number; headers?: { get(no
   const registrar = respuesta.status >= 500 ? console.error : console.warn;
   registrar(`[API] ${respuesta.status} ${codigo} ${requestId ?? "-"} ${soloRuta(ruta)}`);
   const detail = typeof detalle === "string" ? detalle : esInforme(detalle) ? detalle : "";
-  return new ApiError(respuesta.status, detail, backend, requestId);
+  const espera = Number(respuesta.headers?.get(API.CABECERA_REINTENTO));
+  return new ApiError(respuesta.status, detail, backend, requestId, Number.isFinite(espera) && espera > 0 ? Math.ceil(espera) : undefined);
 }
 const esInforme = (v: unknown): v is InformeCsv => typeof v === "object" && v !== null && !Array.isArray(v) && "valido" in v;
 /** Fallo de red o de tiempo de espera: la API no llegó a responder. */
@@ -86,6 +89,8 @@ export interface ErrorTraducido {
   /** Qué botón ofrecer. */
   accion: TipoAccion;
   requestId?: string;
+  /** Segundos que hay que esperar antes de reintentar (429 con Retry-After). */
+  esperaS?: number;
 }
 export const CODIGO_SIN_CONEXION = "SIN_CONEXION";
 export const CODIGO_DESCONOCIDO = "ERROR_DESCONOCIDO";
@@ -112,8 +117,9 @@ export function traducirError(error: unknown): ErrorTraducido {
     estado: error.status,
     titulo: b?.titulo ?? base.titulo,
     mensaje: b?.mensaje ?? detalleLegible(error.detail) ?? base.mensaje,
-    sugerencia: b?.accion || base.accion,
+    sugerencia: error.esperaS ? esperaYReintenta(error.esperaS) : b?.accion || base.accion,
     accion: accionDe(error.status),
     requestId: error.requestId,
+    esperaS: error.esperaS,
   };
 }

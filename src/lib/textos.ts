@@ -194,6 +194,30 @@ export const T = {
     comparar: "Comparar",
     faltan: (min: number) => `Elige al menos ${min}`,
   },
+  puntoPropio: {
+    titulo: "Coordenadas propias",
+    entrada: "Consulta el cielo de cualquier punto de la Luna, en vivo desde JPL Horizons.",
+    lat: "Latitud",
+    lon: "Longitud",
+    ayudaLat: "De −90 a 90. Sur, negativo.",
+    ayudaLon: "De −180 a 180. Este, positivo.",
+    ver: "Ver el cielo de este punto",
+    lectura: (coordenadas: string) => `Punto: ${coordenadas}`,
+    errores: {
+      numero: "Escribe un número, por ejemplo −89,66.",
+      lat: "La latitud va de −90 a 90 (Sur, negativo).",
+      lon: "La longitud va de −180 a 180 (Este, positivo).",
+    },
+    privacidad: "Las coordenadas viajan en la dirección de la página; no se guardan en este navegador.",
+    nombre: "Punto personalizado",
+    fuente: "JPL en vivo",
+    marca: "Punto personalizado · JPL en vivo",
+    marcaEjemplo: "Punto personalizado · datos de ejemplo",
+    cargando: "Consultando JPL Horizons…",
+    cargandoNota: "La primera consulta de un punto puede tardar varios segundos; después sale de la caché.",
+    ejemplo: (sitio: string) =>
+      `Ejemplo, no son tus coordenadas: este servidor todavía no tiene la consulta en vivo a JPL Horizons. Lo que ves abajo son los datos de ${sitio}.`,
+  },
   sitio: {
     pestanas: "Vistas del sitio",
     cielo: "Cielo",
@@ -285,7 +309,7 @@ export const T = {
     solMedia: "Altura media del Sol (con Sol)",
     sinMedia: "sin horas de sol",
     origen: "Origen de las cifras",
-    origenes: { calculado: "Recalculadas por la API a partir de las efemérides", ejemplo: "Calculadas en el navegador con los datos de ejemplo" },
+    origenes: { calculado: "Recalculadas por la API a partir de las efemérides", ejemplo: "Calculadas en el navegador con los datos de ejemplo", horizons_en_vivo: "Calculadas por la API con la consulta en vivo a JPL Horizons" },
     referencia: "Referencia metricas.csv",
     coincide: "coincide",
     noCoincide: "no coincide",
@@ -496,6 +520,8 @@ export const T = {
  * Catálogo base por estado (estándar de respuestas HTTP §2): lo que se muestra cuando la respuesta no trae el
  * objeto `error`. `mensaje` es qué pasó y `accion`, qué puede hacer el usuario.
  */
+/** Sugerencia de un 429 cuando la respuesta dice cuánto esperar (cabecera Retry-After). */
+export const esperaYReintenta = (segundos: number): string => `Espera ${segundos} s y reintenta.`;
 export const ERRORES_POR_ESTADO: Record<number, { codigo: string; titulo: string; mensaje: string; accion: string }> = {
   400: { codigo: "PETICION_INVALIDA", titulo: "Petición inválida", mensaje: "El servidor no pudo entender lo que se le pidió.", accion: "Revisa los datos enviados." },
   401: { codigo: "NO_AUTORIZADO", titulo: "Falta autorización", mensaje: "Esta acción necesita una clave válida.", accion: "Introduce una clave válida." },

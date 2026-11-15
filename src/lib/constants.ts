@@ -12,6 +12,9 @@ export const API = {
   SIMULACION: (id: string) => `/api/simulacion/${encodeURIComponent(id)}`,
   VALIDAR: (tipo: TipoArchivo) => `/api/datos/validar/${tipo}`,
   GUARDAR: (tipo: TipoArchivo) => `/api/datos/${tipo}`,
+  HORIZONS: "/api/horizons",
+  PARAM_HORIZONS: { LAT: "lat", LON: "lon" },
+  CABECERA_REINTENTO: "Retry-After",
   CLAVES: "/api/admin/claves",
   CLAVE_PUBLICA: (id: string) => `/api/admin/claves/${encodeURIComponent(id)}/publica`,
   CLAVE_REVOCAR: (id: string) => `/api/admin/claves/${encodeURIComponent(id)}/revocar`,
@@ -280,6 +283,19 @@ export const RUTAS = {
   CLAVES: "/admin/claves",
 } as const; // sin ruta de carga: es un popup
 export const SEGMENTO = { CIELO: "cielo", VENTANAS: "ventanas", DIA_LUNAR: "dia-lunar" } as const;
+/** Coordenadas propias (HU-13): contrato de GET /api/horizons. */
+export const PUNTO_PROPIO = {
+  PREFIJO: "punto_",
+  LAT: { MIN: -90, MAX: 90 },
+  LON: { MIN: -180, MAX: 180 },
+  DECIMALES: 4,
+  RANGO_MAX_DIAS: 35,
+  CACHE_MAX: 6, // respuestas de /api/horizons que se guardan en memoria (una por punto y periodo)
+  // Respaldo de ejemplo mientras el backend no publique /api/horizons. Para quitarlo: poner false (o borrar el
+  // bloque marcado en api.ts y puntoPropio.ts). Nunca se usa si el endpoint responde, aunque sea con un error.
+  RESPALDO_EJEMPLO: true,
+} as const;
+
 export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses" } as const;
 
 export const ENLACES = {
