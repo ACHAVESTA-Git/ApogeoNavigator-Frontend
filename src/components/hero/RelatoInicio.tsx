@@ -180,7 +180,7 @@ export function RelatoInicio({ titulo, cta }: { titulo: ReactNode; cta: ReactNod
           </div>
 
           {/* Lectura del instante y progreso de actos, siempre visibles */}
-          <div className="absolute inset-x-(--margen) bottom-4 flex items-end justify-between gap-4">
+          <div className="absolute inset-x-(--margen) bottom-4 flex items-end justify-between gap-4 max-md:bottom-10">
             <p className="text-dato-sm text-texto font-mono" data-dato>
               <time dateTime={utc}>{fechaHora(utc)}</time> <span className="text-texto-2">{T.utc}</span>
               <span className="text-texto-3 max-sm:hidden"> · {horaLocal(horaLima(utc))}</span>
