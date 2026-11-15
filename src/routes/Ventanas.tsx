@@ -30,7 +30,8 @@ export default function Ventanas() {
   // Dentro del mismo sitio se conserva el rango anterior mientras llega el nuevo; al cambiar de sitio, no.
   const mismoSitio = { mantener: true };
   const metricas = useMetricas([sitio.site_id], { desde, hasta }, mismoSitio);
-  const media = useMediaCatalogo({ desde, hasta });
+  // La media del catálogo (una consulta por grupo de sitios) espera a que el periodo exista para este sitio.
+  const media = useMediaCatalogo({ desde, hasta }, metricas.isSuccess && !metricas.isPlaceholderData);
   const efemerides = useEfemerides(sitio.site_id, { desde, hasta }, mismoSitio);
   const deEsteSitio = metricas.data?.resultados[0]?.site_id === sitio.site_id && efemerides.data?.site_id === sitio.site_id;
   const error = metricas.error ?? efemerides.error;
