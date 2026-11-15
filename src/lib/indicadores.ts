@@ -37,6 +37,16 @@ export function horasHasta(desde: Utc, evento: unknown): number | null {
   return h > 0 ? Math.round(h) : null;
 }
 
+/**
+ * Qué decir cuando la API no da próxima puesta (`null`) dentro del periodo (indicadores-astronauta §6):
+ *  - `noSale`: el astro no está sobre el horizonte en ninguna hora del periodo (caso «0»). Decir «sin puesta antes
+ *    de…» sugeriría que está a la vista: es falso.
+ *  - `sinPuesta`: está a la vista y no llega a ponerse antes del fin del periodo.
+ */
+export function motivoSinPuesta(horasVisible: number): "noSale" | "sinPuesta" {
+  return horasVisible > 0 ? "sinPuesta" : "noSale";
+}
+
 export interface VentanaConjunta {
   inicioMs: number;
   /** Exclusivo: fin de la última hora de la ventana. */
