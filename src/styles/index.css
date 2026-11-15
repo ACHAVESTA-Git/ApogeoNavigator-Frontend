@@ -16,6 +16,11 @@
   --color-sol: #FFB547;
   --color-sol-nucleo: #FFF2D9;
   --color-sol-tenue: rgb(255 181 71 / 0.14);
+  /* Calendario de calor: el ámbar del Sol en escalones OPACOS (14, 30 y 42 % sobre la superficie), para que el
+     texto claro de la celda cumpla AA; el cuarto escalón es --color-sol con texto oscuro. */
+  --color-calor-1: #3A2F1C;
+  --color-calor-2: #5F4824;
+  --color-calor-3: #7A5B2A;
   --color-tierra: #5AA9FF;
   --color-tierra-tenue: rgb(90 169 255 / 0.16);
   --color-viable: #3FD68F;
