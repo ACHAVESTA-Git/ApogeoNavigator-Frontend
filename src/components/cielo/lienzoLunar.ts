@@ -27,7 +27,33 @@ export interface Paisaje {
   estrellas: { az: number; el: number; brillo: number; r: number }[];
   rocas: { az: number; fondo: number; talla: number }[];
   /** Armónicos del perfil (periódicos en 360°): amplitud relativa, frecuencia entera y fase. */
-  perfil: { lejano: [number, number, number][]; cercano: [number, number, number][] };
+  perfil: { lejano: Armonicos; medio: Armonicos; cercano: Armonicos };
+}
+type Armonicos = [number, number, number][];
+type Lienzo2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+
+/** Grano de regolito: una tesela de ruido determinista que se pinta una sola vez y se repite como patrón. */
+let teselaGrano: OffscreenCanvas | HTMLCanvasElement | null | undefined;
+function grano(): OffscreenCanvas | HTMLCanvasElement | null {
+  if (teselaGrano !== undefined) return teselaGrano;
+  const lado = ESCENA.GRANO.TESELA_PX;
+  try {
+    const tesela = typeof OffscreenCanvas === "undefined" ? Object.assign(document.createElement("canvas"), { width: lado, height: lado }) : new OffscreenCanvas(lado, lado);
+    const g = tesela.getContext("2d") as Lienzo2D | null;
+    if (!g) return (teselaGrano = null);
+    const r = azar(0x9e3779b9);
+    const datos = g.createImageData(lado, lado);
+    for (let i = 0; i < datos.data.length; i += 4) {
+      const claro = r() > 0.5;
+      datos.data[i] = datos.data[i + 1] = datos.data[i + 2] = claro ? 255 : 0;
+      datos.data[i + 3] = Math.round(r() ** 2 * 255);
+    }
+    g.putImageData(datos, 0, 0);
+    teselaGrano = tesela;
+  } catch {
+    teselaGrano = null; // sin canvas (pruebas): la escena se pinta igual, sin grano
+  }
+  return teselaGrano;
 }
 export function crearPaisaje(semilla: number): Paisaje {
   const r = azar(semilla);
@@ -35,11 +61,11 @@ export function crearPaisaje(semilla: number): Paisaje {
   return {
     estrellas: Array.from({ length: ESCENA.ESTRELLAS }, () => ({ az: r() * 360, el: Math.asin(r()) / RAD, brillo: 0.25 + r() ** 3 * 0.75, r: 0.5 + r() * 0.8 })),
     rocas: Array.from({ length: ESCENA.ROCAS }, () => ({ az: r() * 360, fondo: 0.08 + r() * 0.92, talla: 0.5 + r() })),
-    perfil: { lejano: armonicos([2, 3, 5, 9, 14]), cercano: armonicos([1, 4, 7, 11, 19, 31]) },
+    perfil: { lejano: armonicos([2, 3, 5, 9, 14, 23]), medio: armonicos([1, 3, 6, 10, 17]), cercano: armonicos([1, 2, 4, 7, 11]) },
   };
 }
 /** Altura relativa (0…1) del perfil en un azimut. */
-function altura(armonicos: [number, number, number][], az: number): number {
+function altura(armonicos: Armonicos, az: number): number {
   let suma = 0;
   let total = 0;
   for (const [amp, f, fase] of armonicos) {
@@ -144,8 +170,12 @@ export function pintarEscena(ctx: CanvasRenderingContext2D, e: Encuadre, p: Posi
 
   // 4 · Sol: resplandor por capas y disco. Bajo el horizonte lo tapa el terreno.
   if (p.sol_el_deg > -3) {
-    enCopias(xs, 420, (cx) => {
-      const capas: [number, number][] = [[rSol * 46, 0.1 + 0.1 * rasante], [rSol * 14, 0.28], [rSol * 4.2, 0.75]];
+    enCopias(xs, ESCENA.HALO_SOL.RADIO_PX, (cx) => {
+      // halo ancho y tenue + bloom de dos capas pegado al disco
+      const capas: [number, number][] = [
+        [ESCENA.HALO_SOL.RADIO_PX, ESCENA.HALO_SOL.OPACIDAD + ESCENA.HALO_SOL.OPACIDAD_RASANTE * rasante],
+        ...ESCENA.BLOOM_SOL.map(([radios, alfa]) => [rSol * radios, alfa] as [number, number]),
+      ];
       for (const [r, alfa] of capas) {
         const g = ctx.createRadialGradient(cx, ys, 0, cx, ys, r);
         g.addColorStop(0, c.sol);
@@ -164,20 +194,21 @@ export function pintarEscena(ctx: CanvasRenderingContext2D, e: Encuadre, p: Posi
     });
   }
 
-  // 5 · Terreno: dos perfiles ilustrativos. El lejano asoma por encima del horizonte ideal.
-  const perfil = (armonicos: [number, number, number][], amplitud: number, base: number) => {
+  // 5 · Terreno: tres perfiles ilustrativos con paralaje. El lejano asoma apenas sobre el horizonte ideal.
+  const perfil = (armonicos: Armonicos, amplitud: number, base: number, paralaje: number) => {
     ctx.beginPath();
     ctx.moveTo(0, alto);
     for (let px = 0; px <= ancho + ESCENA.PASO_PERFIL_PX; px += ESCENA.PASO_PERFIL_PX) {
-      const az = centro + (px - ancho / 2) / ppd;
+      const az = centro * paralaje + (px - ancho / 2) / ppd;
       ctx.lineTo(px, base - altura(armonicos, az) * amplitud);
     }
     ctx.lineTo(ancho, alto);
     ctx.closePath();
   };
   const suelo = alto - yH;
-  // capa lejana
-  perfil(paisaje.perfil.lejano, ESCENA.RELIEVE_PX.lejano, yH + 2);
+  const R = ESCENA.RELIEVE;
+  const lejano = () => perfil(paisaje.perfil.lejano, R.lejano.px, yH + R.lejano.px - R.lejano.asoma, R.lejano.paralaje);
+  lejano();
   ctx.globalAlpha = 1;
   ctx.fillStyle = c.regolito;
   ctx.fill();
@@ -201,11 +232,11 @@ export function pintarEscena(ctx: CanvasRenderingContext2D, e: Encuadre, p: Posi
   };
   if (dia > 0) {
     ctx.save();
-    perfil(paisaje.perfil.lejano, ESCENA.RELIEVE_PX.lejano, yH + 2);
+    lejano();
     ctx.clip();
     ctx.globalAlpha = dia * (0.16 + 0.34 * (1 - rasante));
     ctx.fillStyle = c.horizonte; // luz general del día
-    ctx.fillRect(0, yH - 30, ancho, suelo + 30);
+    ctx.fillRect(0, yH - R.lejano.px, ancho, suelo + R.lejano.px);
     enCopias(xs, radioLuz, (cx) => pintarLuz(cx, dia * (0.22 + 0.2 * rasante)));
     ctx.restore();
   }
@@ -216,40 +247,69 @@ export function pintarEscena(ctx: CanvasRenderingContext2D, e: Encuadre, p: Posi
     ctx.fillRect(0, yH, ancho, suelo);
   }
 
+  // capa media: una ondulación a media distancia; su ladera se oscurece con la luz rasante
+  perfil(paisaje.perfil.medio, R.medio.px, yH + suelo * R.medio.fondo, R.medio.paralaje);
+  ctx.globalAlpha = R.medio.opacidad * (0.35 + 0.65 * Math.max(rasante, 1 - dia));
+  ctx.fillStyle = c.vacio;
+  ctx.fill();
+  // grano de regolito sobre todo el suelo
+  const tesela = grano();
+  const patron = tesela && ctx.createPattern(tesela, "repeat");
+  if (patron) {
+    ctx.save();
+    lejano();
+    ctx.clip();
+    ctx.globalAlpha = ESCENA.GRANO.OPACIDAD * (0.5 + 0.5 * dia);
+    ctx.fillStyle = patron;
+    ctx.translate(-((centro * ppd) % ESCENA.GRANO.TESELA_PX), 0); // el grano gira con el suelo
+    ctx.fillRect(-ESCENA.GRANO.TESELA_PX, yH - R.lejano.px, ancho + 2 * ESCENA.GRANO.TESELA_PX, suelo + R.lejano.px);
+    ctx.restore();
+  }
+
   // 6 · Rocas con sombras largas: longitud ∝ 1 / tan(elevación), siempre en dirección contraria al Sol.
   const largoSombra = p.sol_el_deg > 0.05 ? limitar(5 / Math.tan(p.sol_el_deg * RAD), 4, ESCENA.SOMBRA_MAX_PX) : 0;
   for (const roca of paisaje.rocas) {
-    const ry = yH + 10 + roca.fondo ** 1.6 * (suelo - 14);
-    const escala = 0.35 + roca.fondo * 1.1;
-    const w = 5 * roca.talla * escala;
+    // Perspectiva: cerca del horizonte son pequeñas y están apretadas; abajo, grandes.
+    const ry = yH + 8 + roca.fondo ** 1.8 * (suelo - 12);
+    const escala = 0.22 + roca.fondo ** 1.4 * 1.9;
+    const w = 6 * roca.talla * escala;
+    const h = w * 0.62;
     enCopias(x(roca.az), ESCENA.SOMBRA_MAX_PX + 20, (rx) => {
+      // lado = hacia dónde cae la sombra (contrario al Sol); la cara iluminada mira al azimut del Sol
       const lado = Math.sign(diferenciaAngular(p.sol_az_deg, centro + (rx - ancho / 2) / ppd)) || 1;
       if (largoSombra && dia > 0) {
         const largo = largoSombra * escala;
         const g = ctx.createLinearGradient(rx, 0, rx + lado * largo, 0);
         g.addColorStop(0, c.vacio);
         g.addColorStop(1, "transparent");
-        ctx.globalAlpha = 0.7 * dia;
+        ctx.globalAlpha = 0.75 * dia;
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.ellipse(rx + (lado * largo) / 2, ry + 1, largo / 2, Math.max(1, w * 0.28), 0, 0, Math.PI * 2);
+        ctx.ellipse(rx + (lado * largo) / 2, ry + 0.5, largo / 2 + w * 0.5, Math.max(1, h * 0.55), 0, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.globalAlpha = 0.25 + 0.6 * dia;
-      ctx.fillStyle = c.horizonte;
+      ctx.globalAlpha = 0.3 + 0.55 * dia;
+      ctx.fillStyle = c.horizonte; // cuerpo
       ctx.beginPath();
-      ctx.ellipse(rx, ry, w, w * 0.42, 0, Math.PI, 0);
+      ctx.ellipse(rx, ry, w, h, 0, Math.PI, 0);
       ctx.fill();
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = 0.6;
       ctx.fillStyle = c.vacio; // cara en sombra, la opuesta al Sol
       ctx.beginPath();
-      ctx.ellipse(rx + lado * w * 0.3, ry, w * 0.7, w * 0.42, 0, Math.PI, 0);
+      ctx.ellipse(rx + lado * w * 0.32, ry, w * 0.68, h, 0, Math.PI, 0);
       ctx.fill();
+      if (dia > 0 && w > 2) {
+        ctx.globalAlpha = dia * (0.35 + 0.4 * rasante);
+        ctx.fillStyle = c.sol; // cara iluminada: un filo cálido del lado del Sol
+        ctx.beginPath();
+        ctx.ellipse(rx - lado * w * 0.5, ry, w * 0.42, h * 0.8, 0, Math.PI, 0);
+        ctx.fill();
+      }
     });
   }
   // capa cercana: una loma oscura al pie que da profundidad
-  perfil(paisaje.perfil.cercano, ESCENA.RELIEVE_PX.cercano, alto + ESCENA.RELIEVE_PX.cercano * 0.35);
-  ctx.globalAlpha = 0.85;
+  perfil(paisaje.perfil.cercano, R.cercano.px, yH + suelo * R.cercano.fondo, R.cercano.paralaje);
+  ctx.globalAlpha = R.cercano.opacidad;
   ctx.fillStyle = c.vacio;
   ctx.fill();
 
