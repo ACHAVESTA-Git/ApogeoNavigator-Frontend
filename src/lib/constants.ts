@@ -157,6 +157,9 @@ export const PANORAMA = {
   ALTO_PX: { movil: { min: 220, max: 300, fraccion: 0.36 }, escritorio: { min: 300, max: 440, fraccion: 0.42 } },
   ETIQUETA: { ANCHO_CARACTER_PX: 7.3, MARGEN_PX: 8, MARGEN_IZQ_PX: 48, SEPARACION_PX: 10, ALTO_PX: 16 },
   ZONA_BOTONES: { ANCHO_PX: 0, ALTO_PX: 0 }, // los botones de giro van arriba: abajo no hay zona reservada
+  ZONA_SUPERIOR: { ANCHO_PX: 290, ALTO_PX: 64 }, // esquina de los botones de centrar y girar: ni etiquetas ni tarjetas
+  // Tarjeta de datos en contexto de un astro; ALTO_PX es una cota para decidir si cabe arriba, no su alto real.
+  CONTEXTO: { ANCHO_PX: 248, ALTO_PX: 150, SEPARACION_PX: 12, BLANCO_PX: 44, MARGEN_PX: 8 },
   DIFUMINADO_BORDE_PX: 28,
   SEPARACION_MARCAS_PX: 15,
   MARGEN_SUPERIOR_PX: 28,
