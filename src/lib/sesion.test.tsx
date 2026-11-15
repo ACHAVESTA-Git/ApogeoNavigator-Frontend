@@ -22,7 +22,7 @@ function simularBackend({ yo = YO as unknown } = {}) {
       const { password } = JSON.parse(String(init.body)) as { password: string };
       if (password !== SECRETO) return json(401, { detail: "Credenciales no válidas" });
       sesion = true;
-      return json(200, {});
+      return json(200, yo); // el login real devuelve el usuario (UsuarioActualOut)
     }
     if (String(ruta).endsWith("/api/auth/logout")) {
       sesion = false;
@@ -45,6 +45,20 @@ afterEach(() => {
 });
 
 describe("contrato de la sesión", () => {
+  it("lee la respuesta real de /api/auth/me: las huellas vienen en `claves` como huella_sha3_256", () => {
+    const real = {
+      id: "6f1c1c1e-6a52-4c53-a4f0-3b6c6c3d9a10", nombre: "Analista de prueba", rol: "analista",
+      claves: [
+        { id: "0d9f2c1a-4b7e-4f43-9d0e-6d7c1a2b3c4d", tipo: "kem", algoritmo: "ML-KEM-1024", estado: "activa", huella_sha3_256: "9b2f0c4d" },
+        { id: "1d9f2c1a-4b7e-4f43-9d0e-6d7c1a2b3c4d", tipo: "firma", algoritmo: "ML-DSA-65", estado: "activa", huella_sha3_256: "7e1a3b5c" },
+      ],
+    };
+    expect(leerUsuario(real)).toEqual({
+      id: real.id, nombre: real.nombre, rol: "analista",
+      huellas: [{ algoritmo: "ML-KEM-1024", huella: "9b2f0c4d" }, { algoritmo: "ML-DSA-65", huella: "7e1a3b5c" }],
+    });
+    expect(leerUsuario({ ...real, claves: [] })?.huellas).toEqual([]);
+  });
   it("lee solo id, nombre, rol y huellas; sin un rol conocido no hay sesión", () => {
     expect(leerUsuario({ ...YO, privada_pem: "NO", token: "NO" })).toEqual(YO);
     expect(leerUsuario({ ...YO, rol: "superusuario" })).toBeNull();
@@ -76,16 +90,17 @@ describe("flujo de sesión con respuestas simuladas", () => {
   it("entrar → me → salir; la contraseña solo viaja en el cuerpo del login y nada sensible se guarda", async () => {
     const { llamadas } = simularBackend();
     expect(await iniciarSesion(url, "persona@ejemplo.test", SECRETO)).toEqual(YO);
-    expect(llamadas.map((l) => `${l.init.method ?? "GET"} ${l.ruta}`)).toEqual(["POST /api/auth/login", "GET /api/auth/me"]);
+    expect(llamadas.map((l) => `${l.init.method ?? "GET"} ${l.ruta}`)).toEqual(["POST /api/auth/login"]);
     for (const { init } of llamadas) {
       expect(init.credentials).toBe("include");
       expect((init.headers as Record<string, string>)["X-Requested-With"]).toBe("XMLHttpRequest");
     }
-    expect(llamadas[1].init.body).toBeUndefined();
     expect(almacenado()).not.toContain(SECRETO);
     expect(almacenado()).not.toContain("persona@ejemplo.test");
     expect(localStorage.getItem("apogeo.sesion")).toBe("1"); // solo el indicio
     expect(await obtenerSesion(url)).toEqual(YO);
+    expect(llamadas[1]).toMatchObject({ ruta: "/api/auth/me" });
+    expect(llamadas[1].init.body).toBeUndefined(); // /me no lleva cuerpo: la contraseña no vuelve a viajar
     await cerrarSesion(url);
     expect(localStorage.getItem("apogeo.sesion")).toBeNull();
     expect(await obtenerSesion(url)).toBeNull();

@@ -91,6 +91,11 @@ describe("mes sin datos (422 de un periodo fuera de los datos)", () => {
     expect(traducirError(new ApiError(422, "'hasta' está fuera del rango de datos disponible")).accion).toBe("mes");
   });
 
+  it.each(["RANGO_SIN_DATOS", "FECHA_FUERA_DE_DATOS"])("vale con el código %s aunque el texto ya no diga «fuera del rango de datos»", (codigo) => {
+    const error = new ApiError(422, "otro texto", { codigo, estado: 422, titulo: "t", mensaje: "La fecha pedida queda fuera del periodo con datos.", accion: "a" });
+    expect(esMesSinDatos(error)).toBe(true);
+    expect(traducirError(error)).toMatchObject({ codigo: "MES_SIN_DATOS", accion: "mes" });
+  });
   it("otros 422 siguen siendo errores que corregir", () => {
     const orden = errorDeRespuesta(respuesta422, cuerpo("'hasta' debe ser posterior a 'desde'"), "/api/metricas");
     expect(esMesSinDatos(orden)).toBe(false);
