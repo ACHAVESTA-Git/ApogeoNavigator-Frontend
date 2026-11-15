@@ -11,6 +11,7 @@ const SitioLayout = lazy(() => import("./routes/SitioLayout"));
 const Cielo = lazy(() => import("./routes/Cielo"));
 const Ventanas = lazy(() => import("./routes/Ventanas"));
 const DiaLunar = lazy(() => import("./routes/DiaLunar"));
+const Analisis = lazy(() => import("./routes/Analisis"));
 const Comparar = lazy(() => import("./routes/Comparar"));
 const Acceso = lazy(() => import("./routes/Acceso"));
 const GestorClaves = lazy(() => import("./routes/GestorClaves"));
@@ -29,6 +30,7 @@ export function Rutas() {
           <Route path={SEGMENTO.CIELO} element={<Cielo />} />
           <Route path={SEGMENTO.VENTANAS} element={<Ventanas />} />
           <Route path={SEGMENTO.DIA_LUNAR} element={<DiaLunar />} />
+          <Route path={SEGMENTO.ANALISIS} element={<Analisis />} />
         </Route>
         <Route path={RUTAS.COMPARAR} element={<Comparar />} />
         <Route path={RUTAS.ACCESO} element={<Acceso />} />

@@ -1,6 +1,7 @@
 // Cliente HTTP de la API. Es el ÚNICO archivo que construye URL de la API (a partir de constants.ts).
 import { avisosDe, esSemaforo, semaforo } from "./astro";
-import { API, API_BASE_URL, DATOS, MODO_MUESTRA, PUNTO_PROPIO } from "./constants";
+import type { Analisis, VariableAnalisis } from "./analisis";
+import { API, API_BASE_URL, DATOS, MODO_MUESTRA, MUESTRA, PUNTO_PROPIO } from "./constants";
 import { ApiError, ErrorDeRed, errorDeRespuesta, esApiAusente } from "./errores";
 import { efemeridesMuestra, marcarMuestraActiva, metricasMuestra, puestasMuestra, sitiosMuestra } from "./muestra";
 import { idDePunto, marcarRespaldoHorizons, puntoDeId, type Punto } from "./puntoPropio";
@@ -162,6 +163,21 @@ export const obtenerPuestas = (id: string, desde?: Utc, { signal, modo }: Opcion
  */
 export const obtenerSimulacion = (id: string, rango: Rango = {}, { signal }: Opciones = {}): Promise<Simulacion> =>
   pedir<Simulacion>(API.SIMULACION(id), { ...rango }, signal);
+
+/**
+ * Transparencia del análisis de un sitio. Mientras el servidor no tenga el endpoint (404 de ruta o sin red), el
+ * sitio de la muestra enseña una respuesta real guardada, MARCADA como ejemplo; los demás sitios dan el error.
+ */
+export async function obtenerAnalisis(id: string, variable?: VariableAnalisis, { signal }: Opciones = {}): Promise<Analisis> {
+  try {
+    return await pedir<Analisis>(API.ANALISIS(id), { [API.PARAM_VARIABLE]: variable }, signal);
+  } catch (error) {
+    if (MODO_MUESTRA === "false" || !esApiAusente(error) || id !== MUESTRA.ANALISIS.SITIO) throw error;
+    const respuesta = await fetch(MUESTRA.ANALISIS.RUTA, { signal });
+    if (!respuesta.ok) throw error;
+    return { ...((await respuesta.json()) as Analisis), ejemplo: true };
+  }
+}
 
 // ---------------------------------------------------------------- carga de CSV (nunca usa la muestra)
 async function subir<T>(ruta: string, archivo: File, clave: string): Promise<T> {

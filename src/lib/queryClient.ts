@@ -22,4 +22,6 @@ export const CLAVES = {
   metricas: (ids: readonly string[], desde?: string, hasta?: string) => ["metricas", [...ids].sort(), desde, hasta] as const,
   metricasTodas: ["metricas"] as const,
   puestas: (id: string, desde: string) => ["puestas", id, desde] as const,
+  analisis: (id: string, variable?: string) => ["analisis", id, variable] as const,
+  analisisTodos: ["analisis"] as const,
 };

@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { m as motion } from "motion/react";
 import { useMediaCatalogo } from "../../hooks/useMediaCatalogo";
@@ -73,6 +74,9 @@ export function FichaSitio({ sitio, alVolver, idTitulo, compartir = false }: {
         </EnlaceBoton>
         <BotonComparar siteId={sitio.site_id} />
       </div>
+      <p className="text-apoyo mt-4">
+        <Link to={RUTAS.ANALISIS(sitio.site_id)} className="text-texto-2 hover:text-texto underline decoration-linea underline-offset-4">{T.analisis.enlace}</Link>
+      </p>
     </article>
   );
 }
