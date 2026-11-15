@@ -124,6 +124,17 @@ export function ordenarRanking<C extends Candidato>(candidatos: readonly C[]): (
     .map(({ c }, i) => ({ ...c, puesto: i + 1 }));
 }
 
+/**
+ * Con qué se compara la cifra decisiva de un puesto: el primero, con el segundo; los demás, con el primero.
+ * Devuelve las horas de diferencia (con signo) y el puesto rival, o null si falta el dato o alguna de las dos
+ * ventanas está cortada por el borde del periodo (un «≥» no se puede restar sin inventar).
+ */
+export function frenteAlRanking<C extends { puesto: number; ventana: Racha | null }>(ranking: readonly C[], fila: C): { dif_h: number; rival: C } | null {
+  const rival = ranking.find((c) => c.puesto === (fila.puesto === 1 ? 2 : 1));
+  if (!rival || !fila.ventana || !rival.ventana || esTruncada(fila.ventana) || esTruncada(rival.ventana)) return null;
+  return { dif_h: fila.ventana.horas - rival.ventana.horas, rival };
+}
+
 /** Los primeros puestos del ranking más los elegidos que quedan fuera (con su puesto real), en orden de puesto. */
 export const visiblesDelRanking = <C extends { puesto: number }>(ranking: readonly C[], elegido: (c: C) => boolean): C[] =>
   ranking.filter((c) => c.puesto <= RANKING.PUESTOS || elegido(c));

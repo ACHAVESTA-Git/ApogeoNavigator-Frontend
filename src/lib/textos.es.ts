@@ -750,6 +750,9 @@ export const T = {
       decisiva: "seguidas con Sol y Tierra a la vez",
       decisivaLeida: (valor: string) => `Tendrás Sol y Tierra a la vez ${valor} seguidas`,
       sinVentana: "Sin datos de ventana",
+      // Con qué se compara la cifra decisiva: «14 h más que Chandrayaan-3 (puesto 2)».
+      frente: (dif: number, valor: string, rival: string, puesto: number) =>
+        dif === 0 ? `Las mismas que ${rival} (puesto ${puesto})` : `${valor} ${dif > 0 ? "más" : "menos"} que ${rival} (puesto ${puesto})`,
       elegir: (nombre: string) => `Abrir el detalle de ${nombre}`,
       quitar: (nombre: string) => `Quitar ${nombre} del detalle`,
       enDetalle: "En el detalle",

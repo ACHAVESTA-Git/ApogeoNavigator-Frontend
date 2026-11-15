@@ -749,6 +749,9 @@ export const T: Textos = {
       decisiva: "in a row with Sun and Earth both up",
       decisivaLeida: (valor: string) => `You get Sun and Earth together for ${valor} in a row`,
       sinVentana: "No window data",
+      // What the decisive figure is compared with: "14 h more than Chandrayaan-3 (rank 2)".
+      frente: (dif: number, valor: string, rival: string, puesto: number) =>
+        dif === 0 ? `Same as ${rival} (rank ${puesto})` : `${valor} ${dif > 0 ? "more" : "less"} than ${rival} (rank ${puesto})`,
       elegir: (nombre: string) => `Open the detail for ${nombre}`,
       quitar: (nombre: string) => `Remove ${nombre} from the detail`,
       enDetalle: "In the detail",

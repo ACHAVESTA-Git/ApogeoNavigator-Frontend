@@ -202,7 +202,7 @@ function Ranking({ sitios, periodo }: { sitios: Site[]; periodo: ReturnType<type
         </div>
         {zona === "polar" && <p className="text-texto-2 mt-2 text-[0.75rem]">{t.top.polarSurAyuda(grados(Math.abs(RANKING.POLAR_SUR_LAT_MAX_DEG), 0))}</p>}
         <div className={unir("transition-opacity duration-(--dur-corta)", actualizando && "opacity-60")}>
-          <TopSitios filas={filas} elegidos={elegidos} alAlternar={alternar} cargando={!listo} vacio={t.top.sinPolares} />
+          <TopSitios filas={filas} ranking={ranking} elegidos={elegidos} alAlternar={alternar} cargando={!listo} vacio={t.top.sinPolares} />
         </div>
         <div className="mt-3 flex min-h-12 flex-wrap items-center justify-between gap-x-6 gap-y-2">
           <p role="status" className="text-apoyo text-texto-2">

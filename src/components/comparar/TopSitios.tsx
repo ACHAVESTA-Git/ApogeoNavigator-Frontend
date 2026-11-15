@@ -4,7 +4,7 @@ import { useCifraAnimada } from "../../hooks/useCifraAnimada";
 import { useMovimientoReducido } from "../../hooks/useMovimientoReducido";
 import type { PuestoRanking } from "../../hooks/useRanking";
 import { avisoDeRelieve } from "../../lib/astro";
-import { esPolarSur, esTruncada } from "../../lib/comparar";
+import { esPolarSur, esTruncada, frenteAlRanking } from "../../lib/comparar";
 import { MOVIMIENTO, RANKING, SEMAFORO } from "../../lib/constants";
 import { horas, latitud, nombreCorto, numeroCorto } from "../../lib/formato";
 import { T } from "../../lib/textos";
@@ -18,17 +18,18 @@ const UMBRALES = {
   comunicacion: { viable: SEMAFORO.COMUNICACION.VERDE_MIN, reservas: SEMAFORO.COMUNICACION.AMARILLO_MIN },
 };
 /** Alto reservado de una fila (también del hueco de carga): nada salta cuando llegan los datos. */
-const ALTO_FILA = "min-h-[28.75rem] lg:min-h-[15.1875rem]";
-const REJILLA = "grid items-center gap-x-8 gap-y-5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(13rem,auto)]";
+const ALTO_FILA = "min-h-[30.5rem] lg:min-h-[15.1875rem]";
+const REJILLA = "grid items-center gap-x-8 gap-y-5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(13rem,17rem)]";
 
 /** La cifra decisiva: horas seguidas con Sol y Tierra a la vez. Interpola solo cuando cambia el periodo. */
-function CifraDecisiva({ fila }: { fila: PuestoRanking }) {
+function CifraDecisiva({ fila, ranking }: { fila: PuestoRanking; ranking: readonly PuestoRanking[] }) {
   const t = T.comparar;
   const valor = fila.ventana?.horas ?? 0;
   const cifra = useCifraAnimada<HTMLSpanElement>(valor, numeroCorto);
   if (!fila.ventana) return <p className="text-apoyo text-texto-2">{t.top.sinVentana}</p>;
   const cortada = esTruncada(fila.ventana);
   const leido = horas(valor);
+  const frente = frenteAlRanking(ranking, fila);
   return (
     <div className="min-w-0 max-lg:order-2">
       <p className="text-dato-xl text-texto font-mono font-medium whitespace-nowrap" data-dato>
@@ -40,11 +41,16 @@ function CifraDecisiva({ fila }: { fila: PuestoRanking }) {
         </span>
       </p>
       <p aria-hidden="true" className="text-apoyo text-texto-2 mt-1.5 text-pretty">{t.top.decisiva}</p>
+      {frente && (
+        <p className="text-apoyo text-texto mt-1 font-medium text-pretty" data-dato>
+          {t.top.frente(frente.dif_h, horas(Math.abs(frente.dif_h)), nombreCorto(frente.rival.sitio.nombre), frente.rival.puesto)}
+        </p>
+      )}
     </div>
   );
 }
 
-function Fila({ fila, elegido, alAlternar }: { fila: PuestoRanking; elegido: boolean; alAlternar: () => void }) {
+function Fila({ fila, ranking, elegido, alAlternar }: { fila: PuestoRanking; ranking: readonly PuestoRanking[]; elegido: boolean; alAlternar: () => void }) {
   const t = T.comparar;
   const reducido = useMovimientoReducido();
   const { sitio, metrica } = fila;
@@ -91,7 +97,7 @@ function Fila({ fila, elegido, alAlternar }: { fila: PuestoRanking; elegido: boo
           <Medidor valor={metrica.pct_sol} umbrales={UMBRALES.energia} rotulo={t.filas.energia} unidad="%" tamano="md" animar={false} />
           <Medidor valor={metrica.pct_tierra} umbrales={UMBRALES.comunicacion} rotulo={t.filas.comunicacion} unidad="%" tamano="md" animar={false} />
         </div>
-        <CifraDecisiva fila={fila} />
+        <CifraDecisiva fila={fila} ranking={ranking} />
       </PanelVidrio>
       {/* Toda la fila es el objetivo táctil: un toque abre (o cierra) su detalle. El contenido queda debajo, legible. */}
       <button type="button" aria-pressed={elegido} aria-label={elegido ? t.top.quitar(nombre) : t.top.elegir(nombre)} onClick={alAlternar}
@@ -105,8 +111,8 @@ function Fila({ fila, elegido, alAlternar }: { fila: PuestoRanking; elegido: boo
  * palabra), dos medidores (energía y comunicación) y la cifra decisiva. Al cambiar de periodo las filas se
  * recolocan (el cambio de puesto es el mensaje). Mientras carga se reserva el alto de los puestos.
  */
-export function TopSitios({ filas, elegidos, alAlternar, cargando, vacio }: {
-  filas: PuestoRanking[]; elegidos: readonly string[]; alAlternar: (id: string) => void; cargando: boolean; vacio: string;
+export function TopSitios({ filas, ranking, elegidos, alAlternar, cargando, vacio }: {
+  filas: PuestoRanking[]; ranking: readonly PuestoRanking[]; elegidos: readonly string[]; alAlternar: (id: string) => void; cargando: boolean; vacio: string;
 }) {
   const t = T.comparar.top;
   if (cargando) {
@@ -120,7 +126,7 @@ export function TopSitios({ filas, elegidos, alAlternar, cargando, vacio }: {
   return (
     <ol aria-label={t.lista(Math.min(RANKING.PUESTOS, filas.length))} className="mt-4 grid gap-3">
       <AnimatePresence mode="popLayout" initial={false}>
-        {filas.map((f) => <Fila key={f.sitio.site_id} fila={f} elegido={elegidos.includes(f.sitio.site_id)} alAlternar={() => alAlternar(f.sitio.site_id)} />)}
+        {filas.map((f) => <Fila key={f.sitio.site_id} fila={f} ranking={ranking} elegido={elegidos.includes(f.sitio.site_id)} alAlternar={() => alAlternar(f.sitio.site_id)} />)}
       </AnimatePresence>
     </ol>
   );

@@ -1,4 +1,4 @@
-import { decidir, diferencias, esPolarSur, esTruncada, monograma, ordenarRanking, rachaDe, varianteRacha, visiblesDelRanking, type LineaComparada } from "./comparar";
+import { decidir, diferencias, esPolarSur, esTruncada, frenteAlRanking, monograma, ordenarRanking, rachaDe, varianteRacha, visiblesDelRanking, type LineaComparada } from "./comparar";
 import { RANKING, RUTAS } from "./constants";
 import type { Racha } from "./tipos";
 import * as en from "./textos.en";
@@ -140,6 +140,17 @@ describe("ranking de sitios", () => {
     const orden = ordenarRanking(Array.from({ length: 8 }, (_, i) => c(`s${i}`, "verde", 100 - i)));
     expect(visiblesDelRanking(orden, () => false).map((o) => o.puesto)).toEqual([1, 2, 3, 4, 5]);
     expect(visiblesDelRanking(orden, (o) => o.id === "s6").map((o) => o.puesto)).toEqual([1, 2, 3, 4, 5, 7]);
+  });
+  it("la cifra decisiva se compara a la vista: el primero con el segundo y los demás con el primero", () => {
+    const v = (horas: number, trunca_fin = false) => ({ horas, inicio_utc: null, fin_utc: null, trunca_inicio: false, trunca_fin });
+    const orden = [{ puesto: 1, ventana: v(383) }, { puesto: 2, ventana: v(369) }, { puesto: 3, ventana: v(100, true) }, { puesto: 4, ventana: null }];
+    expect(frenteAlRanking(orden, orden[0])).toMatchObject({ dif_h: 14, rival: { puesto: 2 } });
+    expect(frenteAlRanking(orden, orden[1])).toMatchObject({ dif_h: -14, rival: { puesto: 1 } });
+    expect(frenteAlRanking(orden, orden[2])).toBeNull(); // «≥ 100 h» no se resta
+    expect(frenteAlRanking(orden, orden[3])).toBeNull(); // sin dato
+    expect(frenteAlRanking([orden[0]], orden[0])).toBeNull(); // nadie con quien comparar
+    expect(es.T.comparar.top.frente(14, "14 h", "Chandrayaan-3", 2)).toBe("14 h más que Chandrayaan-3 (puesto 2)");
+    expect(en.T.comparar.top.frente(-14, "14 h", "IM-1 Odysseus", 1)).toBe("14 h less than IM-1 Odysseus (rank 1)");
   });
   it("la región polar sur empieza en el paralelo 80° S (constante RANKING.POLAR_SUR_LAT_MAX_DEG)", () => {
     expect(RANKING.POLAR_SUR_LAT_MAX_DEG).toBe(-80);
