@@ -57,7 +57,7 @@ export default function Sitios() {
     <>
       <Segmentado etiqueta={t.filtro} opciones={opciones} valor={filtro}
         alCambiar={(v) => escribir({ [PARAM_URL.CATEGORIA]: v === TODAS ? null : v })} className="mb-5" />
-      <ListaSitios sitios={visibles} activo={activo} alActivar={activar} alSeleccionar={seleccionar} />
+      <ListaSitios compartir={esEscritorio && !reducido} sitios={visibles} activo={activo} alActivar={activar} alSeleccionar={seleccionar} />
     </>
   );
 
@@ -74,7 +74,7 @@ export default function Sitios() {
         <div className="mt-5"><LeyendaCategorias categorias={presentes} /></div>
       </div>
 
-      <div className="min-w-0 lg:col-span-5 lg:col-start-8 lg:pt-2">
+      <div className="relative min-w-0 lg:col-span-5 lg:col-start-8 lg:pt-2">
         {isPending && (
           <ul role="status" aria-busy="true" aria-label={T.cargando}>
             {Array.from({ length: MAPA.ESQUELETO_FILAS }, (_, i) => <li key={i} className="bg-superficie border-vacio h-14 border-b-4" />)}
@@ -85,14 +85,15 @@ export default function Sitios() {
           <EstadoVacio titulo={t.vacio}><Boton variante="primario" onClick={abrirCarga}>{T.nav.subir}</Boton></EstadoVacio>
         )}
         {sitios && sitios.length > 0 && (
-          // La ficha entra desde la derecha y SALE por donde entró (160 ms); la lista vuelve con un fundido corto.
-          <AnimatePresence mode="wait" initial={false}>
+          // Lista y ficha se cruzan en el mismo hueco (popLayout): el nombre del sitio es UN elemento que viaja de su
+          // fila al título (layoutId, spring sin rebote) y vuelve por el mismo camino; lo demás solo se funde.
+          <AnimatePresence mode="popLayout" initial={false}>
             {esEscritorio && seleccionado ? (
               <m.div key={seleccionado.site_id}
-                initial={reducido ? false : { opacity: 0, x: 24 }}
-                animate={{ opacity: 1, x: 0, transition: { duration: MOVIMIENTO.MEDIA / 1000, ease: MOVIMIENTO.EASE_SALIDA } }}
-                exit={reducido ? undefined : { opacity: 0, x: 24, transition: { duration: MOVIMIENTO.SALIDA_RUTA / 1000, ease: MOVIMIENTO.EASE_ENTRADA } }}>
-                <FichaSitio sitio={seleccionado} alVolver={cerrar} idTitulo={idFicha} />
+                initial={reducido ? false : { opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: MOVIMIENTO.MEDIA / 1000, ease: MOVIMIENTO.EASE_SALIDA } }}
+                exit={reducido ? undefined : { opacity: 0, transition: { duration: MOVIMIENTO.SALIDA_RUTA / 1000, ease: MOVIMIENTO.EASE_ENTRADA } }}>
+                <FichaSitio sitio={seleccionado} alVolver={cerrar} idTitulo={idFicha} compartir={!reducido} />
               </m.div>
             ) : (
               <m.div key="lista" initial={reducido ? false : { opacity: 0 }} animate={{ opacity: 1, transition: { duration: MOVIMIENTO.CORTA / 1000 } }}

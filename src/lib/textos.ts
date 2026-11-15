@@ -258,6 +258,9 @@ export const T = {
     comunicacion: "Comunicación",
     comunicacionDetalle: "Horas con la Tierra sobre el horizonte",
     deHoras: (horas: string, total: string) => `${horas} de ${total}`,
+    // Con qué se compara: la media de todos los sitios del catálogo en el mismo rango (raya sobre la barra).
+    frenteMedia: (n: number, media: string, puntos: string, signo: number) =>
+      `Media de los ${n} sitios: ${media.replace(" ", "\u00a0")}${signo === 0 ? " (igual)" : ` · ${puntos}\u00a0puntos por ${signo > 0 ? "encima" : "debajo"}`}`,
     // Relato de cada cifra: con qué se compara (días equivalentes) y por qué importa (la consecuencia operativa).
     relato: {
       sol: (dias: string, sin: string, todo: boolean, nada: boolean) =>
@@ -373,6 +376,18 @@ export const T = {
     metrica: "Métrica",
     filas: { horas_sol: "Horas de sol", pct_sol: "% de horas con sol", sol_el_max_deg: "Altura máxima del Sol", horas_tierra_visible: "Horas con la Tierra visible", pct_tierra: "% de horas con la Tierra", energia: "Energía", comunicacion: "Comunicación", global: "Viabilidad global" },
     mejor: "mejor",
+    cifras: "Quién lidera y por cuánto",
+    lidera: (nombre: string, horas: string) => `${nombre} · ${horas}`,
+    frenteA: (nombre: string, pct: string) => `${nombre}: ${pct}`,
+    // Relato del líder de cada eje: con quién se compara (el menor de la selección) y qué supone la diferencia.
+    relato: {
+      sol: (mejor: string, peor: string, horas: string, dias: string, empate: boolean) =>
+        empate ? "Empate en horas de sol: la energía no decide entre estas opciones."
+          : `${mejor} suma ${horas} más de sol que ${peor}: ${dias} días menos de noche que cubrir con baterías.`,
+      tierra: (mejor: string, peor: string, horas: string, dias: string, empate: boolean) =>
+        empate ? "Empate en horas de enlace: la comunicación no decide entre estas opciones."
+          : `${mejor} suma ${horas} más de enlace directo que ${peor}: ${dias} días menos dependiendo de un repetidor.`,
+    },
     verSitio: (nombre: string) => `Ver las ventanas de ${nombre}`,
     cargando: "Comparando…",
   },

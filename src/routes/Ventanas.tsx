@@ -10,6 +10,7 @@ import { ReferenciaMetricas } from "../components/ventanas/ReferenciaMetricas";
 import { SelectorRango } from "../components/ventanas/SelectorRango";
 import { useEfemerides } from "../hooks/useEfemerides";
 import { useDesde } from "../hooks/useMedia";
+import { useMediaCatalogo } from "../hooks/useMediaCatalogo";
 import { useMetricas } from "../hooks/useMetricas";
 import { usePeriodo } from "../hooks/useParametrosUrl";
 import { avisoDeRelieve } from "../lib/astro";
@@ -28,6 +29,7 @@ export default function Ventanas() {
   // Dentro del mismo sitio se conserva el rango anterior mientras llega el nuevo; al cambiar de sitio, no.
   const mismoSitio = { mantener: true };
   const metricas = useMetricas([sitio.site_id], { desde, hasta }, mismoSitio);
+  const media = useMediaCatalogo({ desde, hasta });
   const efemerides = useEfemerides(sitio.site_id, { desde, hasta }, mismoSitio);
   const deEsteSitio = metricas.data?.resultados[0]?.site_id === sitio.site_id && efemerides.data?.site_id === sitio.site_id;
   const m = deEsteSitio ? metricas.data?.resultados[0] : undefined;
@@ -70,8 +72,8 @@ export default function Ventanas() {
               <BandaLuz key={m.inicio_utc + m.fin_utc} filas={efemerides.data.filas} desde={m.inicio_utc} hasta={m.fin_utc} rayado={Boolean(aviso)} tamano={esTableta ? "grande" : "media"} />
             </figure>
             <div className="grid grid-cols-2 gap-6 max-lg:order-first lg:col-span-4 lg:grid-cols-1 lg:content-between lg:pb-6">
-              <CifraMetrica astro="sol" porcentaje={m.pct_sol} horasVisibles={m.horas_sol} horasTotales={total} nivel={m.semaforo.energia} sensible={Boolean(aviso)} />
-              <CifraMetrica astro="tierra" porcentaje={m.pct_tierra} horasVisibles={m.horas_tierra_visible} horasTotales={total} nivel={m.semaforo.comunicacion} />
+              <CifraMetrica astro="sol" porcentaje={m.pct_sol} horasVisibles={m.horas_sol} horasTotales={total} nivel={m.semaforo.energia} sensible={Boolean(aviso)} media={media && { valor: media.pct_sol, n: media.n }} />
+              <CifraMetrica astro="tierra" porcentaje={m.pct_tierra} horasVisibles={m.horas_tierra_visible} horasTotales={total} nivel={m.semaforo.comunicacion} media={media && { valor: media.pct_tierra, n: media.n }} />
             </div>
           </div>
           {aviso && (

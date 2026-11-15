@@ -1,6 +1,7 @@
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useMemo, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useSearchParams } from "react-router";
+import { CifrasLider } from "../components/comparar/CifrasLider";
 import { FilaHorizonte } from "../components/comparar/FilaHorizonte";
 import { SelectorMultiple, type Opcion } from "../components/comparar/SelectorSitios";
 import { TablaComparacion } from "../components/comparar/TablaComparacion";
@@ -68,6 +69,7 @@ function Comparacion({ filas, modo }: { filas: FilaComparacion[]; modo: Modo }) 
   return (
     <>
       <p key={frase} aria-live="polite" className="text-subtitulo text-texto animate-aparecer mt-5 max-w-[60ch] text-balance">{frase}</p>
+      <CifrasLider filas={datos} />
       <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
         <p className="text-dato-sm text-texto-2 min-h-[1.3em] font-mono" data-dato>
           {instante ? <><span className="rotulo">{t.cursor}</span> <span className="text-texto">{instante}</span></> : <span className="text-apoyo text-texto-3 font-sans">{t.sinCursor}</span>}

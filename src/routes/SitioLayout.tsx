@@ -8,7 +8,8 @@ import { PestanasRuta } from "../components/ui/Segmentado";
 import { SelectorMes } from "../components/ui/SelectorMes";
 import { usePeriodo } from "../hooks/useParametrosUrl";
 import { useSitio } from "../hooks/useSitio";
-import { RUTAS } from "../lib/constants";
+import { useLlegadaCompartida } from "../hooks/useLlegadaCompartida";
+import { ID_NOMBRE_SITIO, RUTAS } from "../lib/constants";
 import { coordenadas } from "../lib/formato";
 import { NOMBRE_CATEGORIA, T } from "../lib/textos";
 import type { Site, Utc } from "../lib/tipos";
@@ -26,6 +27,7 @@ export default function SitioLayout() {
   const { sitio, estado, reintentar } = useSitio(siteId);
   const periodo = usePeriodo();
   const t = T.sitio;
+  const nombre = useLlegadaCompartida<HTMLParagraphElement>(ID_NOMBRE_SITIO(siteId ?? ""));
 
   if (estado === "cargando") return <div className="contenedor min-h-[60svh]"><EstadoCarga /></div>;
   if (estado === "error") return <div className="contenedor py-12"><EstadoError alReintentar={reintentar} /></div>;
@@ -51,7 +53,7 @@ export default function SitioLayout() {
             <GlifoCategoria categoria={sitio.categoria} className="size-3" />
             {NOMBRE_CATEGORIA[sitio.categoria]} · {sitio.agencia}
           </p>
-          <p className="titulo-instrumento text-texto truncate text-[1.0625rem] md:mt-1.5 md:text-[1.5rem]">{sitio.nombre}</p>
+          <p ref={nombre} className="titulo-instrumento text-texto truncate text-[1.0625rem] md:mt-1.5 md:text-[1.5rem]">{sitio.nombre}</p>
           <p className="text-dato-sm text-texto-2 font-mono md:mt-1" data-dato>{coordenadas(sitio.lat_deg, sitio.lon_este_deg)}</p>
         </div>
         <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-between sm:gap-3">
