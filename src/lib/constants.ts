@@ -304,7 +304,7 @@ export const RANKING = {
   INSIGNIAS: [] as readonly string[],
   RUTA_INSIGNIA: (siteId: string) => `/insignias/${siteId}.jpg`,
   /** Si existe la pantalla «Ventana de alunizaje» (`/sitios/:id/ventana`). Mientras no esté en las rutas, el acceso no se pinta. */
-  VENTANA_ALUNIZAJE: false,
+  VENTANA_ALUNIZAJE: true,
 } as const;
 
 /** Espera de un 429 (Retry-After): hasta 90 s se dice en segundos; por encima, en minutos (redondeando hacia arriba). */
@@ -455,10 +455,10 @@ export const ALUNIZAJE = {
   MAX_SITIOS: 5,
   // Calendario de calor: límite inferior (%) de los escalones 2, 3 y 4. El 0 es «nada»; el 1, «algo, menos del 25 %».
   ESCALA_PCT: [25, 50, 75],
-  // Rejilla: celdas táctiles de 48 px con 8 px de separación; caben 6 columnas a 360 px.
+  // Rejilla: celdas táctiles de 48 px con 8 px de separación; dentro del panel caben 5 columnas a 360 px.
   CELDA_PX: 48,
   HUECO_PX: 8,
-  COLUMNAS: { MIN: 6, MAX: 16 },
+  COLUMNAS: { MIN: 5, MAX: 16 },
   // Entrada escalonada de las celdas: retrasos decrecientes y techo, para que todo acabe en ≤ 320 ms.
   ENTRADA: { PASO_MS: 5, RETRASO_MAX_MS: 120, DESDE_PX: 4 },
   TOLERANCIA_EMPATE_H: 1e-6,

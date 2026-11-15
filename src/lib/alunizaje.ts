@@ -63,7 +63,7 @@ export function hayEmpate(r: Pick<ResultadoVentanas, "mejores" | "serie_diaria">
 /** Mes del Cielo que contiene un instante: el Cielo trabaja por meses completos. */
 export const mesDelInstante = (utc: Utc): { desde: Utc; hasta: Utc } => ({ desde: inicioDeMes(utc), hasta: sumarMeses(inicioDeMes(utc), 1) });
 
-/** Columnas que caben con celdas de 48 px y 8 px de separación (entre 6 y 16). */
+/** Columnas que caben con celdas de 48 px y 8 px de separación (entre 5 y 16). */
 export function columnasRejilla(anchoPx: number): number {
   const { CELDA_PX, HUECO_PX, COLUMNAS } = ALUNIZAJE;
   return Math.min(COLUMNAS.MAX, Math.max(COLUMNAS.MIN, Math.floor((anchoPx + HUECO_PX) / (CELDA_PX + HUECO_PX))));

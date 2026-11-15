@@ -50,8 +50,9 @@ describe("reglas de la mejor ventana", () => {
 });
 
 describe("rejilla", () => {
-  it("caben 6 columnas a 360 px y nunca más de 16", () => {
-    expect(columnasRejilla(0)).toBe(6);
+  it("caben 5 columnas en el panel a 360 px (294 px útiles) y nunca más de 16", () => {
+    expect(columnasRejilla(0)).toBe(5);
+    expect(columnasRejilla(294)).toBe(5);
     expect(columnasRejilla(328)).toBe(6);
     expect(columnasRejilla(664)).toBe(12);
     expect(columnasRejilla(4000)).toBe(16);

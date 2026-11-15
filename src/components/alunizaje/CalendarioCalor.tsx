@@ -87,7 +87,7 @@ export function CalendarioCalor({ meses, mesActivo, alCambiarMes, seleccion, alE
 
   return (
     <div>
-      <div role="group" aria-label={t.meses} className="grid grid-cols-6 gap-2">
+      <div role="group" aria-label={t.meses} className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {meses.map((m, i) => (
           <button key={m.inicio} type="button" aria-pressed={i === mesActivo} onClick={() => alCambiarMes(i)}
             aria-label={m.maxPct === null ? t.mesSinDatos(mesLargo(m.inicio)) : t.mes(mesLargo(m.inicio), pct(m.maxPct))}
@@ -153,7 +153,7 @@ export function CalendarioCalor({ meses, mesActivo, alCambiarMes, seleccion, alE
         </ul>
       </div>
 
-      <Desplegable titulo={t.tabla} className="mt-4 border-b">
+      <Desplegable titulo={t.tabla} className="mt-4 border-b [&>button]:min-h-12">
         <div className="max-h-80 overflow-auto">
           <table className="text-apoyo w-full text-left">
             <caption className="sr-only">{t.tablaTitulo(nombreMes)}</caption>
