@@ -1,9 +1,9 @@
 import { Hourglass, TriangleAlert } from "lucide-react";
 import { VARIABLES_ANALISIS, type OrigenDatos } from "../../lib/analisis";
 import { PROYECCION_MODELO } from "../../lib/constants";
-import { fechaHora, soloFecha } from "../../lib/fechas";
+import { esUtc, fechaHora } from "../../lib/fechas";
 import { grados } from "../../lib/formato";
-import type { ProyeccionModelo, ResultadoProyeccion } from "../../lib/proyeccionModelo";
+import { fechaDeModelo, type ModeloProyeccion, type ProyeccionModelo, type ResultadoProyeccion } from "../../lib/proyeccionModelo";
 import { T } from "../../lib/textos";
 import { Sello } from "../lujo";
 import { Desplegable } from "../ui/Desplegable";
@@ -13,13 +13,14 @@ const error = (v: number | null | undefined): string => (finito(v) ? grados(v, P
 
 /** Lo que la proyección no puede decir. Llega SIEMPRE de la API y se enseña siempre junto a las cifras (nunca plegado). */
 export function LimitacionesProyeccion({ limitaciones, className }: { limitaciones: ProyeccionModelo["limitaciones"]; className?: string }) {
-  if (!limitaciones?.length) return null;
+  const lista = (limitaciones ?? []).filter((l) => l && typeof l.mensaje === "string" && l.mensaje);
+  if (!lista.length) return null;
   return (
     <section aria-label={T.proyeccion.detalle.limitaciones} className={className} data-limitaciones="">
       <p className="rotulo">{T.proyeccion.detalle.limitaciones}</p>
       <ul className="mt-3 grid gap-x-8 gap-y-2.5 md:grid-cols-2">
-        {limitaciones.map((l) => (
-          <li key={l.codigo} className="text-apoyo text-texto flex gap-2.5" data-limitacion={l.codigo}>
+        {lista.map((l, i) => (
+          <li key={l.codigo ?? i} className="text-apoyo text-texto flex gap-2.5" data-limitacion={l.codigo}>
             <TriangleAlert aria-hidden="true" className="text-reservas mt-0.5 size-4 shrink-0" />{l.mensaje}
           </li>
         ))}
@@ -43,19 +44,19 @@ export function origenDelSello(sha3: string | null | undefined, certificado: Ori
  * Acto 3 · Detalle y trazabilidad: método, entrenamiento, error variable por variable y por horizonte (solo lo que la
  * API trae; lo pendiente se dice) y el Sello con la huella del archivo de efemérides del sitio.
  */
-export function ActoDetalleProyeccion({ p, resultado, certificado }: { p: ProyeccionModelo; resultado: ResultadoProyeccion; certificado?: OrigenDatos }) {
+export function ActoDetalleProyeccion({ modelo, resultado, certificado }: { modelo: ModeloProyeccion; resultado: ResultadoProyeccion; certificado?: OrigenDatos }) {
   const t = T.proyeccion.detalle;
-  const { modelo } = p;
   const e = modelo.error;
   const rmse = VARIABLES_ANALISIS.filter((k) => finito(e?.rmse_deg?.[k]));
-  const horizontes = [...(e?.por_horizonte ?? [])].sort((a, b) => a.meses - b.meses);
+  const horizontes = [...(e?.por_horizonte ?? [])].filter((h) => finito(h?.meses)).sort((a, b) => a.meses - b.meses);
   const control = (e?.control_horizons ?? []).filter((c) => finito(c.error_deg));
   const origen = origenDelSello(resultado.sha3_256, certificado);
-  const ficha: [string, string][] = [
+  const [desde, hasta] = [fechaDeModelo(modelo.entrenado_desde), fechaDeModelo(modelo.entrenado_hasta)];
+  const ficha: [string, string | null | undefined][] = [
     [t.metodo, modelo.metodo],
     [t.version, modelo.version],
-    [t.entrenado, `${soloFecha(modelo.entrenado_desde)} → ${soloFecha(modelo.entrenado_hasta)}`],
-    [t.proyectado, soloFecha(modelo.proyectado_hasta)],
+    [t.entrenado, desde && hasta ? `${desde} → ${hasta}` : null],
+    [t.proyectado, fechaDeModelo(modelo.proyectado_hasta)],
   ];
   const pendiente = (
     <p className="text-apoyo text-reservas flex items-center gap-2 font-semibold" data-error-pendiente=""><Hourglass aria-hidden="true" className="size-4 shrink-0" />{T.proyeccion.heroe.pendiente}</p>
@@ -68,7 +69,7 @@ export function ActoDetalleProyeccion({ p, resultado, certificado }: { p: Proyec
       <div className="mt-6 grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start">
         <div className="min-w-0">
           <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-            {ficha.filter(([, v]) => v && !v.startsWith("undefined")).map(([k, v]) => (
+            {ficha.filter(([, v]) => typeof v === "string" && v.trim() !== "").map(([k, v]) => (
               <div key={k} className="min-w-0">
                 <dt className="rotulo">{k}</dt>
                 <dd className="text-texto mt-1 font-mono wrap-anywhere" data-dato>{v}</dd>
@@ -116,8 +117,8 @@ export function ActoDetalleProyeccion({ p, resultado, certificado }: { p: Proyec
                       {control.map((c, i) => (
                         <tr key={`${c.site_id}-${c.utc}-${c.variable}-${i}`} className="capilar-t">
                           <td className="text-texto-2 py-1 pr-3">{c.site_id}</td>
-                          <td className="text-texto-2 py-1 pr-3 whitespace-nowrap">{fechaHora(c.utc)}</td>
-                          <td className="text-texto-2 py-1 pr-3">{T.analisis.serie.variables[c.variable as keyof typeof T.analisis.serie.variables] ?? c.variable}</td>
+                          <td className="text-texto-2 py-1 pr-3 whitespace-nowrap">{esUtc(c.utc) ? fechaHora(c.utc) : "—"}</td>
+                          <td className="text-texto-2 py-1 pr-3">{T.analisis.serie.variables[c.variable as keyof typeof T.analisis.serie.variables] ?? c.variable ?? "—"}</td>
                           <td className="text-texto py-1 pr-3">{error(c.error_deg)}</td>
                         </tr>
                       ))}

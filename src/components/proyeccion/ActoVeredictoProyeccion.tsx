@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { PROYECCION_MODELO } from "../../lib/constants";
 import { mesLargo } from "../../lib/fechas";
 import { grados, numero } from "../../lib/formato";
-import { errorControl, inicioDelMes, resumenMeses, type ModeloProyeccion, type ResultadoProyeccion } from "../../lib/proyeccionModelo";
+import { errorControl, inicioDelMes, mesesValidos, resumenMeses, type ModeloProyeccion, type ResultadoProyeccion } from "../../lib/proyeccionModelo";
 import { T } from "../../lib/textos";
 import { CifraHeroe, PanelVidrio, Veredicto } from "../lujo";
 
@@ -17,7 +17,7 @@ const error = (v: number) => numero(v, PROYECCION_MODELO.DECIMALES_ERROR);
  */
 export function ActoVeredictoProyeccion({ sitio, resultado, modelo }: { sitio: string; resultado: ResultadoProyeccion; modelo: ModeloProyeccion }) {
   const t = T.proyeccion;
-  const r = resumenMeses(resultado.meses ?? []);
+  const r = resumenMeses(mesesValidos(resultado.meses));
   const control = errorControl(modelo.error, resultado.site_id);
   const rmseSol = modelo.error?.rmse_deg?.sol_el_deg;
   const aciertos = modelo.error?.aciertos_semaforo_control;

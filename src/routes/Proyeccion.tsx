@@ -17,7 +17,7 @@ import { useSesion } from "../hooks/useSesion";
 import { PARAM_URL, PROYECCION_MODELO, RUTAS } from "../lib/constants";
 import { aMs, sumarMeses } from "../lib/fechas";
 import { nombreCorto } from "../lib/formato";
-import { esPasoHoras, inicioDelMes, mesesParciales, resultadoDe, type PasoHorasProyeccion, type ProyeccionModelo, type ResultadoProyeccion } from "../lib/proyeccionModelo";
+import { MODELO_VACIO, esPasoHoras, inicioDelMes, mesesParciales, mesesValidos, resultadoDe, serieValida, type ModeloProyeccion, type PasoHorasProyeccion, type ResultadoProyeccion } from "../lib/proyeccionModelo";
 import { esPuntoPropio } from "../lib/puntoPropio";
 import { T } from "../lib/textos";
 import { useContextoSitio } from "./SitioLayout";
@@ -43,11 +43,11 @@ function SinPermiso({ anonimo, siteId }: { anonimo: boolean; siteId: string }) {
 }
 
 /** Acto 2 · Evidencia: la línea de meses (semáforo de energía y comunicación) y la serie con su banda de error. */
-function ActoEvidencia({ p, resultado, sitio, paso }: { p: ProyeccionModelo; resultado: ResultadoProyeccion; sitio: string; paso: PasoHorasProyeccion }) {
+function ActoEvidencia({ modelo, resultado, sitio, paso }: { modelo: ModeloProyeccion; resultado: ResultadoProyeccion; sitio: string; paso: PasoHorasProyeccion }) {
   const t = T.proyeccion.evidencia;
   const [mes, setMes] = useState<string | null>(null);
-  const meses = resultado.meses ?? [];
-  const serie = resultado.serie ?? [];
+  const meses = useMemo(() => mesesValidos(resultado.meses), [resultado.meses]);
+  const serie = useMemo(() => serieValida(resultado.serie), [resultado.serie]);
   const elegido = meses.some((m) => m.mes === mes) ? mes : null;
   const parciales = useMemo(() => mesesParciales(serie, meses, paso), [serie, meses, paso]);
   const dominio = useMemo(() => (elegido ? ([aMs(inicioDelMes(elegido)), aMs(sumarMeses(inicioDelMes(elegido), 1))] as const) : null), [elegido]);
@@ -58,7 +58,7 @@ function ActoEvidencia({ p, resultado, sitio, paso }: { p: ProyeccionModelo; res
       <p className="text-texto-2 mt-2 max-w-medida">{t.entrada}</p>
       {meses.length > 0 && <div className="mt-5"><LineaMeses meses={meses} elegido={elegido} alElegir={setMes} parciales={parciales} /></div>}
       <h3 className="text-subtitulo text-texto mt-8 font-semibold">{T.proyeccion.serie.titulo}</h3>
-      <GraficoProyeccion serie={serie} modelo={p.modelo} sitio={sitio} dominio={dominio} />
+      <GraficoProyeccion serie={serie} modelo={modelo} sitio={sitio} dominio={dominio} />
     </section>
   );
 }
@@ -78,6 +78,8 @@ function ProyeccionSitio() {
   const analisis = useAnalisis(esAdmin ? sitio.site_id : undefined);
   const nombre = nombreCorto(sitio.nombre);
   const resultado = data ? resultadoDe(data, sitio.site_id) : undefined;
+  // Sin CSV el servidor responde 200 con el modelo (o sus campos) en null: se trabaja con un modelo vacío.
+  const modelo = data?.modelo ?? MODELO_VACIO;
   return (
     <div className="contenedor py-8 lg:py-10">
       <p className="rotulo">{t.rotulo}</p>
@@ -98,13 +100,13 @@ function ProyeccionSitio() {
             {data && !error && (
               <>
                 {resultado
-                  ? <ActoVeredictoProyeccion sitio={nombre} resultado={resultado} modelo={data.modelo} />
+                  ? <ActoVeredictoProyeccion sitio={nombre} resultado={resultado} modelo={modelo} />
                   : <p role="status" className="text-texto-2 mt-8">{t.sinResultado}</p>}
                 <LimitacionesProyeccion limitaciones={data.limitaciones} className="mt-6 px-1" />
                 {resultado && (
                   <>
-                    <ActoEvidencia p={data} resultado={resultado} sitio={nombre} paso={paso} />
-                    <ActoDetalleProyeccion p={data} resultado={resultado} certificado={analisis.data?.entrada.origen} />
+                    <ActoEvidencia modelo={modelo} resultado={resultado} sitio={nombre} paso={paso} />
+                    <ActoDetalleProyeccion modelo={modelo} resultado={resultado} certificado={analisis.data?.entrada.origen} />
                   </>
                 )}
               </>

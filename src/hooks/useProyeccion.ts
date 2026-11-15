@@ -12,5 +12,5 @@ export const useProyeccion = (id: string, pasoHoras: PasoHorasProyeccion, activa
     queryKey: CLAVES.proyeccion(id, pasoHoras),
     queryFn: ({ signal }) => obtenerProyeccion(id, pasoHoras, {}, { signal }),
     enabled: activa && Boolean(id),
-    placeholderData: (anterior) => (anterior?.resultados?.some((r) => r.site_id === id) ? anterior : undefined), // al cambiar el paso no parpadea
+    placeholderData: (anterior) => (anterior?.resultados?.some((r) => r?.site_id === id) ? anterior : undefined), // al cambiar el paso no parpadea
   });

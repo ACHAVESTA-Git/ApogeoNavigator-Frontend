@@ -11,7 +11,7 @@ export const esPasoHoras = (v: number): v is PasoHorasProyeccion => (PROYECCION_
 
 type RmsePorVariable = Partial<Record<keyof Omit<FilaEfemeride, "utc">, number | null>>;
 export interface ErrorHorizonte { meses: number; rmse_sol_el_deg?: number | null; rmse_tierra_el_deg?: number | null }
-export interface PuntoControl { site_id: string; utc: Utc; variable: string; error_deg: number | null }
+export interface PuntoControl { site_id: string; utc?: Utc | null; variable?: string | null; error_deg: number | null }
 /** Error medido del modelo. Cualquier campo puede faltar o venir en null: entonces no se enseña. */
 export interface ErrorModelo {
   rmse_deg?: RmsePorVariable | null;
@@ -19,14 +19,23 @@ export interface ErrorModelo {
   control_horizons?: PuntoControl[] | null;
   aciertos_semaforo_control?: { aciertos: number; total: number } | null;
 }
+/** Sin modelo disponible (aún no hay CSV) cualquier campo puede venir en null: entonces no se enseña. */
 export interface ModeloProyeccion {
-  version: string;
-  metodo: string;
-  entrenado_desde: string;
-  entrenado_hasta: string;
-  proyectado_hasta: string;
+  version?: string | null;
+  metodo?: string | null;
+  entrenado_desde?: string | null;
+  entrenado_hasta?: string | null;
+  proyectado_hasta?: string | null;
   error?: ErrorModelo | null;
 }
+export const MODELO_VACIO: ModeloProyeccion = {};
+/** 'YYYY-MM-DD' de una fecha de la API, o null si no llega. */
+export const fechaDeModelo = (fecha: string | null | undefined): string | null => (typeof fecha === "string" && fecha.length >= 10 ? fecha.slice(0, 10) : null);
+/** Meses con lo mínimo para pintarse: identificador 'YYYY-MM' y semáforo de los dos ejes. */
+export const mesesValidos = (meses: readonly MesProyeccion[] | null | undefined): MesProyeccion[] =>
+  (meses ?? []).filter((m) => typeof m?.mes === "string" && /^\d{4}-\d{2}$/.test(m.mes) && Boolean(m.semaforo?.energia) && Boolean(m.semaforo?.comunicacion));
+/** Filas de la serie con instante legible. */
+export const serieValida = (serie: readonly FilaEfemeride[] | null | undefined): FilaEfemeride[] => (serie ?? []).filter((f) => typeof f?.utc === "string");
 export interface MesProyeccion {
   /** 'YYYY-MM' */
   mes: string;
@@ -40,9 +49,9 @@ export interface ResultadoProyeccion { site_id: string; sha3_256?: string | null
 /** GET /api/proyeccion?site_id&desde&hasta&paso_horas */
 export interface ProyeccionModelo {
   origen: "proyeccion";
-  modelo: ModeloProyeccion;
-  limitaciones: { codigo: string; mensaje: string }[];
-  resultados: ResultadoProyeccion[];
+  modelo?: ModeloProyeccion | null;
+  limitaciones?: { codigo: string; mensaje: string }[] | null;
+  resultados?: ResultadoProyeccion[] | null;
 }
 
 const finito = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
@@ -52,13 +61,13 @@ const MS_POR_MES = PROYECCION_MODELO.DIAS_POR_MES * HORAS_POR_DIA * MS_POR_HORA;
 export const inicioDelMes = (mes: string): Utc => `${mes}-01T00:00Z`;
 /** Milisegundos de una fecha de la API ('YYYY-MM-DDTHH:MMZ' o ISO); null si no se puede leer. */
 export function msDeFecha(fecha: string | null | undefined): number | null {
-  if (!fecha) return null;
+  if (typeof fecha !== "string" || !fecha) return null;
   const ms = esUtc(fecha) ? aMs(fecha) : Date.parse(fecha);
   return Number.isFinite(ms) ? ms : null;
 }
 
 export const resultadoDe = (p: Pick<ProyeccionModelo, "resultados">, siteId: string): ResultadoProyeccion | undefined =>
-  p.resultados?.find((r) => r.site_id === siteId);
+  p.resultados?.find((r) => r?.site_id === siteId);
 
 /** Nivel de un mes: el peor de energía y comunicación (misma regla que el semáforo global). */
 export const nivelDelMes = (m: Pick<MesProyeccion, "semaforo">): NivelSemaforo => peorNivel(m.semaforo.energia, m.semaforo.comunicacion);
@@ -95,7 +104,7 @@ export interface ErrorControl {
  * Prefiere los puntos del sitio; si no tiene, usa los de todos los sitios y lo dice. Sin puntos: null.
  */
 export function errorControl(error: ErrorModelo | null | undefined, siteId: string): ErrorControl | null {
-  const validos = (error?.control_horizons ?? []).filter((c) => finito(c.error_deg) && c.variable.endsWith(PROYECCION_MODELO.SUFIJO_ELEVACION));
+  const validos = (error?.control_horizons ?? []).filter((c) => finito(c.error_deg) && typeof c.variable === "string" && c.variable.endsWith(PROYECCION_MODELO.SUFIJO_ELEVACION));
   const propios = validos.filter((c) => c.site_id === siteId);
   const usados = propios.length ? propios : validos;
   if (!usados.length) return null;
@@ -151,7 +160,7 @@ export function mesesParciales(serie: readonly FilaEfemeride[], meses: readonly 
   if (!orden.length) return parciales;
   const tolerancia = pasoHoras * MS_POR_HORA;
   const extremos = (mes: string) => {
-    const ms = serie.filter((f) => f.utc.startsWith(mes)).flatMap((f) => msDeFecha(f.utc) ?? []);
+    const ms = serie.filter((f) => typeof f?.utc === "string" && f.utc.startsWith(mes)).flatMap((f) => msDeFecha(f.utc) ?? []);
     return ms.length ? { primera: Math.min(...ms), ultima: Math.max(...ms) } : null;
   };
   const [primero, ultimo] = [orden[0], orden[orden.length - 1]];
