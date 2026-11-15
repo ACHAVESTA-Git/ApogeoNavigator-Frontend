@@ -45,5 +45,20 @@ Los tokens viven en el bloque `@theme` de `src/styles/index.css`. `npm run build
 | Texto, títulos y logotipo | Archivo Variable (pesos 100 a 900, ancho 62 a 125) |
 | Cifras y datos | JetBrains Mono Variable, con cifras tabulares |
 
+**Interletraje y peso por tamaño** (tokens de `src/styles/index.css`): titular de portada −0,03 em; títulos −0,015 em; texto 0; rótulos en mayúsculas +0,1 em, peso 600 y ancho 125; logotipo −0,01 em. El interletraje se cierra al crecer el texto y se abre en los rótulos pequeños; no hay un valor único para todos los tamaños.
+
+**Rótulos de los astros en la portada.** JetBrains Mono de 12 px en peso 500, con el color pleno del astro (`sol` o `tierra`) y un halo del color `vacio`. Si el astro está bajo el horizonte, el rótulo va debajo de su contorno discontinuo; nunca se atenúa.
+
+### Revisión del 15/11 (sin cambios de marca)
+Se contrastó la marca con la guía de `ui-ux-pro-max` (`--design-system`, consulta «space science data dashboard dark editorial», sin persistir). La guía propone fondo casi negro, texto blanco roto, gris medio para lo secundario y un único acento, con un tono «ciencia, datos, precisión». La paleta «Rasante» y la tipografía ya cumplen eso, y el interletraje ya varía por tamaño, así que **no se cambia ningún token**. Lo que se descartó a propósito:
+
+| Sugerencia de la guía | Decisión | Motivo |
+|---|---|---|
+| Acento azul `#3B82F6` | No | El azul es el color de la Tierra (`tierra`); el acento de marca es `sol`. Un segundo azul confundiría el significado del color |
+| Brillos, barridos, texto en cinta y marcadores que parpadean | No | Contradice «una idea por pantalla» y «nunca más de un elemento llamativo a la vez» |
+| Bordes azulados `#1E293B` | No | Los neutros de «Rasante» son cálidos; mezclar temperaturas rompe la coherencia |
+
+El único ajuste fino del día es el de los rótulos de los astros (arriba), que sube su legibilidad sin tocar la paleta.
+
 ## Metadatos para compartir
 En `index.html`: `og:title` «Apogeo Navigator · Sitios de alunizaje», `og:description`, `og:image` (1200×630), `og:locale` `es_PE` con `en_US` como alternativa y `twitter:card` grande. Van en español porque sin SSR no cambian con el idioma. Pendiente: poner la dirección completa de `og:image` con el dominio de producción.
