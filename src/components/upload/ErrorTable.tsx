@@ -36,6 +36,7 @@ export function ErrorTable({ titulo, incidencias, total }: { titulo: string; inc
           </tbody>
         </table>
       </div>
+      <p className="text-texto-3 mt-1 text-[0.8125rem]">{T.carga.notaLinea}</p>
       {total > CARGA.MAX_ERRORES_FILA && (
         <p className="mt-1 text-[0.8125rem]">
           <button type="button" onClick={() => setTodos((v) => !v)} aria-expanded={todos}
