@@ -320,7 +320,13 @@ export const ENLACES = {
 
 /** Gráficos de «Cómo analizamos los datos» (unidades del viewBox). */
 export const ANALISIS_GRAFICO = {
-  SERIE: { ANCHO: 720, ALTO: 300, MARGEN: { sup: 18, der: 16, inf: 30, izq: 44 } },
-  ESPECTRO: { ANCHO: 720, ALTO: 220, MARGEN: { sup: 22, der: 20, inf: 34, izq: 44 }, PERIODO_MIN_DIAS: 5 },
+  // El viewBox se dibuja al ancho real del contenedor (una unidad = un píxel): los rótulos de 12 se leen a 12 px
+  // en cualquier pantalla y el gráfico no obliga a desplazarse. ANCHO es solo el valor previo a medir.
+  SERIE: { ANCHO: 720, RAZON: 0.42, ALTO_MIN: 230, ALTO_MAX: 320, MARGEN: { sup: 18, der: 16, inf: 30, izq: 44 }, MARGEN_COMPACTO: { sup: 18, der: 8, inf: 30, izq: 40 } },
+  ESPECTRO: { ANCHO: 720, RAZON: 0.3, ALTO_MIN: 210, ALTO_MAX: 240, MARGEN: { sup: 24, der: 20, inf: 42, izq: 44 }, MARGEN_COMPACTO: { sup: 24, der: 10, inf: 42, izq: 30 } },
+  ANCHO_COMPACTO: 480, // por debajo, márgenes estrechos y menos marcas en el eje
+  ANCHO_MIN: 280,
+  MARCAS_X: { amplio: 6, compacto: 3 },
+  PERIODO_MIN_DIAS: 5,
   DECIMALES_HUELLA: 12, // caracteres de la huella SHA3-256 que se enseñan antes de la elipsis
 } as const;

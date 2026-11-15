@@ -347,7 +347,7 @@ export function PanoramaCielo({ filas, t, tUtc, escala, alPulsarTecla, idTitulo,
           </div>
         </div>
         {/* Avisos de honestidad, siempre visibles dentro de la escena */}
-        <p className="text-texto-3 pointer-events-none absolute right-3 font-mono text-[0.6875rem]" style={{ top: yHorizonte - 18 }}>{T.cielo.horizonteIdeal}</p>
+        <p className="text-texto-3 pointer-events-none absolute right-3 font-mono text-[0.75rem]" style={{ top: yHorizonte - 18 }}>{T.cielo.horizonteIdeal}</p>
         <p className="text-texto-2 pointer-events-none absolute left-14 text-[0.75rem]" style={{ top: yHorizonte + 34 }}>{T.cielo.relieve}</p>
       </div>
       <p aria-hidden="true" className="text-texto-3 mt-2 text-[0.75rem] max-md:hidden">

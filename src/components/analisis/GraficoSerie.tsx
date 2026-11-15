@@ -1,14 +1,14 @@
 import { scaleLinear } from "d3-scale";
 import { area, line } from "d3-shape";
 import { useId, useMemo } from "react";
-import { estadoValidacion, rmseDeValidacion, tramosSerie, type Analisis } from "../../lib/analisis";
+import { estadoValidacion, lienzoGrafico, rmseDeValidacion, tramosSerie, type Analisis } from "../../lib/analisis";
 import { ANALISIS_GRAFICO } from "../../lib/constants";
 import { aUtc, diaCorto, fechaHora, soloFecha } from "../../lib/fechas";
 import { grados, numero } from "../../lib/formato";
+import { useDimensiones } from "../../hooks/useDimensiones";
 import { T } from "../../lib/textos";
 import { Desplegable } from "../ui/Desplegable";
 
-const { ANCHO, ALTO, MARGEN } = ANALISIS_GRAFICO.SERIE;
 type Punto = { t: number; v: number };
 
 /**
@@ -19,6 +19,8 @@ export function GraficoSerie({ analisis }: { analisis: Analisis }) {
   const t = T.analisis.serie;
   const idTitulo = useId();
   const { serie, validacion } = analisis;
+  const [refLienzo, { ancho }] = useDimensiones();
+  const { ANCHO, ALTO, MARGEN, marcasX: MARCAS_X } = lienzoGrafico(ancho, ANALISIS_GRAFICO.SERIE);
   const g = useMemo(() => {
     const tramos = tramosSerie(serie.puntos, serie.fin_datos_utc);
     const todos = [...tramos.observado, ...tramos.ajustado, ...tramos.proyectado];
@@ -32,13 +34,13 @@ export function GraficoSerie({ analisis }: { analisis: Analisis }) {
     const trazo = line<Punto>().x((p) => x(p.t)).y((p) => y(p.v));
     const banda = rmse ? area<Punto>().x((p) => x(p.t)).y0((p) => y(p.v - rmse)).y1((p) => y(p.v + rmse))(tramos.proyectado) : null;
     return { tramos, x, y, rmse, banda, tMin, tMax, d: { observado: trazo(tramos.observado), ajustado: trazo(tramos.ajustado), proyectado: trazo(tramos.proyectado) } };
-  }, [serie, validacion]);
+  }, [serie, validacion, ANCHO, ALTO, MARGEN]);
   if (!g) return null;
 
   const nombre = t.variables[serie.variable] ?? serie.nombre;
   const xFin = g.x(g.tramos.finMs);
   const conProyeccion = g.tramos.proyectado.length > 0;
-  const marcasX = g.x.ticks(6).map((ms) => ({ ms, etiqueta: diaCorto(aUtc(ms)) }));
+  const marcasX = g.x.ticks(MARCAS_X).map((ms) => ({ ms, etiqueta: diaCorto(aUtc(ms)) }));
   const referencia = estadoValidacion(validacion) === "referencia";
   const leyenda = [
     { clave: "observado", etiqueta: t.observado, clase: "bg-texto" },
@@ -47,24 +49,24 @@ export function GraficoSerie({ analisis }: { analisis: Analisis }) {
   ];
   return (
     <figure className="mt-4">
-      <div className="overflow-x-auto overscroll-x-contain" tabIndex={0} role="group" aria-labelledby={idTitulo}>
-      <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} role="img" aria-labelledby={idTitulo} className="h-auto w-full min-w-[34rem]">
+      <div ref={refLienzo}>
+      <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} role="img" aria-labelledby={idTitulo} className="h-auto w-full">
         <title id={idTitulo}>{t.alt(nombre, soloFecha(aUtc(g.tMin)), soloFecha(serie.fin_datos_utc), soloFecha(aUtc(g.tMax)))}</title>
         {g.y.ticks(5).map((v) => (
           <g key={v}>
             <line x1={MARGEN.izq} x2={ANCHO - MARGEN.der} y1={g.y(v)} y2={g.y(v)} className={v === 0 ? "stroke-horizonte" : "stroke-linea"} strokeWidth={v === 0 ? 1.25 : 0.5} />
-            <text x={MARGEN.izq - 6} y={g.y(v)} dy="0.32em" textAnchor="end" className="fill-texto-3 font-mono text-[11px]">{numero(v, Math.abs(v) < 10 ? 1 : 0)}°</text>
+            <text x={MARGEN.izq - 6} y={g.y(v)} dy="0.32em" textAnchor="end" className="fill-texto-3 font-mono text-[12px]">{numero(v, Math.abs(v) < 10 ? 1 : 0)}°</text>
           </g>
         ))}
         {marcasX.map((m) => (
-          <text key={m.ms} x={g.x(m.ms)} y={ALTO - 8} textAnchor="middle" className="fill-texto-3 font-mono text-[11px]">{m.etiqueta}</text>
+          <text key={m.ms} x={g.x(m.ms)} y={ALTO - 8} textAnchor="middle" className="fill-texto-3 font-mono text-[12px]">{m.etiqueta}</text>
         ))}
         {conProyeccion && (
           <>
             {/* La zona proyectada se tiñe: ahí ya no hay datos, solo estimación. */}
             <rect x={xFin} y={MARGEN.sup} width={ANCHO - MARGEN.der - xFin} height={ALTO - MARGEN.inf - MARGEN.sup} className="fill-tierra opacity-[0.05]" />
             <line x1={xFin} x2={xFin} y1={MARGEN.sup - 6} y2={ALTO - MARGEN.inf} className="stroke-texto-2" strokeDasharray="2 3" />
-            <text x={xFin - 6} y={MARGEN.sup + 4} textAnchor="end" className="fill-texto-2 text-[11px]">{t.finDatos}</text>
+            <text x={xFin - 6} y={MARGEN.sup + 4} textAnchor="end" className="fill-texto-2 text-[12px]">{t.finDatos}</text>
           </>
         )}
         {g.banda && <path d={g.banda} className="fill-tierra opacity-25" />}

@@ -1,6 +1,7 @@
 // «Cómo analizamos los datos»: tipos de GET /api/analisis/{site_id} y las reglas de presentación que evitan
 // afirmar más de lo que los datos demuestran. Los textos viven en textos.ts (T.analisis); aquí solo se decide
 // CUÁL toca. Contrato: docs/api/analisis-transparencia.md del backend.
+import { ANALISIS_GRAFICO } from "./constants";
 import { T } from "./textos";
 import type { Utc } from "./tipos";
 
@@ -130,3 +131,16 @@ export const rmseDeValidacion = (v: ValidacionAnalisis, variable: VariableAnalis
   v.disponible ? (v.rmse_deg?.[variable] ?? null) : null;
 
 export const esVariableAnalisis = (v: string | null): v is VariableAnalisis => (VARIABLES_ANALISIS as readonly string[]).includes(v ?? "");
+
+type Margen = { sup: number; der: number; inf: number; izq: number };
+/** Lienzo de un gráfico del análisis a partir del ancho medido de su contenedor (0 = aún sin medir). */
+export function lienzoGrafico(anchoPx: number, cfg: { ANCHO: number; RAZON: number; ALTO_MIN: number; ALTO_MAX: number; MARGEN: Margen; MARGEN_COMPACTO: Margen }) {
+  const ANCHO = anchoPx > 0 ? Math.max(ANALISIS_GRAFICO.ANCHO_MIN, Math.round(anchoPx)) : cfg.ANCHO;
+  const compacto = ANCHO < ANALISIS_GRAFICO.ANCHO_COMPACTO;
+  return {
+    ANCHO,
+    ALTO: Math.round(Math.min(cfg.ALTO_MAX, Math.max(cfg.ALTO_MIN, ANCHO * cfg.RAZON))),
+    MARGEN: compacto ? cfg.MARGEN_COMPACTO : cfg.MARGEN,
+    marcasX: compacto ? ANALISIS_GRAFICO.MARCAS_X.compacto : ANALISIS_GRAFICO.MARCAS_X.amplio,
+  };
+}
