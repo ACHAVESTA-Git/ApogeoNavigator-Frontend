@@ -4,6 +4,9 @@ import { describe, expect, it } from "vitest";
 import { sumarHoras } from "../../lib/fechas";
 import type { FilaEfemeride, Metrica } from "../../lib/tipos";
 import { LineaVentanas } from "../ventanas/LineaVentanas";
+import * as en from "../../lib/textos.en";
+import * as es from "../../lib/textos.es";
+import { ChipNivel } from "./ChipNivel";
 import { IndicadoresAstronauta } from "./IndicadoresAstronauta";
 import { MedidoresMision } from "./MedidoresMision";
 
@@ -68,6 +71,53 @@ describe("IndicadoresAstronauta", () => {
     expect(screen.getByText("Sin dato")).toBeInTheDocument();
     expect(container.querySelector('[data-variante="cero"]')).toBeNull();
     expect(screen.queryByText(/Sin puesta del Sol/)).toBeNull();
+  });
+});
+
+describe("puesta nula cuando el astro no sale en el periodo (auditoría del #86)", () => {
+  /** Chang'e 4 en diciembre: 0 h de Tierra visible y `proxima_puesta_tierra_utc: null`. */
+  const sinTierra: Metrica = { ...SHACKLETON, horas_tierra_visible: 0, pct_tierra: 0,
+    indicadores_astronauta: { ...SHACKLETON.indicadores_astronauta, proxima_puesta_tierra_utc: null } };
+  it("dice que la Tierra no está a la vista; no «Sin puesta de la Tierra antes de…»", () => {
+    pintar(sinTierra);
+    expect(screen.getByText("La Tierra no está a la vista en este periodo.")).toBeInTheDocument();
+    expect(screen.queryByText(/Sin puesta de la Tierra/)).toBeNull();
+  });
+  it("con 0 h de sol dice que el Sol no sale; con sol y sin puesta, mantiene «Sin puesta… antes del fin del periodo»", () => {
+    pintar({ ...SHACKLETON, horas_sol: 0, pct_sol: 0 });
+    expect(screen.getByText("El Sol no sale en este periodo.")).toBeInTheDocument();
+    expect(screen.queryByText(/Sin puesta del Sol/)).toBeNull();
+  });
+  it("los textos existen en los dos idiomas", () => {
+    expect(en.T.mision.noSaleSol).toBe("The Sun does not rise in this period");
+    expect(en.T.mision.noSaleTierra).toBe("The Earth is not in view in this period");
+    expect(es.T.mision.noSaleTierra).toBe("La Tierra no está a la vista en este periodo");
+  });
+});
+
+describe("aviso «sensible al relieve» en el estado de misión (auditoría del #86)", () => {
+  it("el chip lleva el mismo asterisco que Ventanas solo si se le pide", () => {
+    const { container, rerender } = render(<ChipNivel nivel="verde" nota />);
+    expect(container).toHaveTextContent("Viable*");
+    rerender(<ChipNivel nivel="verde" />);
+    expect(container).not.toHaveTextContent("*");
+  });
+  it("los medidores escriben la línea del aviso bajo la energía", () => {
+    const { container, rerender } = render(<MedidoresMision metrica={{ pct_sol: 100, pct_tierra: 39.11 }} sensible />);
+    expect(container.querySelector("[data-aviso-relieve]")).toHaveTextContent("* sensible al relieve");
+    rerender(<MedidoresMision metrica={{ pct_sol: 100, pct_tierra: 39.11 }} />);
+    expect(container.querySelector("[data-aviso-relieve]")).toBeNull();
+  });
+});
+
+describe("rótulo del anillo de 80° S en el mapa polar", () => {
+  it("dice «región polar sur» y ningún texto de Sitios nombra a Artemis (rótulo sin fuente)", () => {
+    expect(es.T.sitios.regionPolarSur).toBe("región polar sur");
+    expect(en.T.sitios.regionPolarSur).toBe("south polar region");
+    for (const t of [es.T.sitios, en.T.sitios]) {
+      expect(Object.keys(t).filter((k) => /artemis/i.test(k))).toEqual([]);
+      expect(Object.values(t).filter((v) => typeof v === "string" && /artemis/i.test(v))).toEqual([]);
+    }
   });
 });
 
