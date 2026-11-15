@@ -50,6 +50,8 @@ export default function SitioLayout() {
     { a: `${RUTAS.CIELO(id)}${periodo.consulta}`, etiqueta: t.cielo },
     { a: `${RUTAS.VENTANAS(id)}${periodo.consulta}`, etiqueta: t.ventanas },
     { a: `${RUTAS.DIA_LUNAR(id)}${periodo.consulta}`, etiqueta: t.diaLunar },
+    // El análisis es del archivo entero, no del mes: los puntos propios (sin archivo) no lo tienen.
+    ...(propio ? [] : [{ a: `${RUTAS.ANALISIS(id)}${periodo.consulta}`, etiqueta: t.analisis }]),
   ];
   return (
     <>
