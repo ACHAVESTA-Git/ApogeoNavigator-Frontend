@@ -69,6 +69,14 @@ export const MS_POR_HORA = 3_600_000;
 export const HORAS_POR_DIA = 24;
 export const GRADOS_VUELTA = 360;
 
+// Lectura de la incertidumbre de /api/simulacion (RMSE por componente).
+export const PROYECCION = {
+  // 2× el RMSE cubre el 98–100 % de los puntos proyectados: esa es la banda que se cita y se dibuja.
+  FACTOR_BANDA: 2,
+  // Más allá de esta banda ± un azimut ya no orienta (cerca del cénit o del nadir el RMSE llega a 180°): «no acotable».
+  BANDA_MAX_DEG: 30,
+} as const;
+
 export const DATOS = {
   PASO_HORAS: 1,
   RANGO_MAX_DIAS: 35, // = QUERY_MAX_RANGE_DAYS del backend

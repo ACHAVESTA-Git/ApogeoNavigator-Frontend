@@ -28,7 +28,8 @@ import { aMs } from "../lib/fechas";
 import { interpolarFila } from "../lib/interpolar";
 import { T, describirCielo } from "../lib/textos";
 import { grados } from "../lib/formato";
-import type { FilaEfemeride, PuntoSimulacion, Site, Utc } from "../lib/tipos";
+import { fiabilidadDe } from "../lib/proyeccion";
+import type { Astro, FilaEfemeride, Site, Utc } from "../lib/tipos";
 import { useContextoSitio } from "./SitioLayout";
 
 const CieloCenital = lazy(() => import("../components/cielo/CieloCenital"));
@@ -36,11 +37,7 @@ type Vista = "panorama" | "cenital";
 const ESCALAS = [{ valor: "lupa" as Escala, etiqueta: T.cielo.lupa }, { valor: "lineal" as Escala, etiqueta: T.cielo.lineal }];
 const VISTAS = [{ valor: "panorama" as Vista, etiqueta: T.cielo.panorama }, { valor: "cenital" as Vista, etiqueta: T.cielo.cenital }];
 
-/** Mayor incertidumbre del punto (0 si es un dato de Horizons). */
-const incertidumbreDe = (fila: FilaEfemeride): number => {
-  const i = (fila as Partial<PuntoSimulacion>).incertidumbre_deg;
-  return i ? Math.max(i.sol_az_deg, i.sol_el_deg, i.tierra_az_deg, i.tierra_el_deg) : 0;
-};
+const ASTROS_LECTURA: readonly Astro[] = ["sol", "tierra"];
 
 function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemeride[]; periodo: { desde: Utc; hasta: Utc } }) {
   const t = T.cielo;
@@ -56,9 +53,10 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
   const posicion = useValorMotion(useTransform(reloj.t, (ms) => interpolarFila(filas, ms)));
   // «Puesta en N h»: la API cuando está en pausa; mientras se reproduce, el mismo cálculo sobre las filas ya cargadas.
   // En un instante proyectado la API no tiene datos (respondería 422): ahí vale solo el cálculo local.
-  const incertidumbre = incertidumbreDe(filas[reloj.indice]);
+  const fiabilidad = useMemo(() => fiabilidadDe(filas[reloj.indice]), [filas, reloj.indice]);
+  const astrosPocoFiables = ASTROS_LECTURA.filter((a) => !fiabilidad.azimutFiable[a]);
   // Un punto propio no tiene /api/puestas: sus cruces salen de las filas que ya trajo /api/horizons.
-  const puestas = usePuestas(sitio.site_id, reloj.tUtc, !reloj.reproduciendo && incertidumbre === 0 && !esPuntoPropio(sitio.site_id));
+  const puestas = usePuestas(sitio.site_id, reloj.tUtc, !reloj.reproduciendo && !fiabilidad.esProyeccion && !esPuntoPropio(sitio.site_id));
   // La última respuesta de la API se proyecta al instante en curso (la API ve todos los datos del sitio; las filas
   // cargadas, solo este periodo). Si ya no vale, se usa el cálculo local.
   const ultima = useRef(puestas.data);
@@ -106,10 +104,13 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
             alCambiar={(v) => escribir({ [PARAM_URL.VISTA]: v === "panorama" ? null : v })} />
         </div>
       </div>
-      {incertidumbre > 0 && (
-        <p role="status" className="text-apoyo text-reservas mt-2 flex items-center gap-2">
+      {fiabilidad.esProyeccion && (
+        <p role="status" className="text-apoyo text-reservas mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="border-reservas rounded-full border border-dashed px-2 py-0.5 text-[0.75rem] font-semibold tracking-wide uppercase">{t.proyeccion}</span>
-          {t.proyeccionAviso} {t.proyeccionNota(grados(incertidumbre, 2))}
+          <span>
+            {t.proyeccionAviso} {fiabilidad.bandaDeg > 0 ? t.proyeccionNota(grados(fiabilidad.bandaDeg, 2)) : t.proyeccionSinBanda}
+            {astrosPocoFiables.map((a) => ` ${t.azimutPocoFiable(a)}`)}
+          </span>
           <Link to={RUTAS.ANALISIS(sitio.site_id)} className="text-texto underline decoration-linea underline-offset-4">{T.analisis.enlaceProyeccion}</Link>
         </p>
       )}
@@ -121,7 +122,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
       <div className="relative mt-2">
         {vista === "panorama" ? (
           <PanoramaCielo filas={filas} t={reloj.t} tUtc={reloj.tUtc} escala={escala} alPulsarTecla={alPulsarTecla} idTitulo={idTitulo}
-            semilla={sitio.site_id} alArrastrarTiempo={reloj.arrastrarA} alSoltarTiempo={reloj.irA} incertidumbre={incertidumbre} eventos={eventos} />
+            semilla={sitio.site_id} alArrastrarTiempo={reloj.arrastrarA} alSoltarTiempo={reloj.irA} incertidumbre={fiabilidad.bandaDeg} azimutFiable={fiabilidad.azimutFiable} eventos={eventos} />
         ) : (
           <Suspense fallback={<EstadoCarga />}>
             <div tabIndex={0} role="group" aria-labelledby={idTitulo} aria-keyshortcuts={t.teclas} onKeyDown={teclas} className="panel py-6 md:pb-40">
@@ -133,7 +134,7 @@ function Instrumento({ sitio, filas, periodo }: { sitio: Site; filas: FilaEfemer
           <Transporte filas={filas} control={controlDeReloj(reloj, filas)} conHoras={esEscritorio} />
         </div>
       </div>
-      <PanelLectura utc={reloj.tUtc} posicion={posicion} eventos={eventos} periodo={periodo} className="panel mt-4 p-4 md:p-5" />
+      <PanelLectura azimutFiable={fiabilidad.azimutFiable} utc={reloj.tUtc} posicion={posicion} eventos={eventos} periodo={periodo} className="panel mt-4 p-4 md:p-5" />
       <AvisoHorizonteIdeal className="mt-4" />
 
       <div className="mt-8">
