@@ -1,26 +1,19 @@
-import { useEffect, useState } from "react";
-
-type Site = { site_id: string; nombre: string };
+import { QueryClientProvider } from "@tanstack/react-query";
+import { LazyMotion, domMax } from "motion/react";
+import { useState } from "react";
+import { BrowserRouter } from "react-router";
+import { crearQueryClient } from "./lib/queryClient";
+import { Rutas } from "./rutas";
 
 export default function App() {
-  const [sites, setSites] = useState<Site[]>([]);
-
-  useEffect(() => {
-    fetch("/api/sites")
-      .then((r) => r.json())
-      .then(setSites)
-      .catch(() => setSites([]));
-  }, []);
-
+  const [queryClient] = useState(crearQueryClient);
   return (
-    <main style={{ fontFamily: "system-ui", padding: "2rem" }}>
-      <h1>Hola Apogeo</h1>
-      <p>Sitios cargados desde la API: {sites.length}</p>
-      <ul>
-        {sites.map((s) => (
-          <li key={s.site_id}>{s.nombre}</li>
-        ))}
-      </ul>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <LazyMotion features={domMax} strict>
+        <BrowserRouter>
+          <Rutas />
+        </BrowserRouter>
+      </LazyMotion>
+    </QueryClientProvider>
   );
 }
