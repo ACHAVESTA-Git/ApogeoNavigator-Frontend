@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { aMs, sumarHoras } from "./fechas";
-import { esRachaCortada, horasHasta, varianteRacha, ventanaMasLarga, ventanasConjuntas, ventanasDe } from "./indicadores";
+import { esRachaCortada, horasHasta, motivoSinPuesta, varianteRacha, ventanaMasLarga, ventanasConjuntas, ventanasDe } from "./indicadores";
 import type { FilaEfemeride, Racha } from "./tipos";
 
 const T0 = "2026-12-01T00:00Z";
@@ -38,6 +38,13 @@ describe("horas hasta una puesta", () => {
     expect(horasHasta(T0, undefined)).toBeNull();
     expect(horasHasta(T0, "mañana")).toBeNull();
     expect(horasHasta(T0, T0)).toBeNull();
+  });
+});
+
+describe("puesta nula", () => {
+  it("con 0 h visibles el astro no sale: no se dice «sin puesta antes de…»", () => {
+    expect(motivoSinPuesta(0)).toBe("noSale");
+    expect(motivoSinPuesta(291)).toBe("sinPuesta");
   });
 });
 

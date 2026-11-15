@@ -5,7 +5,8 @@ import { ENTRADA_LUJO } from "../../lib/constants";
 import { esMesSinDatos } from "../../lib/errores";
 import { fechaHora } from "../../lib/fechas";
 import { horas, pct } from "../../lib/formato";
-import { horasHasta } from "../../lib/indicadores";
+import { esSensibleAlRelieve } from "../../lib/astro";
+import { horasHasta, motivoSinPuesta } from "../../lib/indicadores";
 import { T, periodoLegible } from "../../lib/textos";
 import type { Site, Utc } from "../../lib/tipos";
 import { GlifoAstro } from "../glifos/Astros";
@@ -42,11 +43,13 @@ export function EstadoMision({ sitio, desde, hasta, plegado = false, className }
   const ind = m?.indicadores_astronauta;
   const puesta = ind?.proxima_puesta_sol_utc;
   const horasPuesta = m ? horasHasta(m.inicio_utc, puesta) : null;
+  // Aviso de la API: con el Sol rasante una colina puede taparlo. Mismo asterisco que en Ventanas, con su línea.
+  const sensible = Boolean(m && esSensibleAlRelieve(m));
   return (
     <PanelVidrio como="section" relleno="ninguno" aria-label={t.region(sitio.nombre, periodo)} className={className}>
       <div className="flex min-h-12 items-center gap-x-3 px-4 md:px-6">
         <h2 className="rotulo shrink-0">{t.titulo}</h2>
-        {m && <ChipNivel nivel={m.semaforo.global} rotulo={T.semaforo.global} className="entrada-lujo shrink-0" />}
+        {m && <ChipNivel nivel={m.semaforo.global} rotulo={T.semaforo.global} nota={sensible} className="entrada-lujo shrink-0" />}
         {/* Plegado, la franja resume las dos cifras (y la próxima puesta si cabe); abierto, ya están debajo. */}
         {m && !abierto && (
           <p className="entrada-lujo text-apoyo text-texto-2 min-w-0 truncate font-mono" data-dato>
@@ -60,10 +63,15 @@ export function EstadoMision({ sitio, desde, hasta, plegado = false, className }
           <ChevronDown aria-hidden="true" className={unir("size-4 transition-transform duration-(--dur-corta) ease-salida", abierto && "rotate-180")} />
         </button>
       </div>
+      {/* Siempre a la vista (también plegada) y con el alto reservado: el periodo y, si la API lo avisa, el asterisco. */}
+      <p className="text-texto-2 -mt-1 min-h-5 px-4 pb-3 text-[0.75rem] md:px-6" data-linea-mision>
+        {sensible && <span className="text-texto" data-aviso-relieve>* <span className="first-letter:uppercase inline-block">{T.semaforo.sensible}</span> · </span>}
+        {t.periodo(periodo)}
+      </p>
       <Plegable abierto={abierto} rapido>
         <div id={id} className="grid gap-x-10 gap-y-6 px-4 pb-4 md:px-6 md:pb-6 lg:grid-cols-[auto_minmax(0,1fr)]" aria-busy={!m && !error}>
           <div className="flex flex-col gap-4 sm:max-lg:flex-row sm:max-lg:items-center sm:max-lg:gap-8">
-            <MedidoresMision metrica={m} animar />
+            <MedidoresMision metrica={m} animar sensible={sensible} />
             <ul className="text-apoyo text-texto min-h-24 max-w-[26rem] space-y-2 lg:max-w-[14.5rem]">
               {m && (
                 <>
@@ -71,7 +79,7 @@ export function EstadoMision({ sitio, desde, hasta, plegado = false, className }
                     <li className="entrada-lujo flex items-start gap-2" style={retraso(1)}>
                       <GlifoAstro astro="sol" px={14} className="mt-1 shrink-0" />
                       <span>
-                        {horasPuesta !== null && puesta ? t.puestaSol(horas(horasPuesta), fechaHora(puesta)) : t.sinPuestaSol(fechaHora(m.fin_utc))}
+                        {horasPuesta !== null && puesta ? t.puestaSol(horas(horasPuesta), fechaHora(puesta)) : motivoSinPuesta(m.horas_sol) === "noSale" ? `${t.noSaleSol}.` : t.sinPuestaSol(fechaHora(m.fin_utc))}
                         {horasPuesta !== null && <span className="text-texto-2 block text-[0.75rem]">{t.desdeInicio(fechaHora(m.inicio_utc))}</span>}
                       </span>
                     </li>
