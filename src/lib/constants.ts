@@ -124,6 +124,7 @@ export const MOVIMIENTO = {
   ESCENA: 900,
   SALIDA_RUTA: 160,
   CONTEO: 700, // conteo de una cifra al aparecer (escena de una sola vez)
+  VUELO_VIGENCIA_MS: 1500, // un origen de transición compartida entre rutas caduca si la ruta tarda más
   DESPLAZAMIENTO_ENTRADA_PX: 8,
   STAGGER: 60,
   HERO_CICLO: 14_000,
@@ -142,6 +143,8 @@ export const MOVIMIENTO = {
   DEBOUNCE_ANUNCIO_MS: 500,
   PASO_REDUCIDO_MS: 1000, // con movimiento reducido la reproducción salta 1 h por segundo
 } as const;
+/** Identidad compartida del nombre de un sitio: lista → ficha (`layoutId`) → cabecera del sitio (vuelo). */
+export const ID_NOMBRE_SITIO = (siteId: string) => `nombre-sitio-${siteId}`;
 export const VELOCIDADES_HORAS_POR_SEG = [1, 6, 24] as const;
 export const VELOCIDAD_POR_DEFECTO = 6;
 

@@ -4,7 +4,7 @@
 import { animate } from "motion";
 import { MOVIMIENTO } from "../constants";
 
-const reducido = (): boolean => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+export const movimientoReducido = (): boolean => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export interface OpcionesAnimar {
   /** ms; se recorta a MOVIMIENTO.MEDIA (320 ms), el techo de la interfaz, salvo que sea una escena. */
@@ -16,7 +16,7 @@ export interface OpcionesAnimar {
 /** Interpola un número y llama a `alActualizar` en cada fotograma. Devuelve una función para detenerla. */
 export function animarNumero(desde: number, hasta: number, alActualizar: (valor: number) => void,
   { duracion = MOVIMIENTO.MEDIA, curva = MOVIMIENTO.EASE_SALIDA, escena = false }: OpcionesAnimar = {}): () => void {
-  if (reducido() || desde === hasta) {
+  if (movimientoReducido() || desde === hasta) {
     alActualizar(hasta);
     return () => undefined;
   }
