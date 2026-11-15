@@ -55,7 +55,7 @@ function Kpi({ rotulo, valor, total, contexto, activa, color }: { rotulo: string
     <div className="panel mt-6 max-w-md p-4 md:mt-8 md:p-5">
       <p className="rotulo">{rotulo}</p>
       <p className="mt-2 font-mono" data-dato>
-        <span ref={ref} className={unir("text-dato-xl font-medium", color ?? "text-texto")}>{valor}</span>
+        <span ref={ref} className={unir("text-dato-xl inline-block font-medium tabular-nums", color ?? "text-texto")} style={{ minWidth: `${String(valor).length}ch` }}>{valor}</span>
         {total !== undefined && <span className="text-dato text-texto-2"> {T.inicio.actos.de(horas(total))}</span>}
       </p>
       {total !== undefined && (
