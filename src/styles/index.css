@@ -83,6 +83,10 @@
 
   --animate-girar: girar 900ms linear infinite;
   --animate-aparecer: aparecer var(--dur-corta) var(--ease-salida) both;
+  --animate-crecer: crecer 700ms var(--ease-salida) both;
+  @keyframes crecer {
+    from { transform: scaleX(0); }
+  }
   @keyframes aparecer {
     from { opacity: 0; }
   }

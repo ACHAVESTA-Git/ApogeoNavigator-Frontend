@@ -258,6 +258,17 @@ export const T = {
     comunicacion: "Comunicación",
     comunicacionDetalle: "Horas con la Tierra sobre el horizonte",
     deHoras: (horas: string, total: string) => `${horas} de ${total}`,
+    // Relato de cada cifra: con qué se compara (días equivalentes) y por qué importa (la consecuencia operativa).
+    relato: {
+      sol: (dias: string, sin: string, todo: boolean, nada: boolean) =>
+        nada ? "Sin Sol en todo el periodo: el módulo depende por completo de baterías o de una fuente de calor."
+          : todo ? `Equivale a ${dias} días seguidos de luz: no hay noche que sobrevivir en este periodo.`
+          : `Equivale a ${dias} días de luz. Quedan ${sin} a oscuras: ese tramo hay que pasarlo con baterías.`,
+      tierra: (dias: string, sin: string, todo: boolean, nada: boolean) =>
+        nada ? "La Tierra nunca asoma: sin satélite de retransmisión no hay comunicación."
+          : todo ? "La Tierra está siempre a la vista: enlace directo durante todo el periodo."
+          : `Equivale a ${dias} días de enlace directo. Quedan ${sin} sin línea con la Tierra: hace falta un repetidor o esperar.`,
+    },
     banda: (sol: string, tierra: string) => `Bandas de luz del periodo: Sol sobre el horizonte ${sol}; Tierra sobre el horizonte ${tierra}.`,
     sinSol: "Sin Sol sobre el horizonte en todo el periodo.",
     global: (nivel: string) => `Global: ${nivel}`,

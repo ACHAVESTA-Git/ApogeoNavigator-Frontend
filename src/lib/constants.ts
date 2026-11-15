@@ -123,6 +123,7 @@ export const MOVIMIENTO = {
   LARGA: 560,
   ESCENA: 900,
   SALIDA_RUTA: 160,
+  CONTEO: 700, // conteo de una cifra al aparecer (escena de una sola vez)
   DESPLAZAMIENTO_ENTRADA_PX: 8,
   STAGGER: 60,
   HERO_CICLO: 14_000,
