@@ -5,7 +5,7 @@
 import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
 import { diaCorto, esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha, soloHora } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
-import { decidir, diferencias, type Diferencia, type LineaComparada } from "./comparar";
+import { decidir, diferencias, type Diferencia, type FraseRacha, type LineaComparada } from "./comparar";
 import type { FilaVeredicto, PartesVeredicto, Textos, TextosApiAnalisis } from "./textos.es";
 import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
 
@@ -737,6 +737,81 @@ export const T: Textos = {
     verCielo: (nombre: string) => `Open the sky of ${nombre} at this instant`,
     verSitio: (nombre: string) => `See the windows at ${nombre}`,
     cargando: "Comparing…",
+    // Longest consecutive hours (astronaut indicators) and their operational reading.
+    // Site ranking (Top 5): the criterion is stated in one line and each row reads at a glance.
+    top: {
+      titulo: (n: number, periodo: string) => `Where to land · Top ${n} for ${periodo}`,
+      criterio: "Order: power and comms verdict first; on a tie, more consecutive hours with Sun and Earth both up.",
+      lista: (n: number) => `Ranking of the top ${n} sites`,
+      zona: "Sites in the ranking",
+      todos: "All",
+      polarSur: "South polar region",
+      polarSurAyuda: (grados: string) => `Latitude ${grados} S or further south.`,
+      puesto: (n: number) => `Rank ${n}`,
+      decisiva: "in a row with Sun and Earth both up",
+      decisivaLeida: (valor: string) => `You get Sun and Earth together for ${valor} in a row`,
+      sinVentana: "No window data",
+      // What the decisive figure is compared with: "14 h more than Chandrayaan-3 (rank 2)".
+      frente: (dif: number, valor: string, rival: string, puesto: number) =>
+        dif === 0 ? `Same as ${rival} (rank ${puesto})` : `${valor} ${dif > 0 ? "more" : "less"} than ${rival} (rank ${puesto})`,
+      elegir: (nombre: string) => `Open the detail for ${nombre}`,
+      quitar: (nombre: string) => `Remove ${nombre} from the detail`,
+      enDetalle: "In the detail",
+      tocar: "Tap a site to see its horizon. Up to 3 at once.",
+      elegidos: (n: number, max: number) => `${n} of ${max} in the detail`,
+      irAlDetalle: "See the detail",
+      sinPolares: "No site in the catalogue is in the south polar region.",
+      detalle: "Detail",
+      detalleDe: (nombres: string) => `Horizon of ${nombres}`,
+      planear: "Plan landing",
+      planearDe: (nombre: string) => `Plan the landing at ${nombre}`,
+      sitio: "Site",
+      insignia: (nombre: string) => `${nombre} mission insignia`,
+      creditoInsignia: "Insignia: NASA",
+    },
+    podio: {
+      sensible: "Terrain-sensitive",
+      sinDato: "No data",
+      alMenos: (valor: string) => `≥ ${valor}`,
+      alMenosLeido: (valor: string) => `at least ${valor}`,
+      ahora: (sol: number, tierra: number, n: number) => `Right now: ${sol} of ${n} with Sun · ${tierra} of ${n} with Earth`,
+      mision: "What it means for your mission",
+      rachas: {
+        noche_mas_larga: "Longest night",
+        apagon_tierra_mas_largo: "Longest Earth blackout",
+        ventana_sol_y_tierra: "Sun + Earth window",
+      },
+      definiciones: {
+        noche_mas_larga: "Most consecutive hours with the Sun at or below 0° elevation.",
+        apagon_tierra_mas_largo: "Most consecutive hours with Earth at or below 0° elevation: no direct line of sight.",
+        ventana_sol_y_tierra: "Most consecutive hours with both Sun and Earth above the horizon.",
+      },
+      // Sentences from docs/datos/indicadores-astronauta.md (§4). `borde`: the run started earlier or the period is not a calendar month.
+      frases: {
+        noche_mas_larga: {
+          normal: (f: FraseRacha) => `Up to ${f.horas} in a row without Sun at ${f.sitio} (${f.mes}). Size the battery to cover that night.`,
+          cero: (f: FraseRacha) => `No night in ${f.mes}: the Sun stays above the ideal horizon. Terrain could still block it.`,
+          sigue: (f: FraseRacha) => `At least ${f.horas} without Sun; the night continues into next month. Size the battery for more than ${f.horas}.`,
+          borde: (f: FraseRacha) => `At least ${f.horas} without Sun; the night extends beyond ${f.mes}. Size the battery for more than ${f.horas}.`,
+          todo: (f: FraseRacha) => `No Sun for all of ${f.mes} (${f.horas}); it may continue afterwards. No solar power in this period.`,
+        },
+        apagon_tierra_mas_largo: {
+          normal: (f: FraseRacha) => `Up to ${f.horas} in a row without Earth in view at ${f.sitio} (${f.mes}). Size the relay or onboard data storage.`,
+          cero: (f: FraseRacha) => `Earth never sets in ${f.mes}: direct line of sight all period with an ideal horizon. Terrain could still cut it.`,
+          sigue: (f: FraseRacha) => `At least ${f.horas} without Earth in view; the blackout continues into next month. Size relay or storage for more.`,
+          borde: (f: FraseRacha) => `At least ${f.horas} without Earth in view; the blackout extends beyond ${f.mes}. Size relay or storage for more.`,
+          todo: (f: FraseRacha) => `Earth is not in view for all of ${f.mes} (${f.horas}). No direct link: communications depend on a relay.`,
+        },
+        ventana_sol_y_tierra: {
+          normal: (f: FraseRacha) => `Up to ${f.horas} in a row with Sun and Earth both up: the best window for solar power plus a direct link.`,
+          cero: (f: FraseRacha) => `In ${f.mes} Sun and Earth are never up together: no operation with solar power and a direct link at once.`,
+          sigue: (f: FraseRacha) => `At least ${f.horas} with Sun and Earth both up; the window continues into next month.`,
+          borde: (f: FraseRacha) => `At least ${f.horas} with Sun and Earth both up; the window extends beyond ${f.mes}.`,
+          todo: (f: FraseRacha) => `Sun and Earth both above the horizon all of ${f.mes} (${f.horas}): one continuous window for the period.`,
+        },
+      },
+      avisoRachas: "Ideal horizon: no terrain. Figures are ephemerides computed from JPL Horizons, not measurements; consecutive hours are multiples of 1 h.",
+    },
   },
   diaLunar: {
     documento: (nombre: string) => `Lunar day · ${nombre}`,
