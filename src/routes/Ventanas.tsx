@@ -14,7 +14,7 @@ import { useMediaCatalogo } from "../hooks/useMediaCatalogo";
 import { useMetricas } from "../hooks/useMetricas";
 import { usePeriodo } from "../hooks/useParametrosUrl";
 import { avisoDeRelieve } from "../lib/astro";
-import { ApiError, mensajeDeError } from "../lib/errores";
+import { ApiError, traducirError } from "../lib/errores";
 import { horasEntre, inicioDeMes, sumarMeses } from "../lib/fechas";
 import { fijarFranjaTiempo } from "../lib/relojGlobal";
 import { horas } from "../lib/formato";
@@ -34,7 +34,7 @@ export default function Ventanas() {
   const deEsteSitio = metricas.data?.resultados[0]?.site_id === sitio.site_id && efemerides.data?.site_id === sitio.site_id;
   const m = deEsteSitio ? metricas.data?.resultados[0] : undefined;
   const error = metricas.error ?? efemerides.error;
-  const errorDeRango = error instanceof ApiError && error.esNoProcesable ? mensajeDeError(error, T.errores.sinDatosRango) : null;
+  const errorDeRango = error instanceof ApiError && error.esNoProcesable ? traducirError(error).mensaje : null;
   const aviso = m && avisoDeRelieve(m);
   // Barra de tiempo: qué parte del mes cubre el rango elegido.
   useEffect(() => {

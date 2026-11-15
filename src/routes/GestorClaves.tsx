@@ -13,10 +13,10 @@ import { CampoClave } from "../components/upload/CampoClave";
 import { Plegable } from "../components/upload/Plegable";
 import { SuccessCheck } from "../components/upload/SuccessCheck";
 import { useClaveGuardada } from "../hooks/useClaveCarga";
-import { CLAVES_PQC } from "../lib/constants";
+import { API, CLAVES_PQC } from "../lib/constants";
 import { CLAVES_EJEMPLO, descargarTexto, entregaDeEjemplo, generarClaves, listarClaves, obtenerPublicaPem, revocarClave, rotarClave,
   type Clave, type ClaveEntregada, type EstadoClave, type FiltrosClaves, type TipoClave } from "../lib/claves";
-import { ApiError, mensajeDeError } from "../lib/errores";
+import { ApiError } from "../lib/errores";
 import { T } from "../lib/textos";
 
 const t = T.claves;
@@ -144,7 +144,7 @@ function Confirmacion({ accion, claveAdmin, ejemplo, alCerrar, alEntregar }: {
             {accion.tipo === "revocar" && <span className="text-texto-3 mt-1 block text-[0.8125rem]">{t.confirmarRevocar.motivoAyuda(CLAVES_PQC.MOTIVO.MIN, CLAVES_PQC.MOTIVO.MAX)}</span>}
           </label>
         )}
-        {mutacion.error && <p role="alert" className="text-apoyo text-critico">{t.error} {mensajeDeError(mutacion.error, "")}</p>}
+        {mutacion.error && <EstadoError error={mutacion.error} compacto />}
       </form>
     </Popup>
   );
@@ -175,7 +175,7 @@ export default function GestorClaves() {
     retry: false,
   });
   const ancla = useAnclaHorizonte("linea");
-  const noAutorizado = consulta.error instanceof ApiError && consulta.error.status === 401;
+  const noAutorizado = consulta.error instanceof ApiError && consulta.error.status === API.NO_AUTORIZADO;
 
   if (!claveAdmin || noAutorizado) {
     return (
