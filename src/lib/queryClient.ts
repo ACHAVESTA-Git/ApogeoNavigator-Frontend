@@ -24,4 +24,5 @@ export const CLAVES = {
   puestas: (id: string, desde: string) => ["puestas", id, desde] as const,
   analisis: (id: string, variable?: string) => ["analisis", id, variable] as const,
   analisisTodos: ["analisis"] as const,
+  proyeccion: (id: string, pasoHoras: number) => ["proyeccion", id, pasoHoras] as const,
 };
