@@ -15,6 +15,9 @@ export const API = {
   SIMULACION: (id: string) => `/api/simulacion/${encodeURIComponent(id)}`,
   ANALISIS: (id: string) => `/api/analisis/${encodeURIComponent(id)}`,
   PARAM_VARIABLE: "variable",
+  // Proyección del modelo hasta 2028 (solo rol admin: va con la sesión; el servidor responde 401/403 al resto).
+  PROYECCION: "/api/proyeccion",
+  PARAM_PASO_HORAS: "paso_horas",
   VALIDAR: (tipo: TipoArchivo) => `/api/datos/validar/${tipo}`,
   GUARDAR: (tipo: TipoArchivo) => `/api/datos/${tipo}`,
   HORIZONS: "/api/horizons",
@@ -382,13 +385,14 @@ export const RUTAS = {
   VENTANAS: (id: string) => `/sitios/${id}/ventanas`,
   DIA_LUNAR: (id: string) => `/sitios/${id}/dia-lunar`,
   ANALISIS: (id: string) => `/sitios/${id}/analisis`,
+  PROYECCION: (id: string) => `/sitios/${id}/proyeccion`,
   VENTANA_ALUNIZAJE: (id: string) => `/sitios/${id}/ventana`,
   COMPARAR: "/comparar",
   ACCESO: "/acceso",
   CLAVES: "/admin/claves",
   PERFIL: "/perfil",
 } as const; // sin ruta de carga: es un popup
-export const SEGMENTO = { CIELO: "cielo", VENTANAS: "ventanas", DIA_LUNAR: "dia-lunar", ANALISIS: "analisis" } as const;
+export const SEGMENTO = { CIELO: "cielo", VENTANAS: "ventanas", DIA_LUNAR: "dia-lunar", ANALISIS: "analisis", PROYECCION: "proyeccion" } as const;
 /** Coordenadas propias (HU-13): contrato de GET /api/horizons. */
 export const PUNTO_PROPIO = {
   PREFIJO: "punto_",
@@ -399,7 +403,7 @@ export const PUNTO_PROPIO = {
   CACHE_MAX: 6, // respuestas de /api/horizons que se guardan en memoria (una por punto y periodo)
 } as const;
 
-export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", ZONA: "zona", VARIABLE: "variable", ESTANCIA: "estancia", DIA: "dia" } as const;
+export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", ZONA: "zona", VARIABLE: "variable", ESTANCIA: "estancia", DIA: "dia", PASO: "paso" } as const;
 
 export const ENLACES = {
   HORIZONS: "https://ssd.jpl.nasa.gov/horizons/",
@@ -466,6 +470,19 @@ export const CONFIANZA = {
   VARIABLE_RITMO: "sol_el_deg", // el «día lunar» se lee en la elevación del Sol
 } as const;
 
+/** Pestaña «Proyección» (solo rol admin): lectura de GET /api/proyeccion. Los umbrales son de LECTURA de esa pantalla. */
+export const PROYECCION_MODELO = {
+  ROL: "admin",
+  PASOS_HORAS: [1, 6, 24], // valores que admite `paso_horas`
+  PASO_POR_DEFECTO: 6,
+  // Veredicto del periodo: crítico si al menos esta parte de los meses es crítica; viable solo si todos lo son.
+  FRACCION_CRITICA: 0.5,
+  DIAS_POR_MES: 30.4375, // mes medio (365,25 / 12): convierte «meses de horizonte» en tiempo
+  SUFIJO_ELEVACION: "_el_deg", // los puntos de control que cuentan para el error héroe: los de elevación
+  DECIMALES_ERROR: 2,
+  TACTIL_MIN_PX: 48, // objetivo táctil del astronauta (plan 2, §1)
+  GRAFICO: { ANCHO: 960, RAZON: 0.4, ALTO_MIN: 260, ALTO_MAX: 420, MARGEN: { sup: 22, der: 16, inf: 30, izq: 44 }, MARGEN_COMPACTO: { sup: 22, der: 8, inf: 30, izq: 40 } },
+} as const;
 /** Ventana de alunizaje (HU-18): contrato de GET /api/ventanas-alunizaje y lectura del calendario de calor. */
 export const ALUNIZAJE = {
   ESTANCIAS_H: [72, 156, 336], // 3 d, 6,5 d (estancia de referencia) y 14 d: las únicas que acepta la API

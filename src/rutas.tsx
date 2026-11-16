@@ -13,6 +13,7 @@ const Ventanas = lazy(() => import("./routes/Ventanas"));
 const DiaLunar = lazy(() => import("./routes/DiaLunar"));
 const VentanaAlunizaje = lazy(() => import("./routes/VentanaAlunizaje"));
 const Analisis = lazy(() => import("./routes/Analisis"));
+const Proyeccion = lazy(() => import("./routes/Proyeccion"));
 const Comparar = lazy(() => import("./routes/Comparar"));
 const Acceso = lazy(() => import("./routes/Acceso"));
 const Perfil = lazy(() => import("./routes/Perfil"));
@@ -33,6 +34,7 @@ export function Rutas() {
           <Route path={SEGMENTO.VENTANAS} element={<Ventanas />} />
           <Route path={SEGMENTO.DIA_LUNAR} element={<DiaLunar />} />
           <Route path={SEGMENTO.ANALISIS} element={<Analisis />} />
+          <Route path={SEGMENTO.PROYECCION} element={<Proyeccion />} />
         </Route>
         {/* Pantalla propia (sin la cabecera de mes del sitio): abarca los seis meses de datos. */}
         <Route path={RUTAS.VENTANA_ALUNIZAJE(PARAM_SITIO)} element={<VentanaAlunizaje />} />
