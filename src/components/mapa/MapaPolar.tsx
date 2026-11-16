@@ -1,5 +1,5 @@
-import { Fragment, useId } from "react";
-import { MAPA, MOVIMIENTO } from "../../lib/constants";
+import { Fragment, useId, useRef } from "react";
+import { MAPA } from "../../lib/constants";
 import { latitud, nombreCorto } from "../../lib/formato";
 import { proyectarPolar, radioLatitud } from "../../lib/geo";
 import { T } from "../../lib/textos";
@@ -30,8 +30,20 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
   const resaltado = sitios.find((s) => s.site_id === (activo ?? seleccionado));
   const meridianos = Array.from({ length: 360 / MAPA.MERIDIANOS_CADA }, (_, i) => i * MAPA.MERIDIANOS_CADA);
 
+  const disco = useRef<HTMLDivElement>(null);
+  // Parallax sutil solo con puntero fino: pocos grados, escritos como variables del propio disco.
+  const mover = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse" || !disco.current) return;
+    const b = e.currentTarget.getBoundingClientRect();
+    const nx = (e.clientX - b.left) / b.width - 0.5, ny = (e.clientY - b.top) / b.height - 0.5;
+    disco.current.style.setProperty("--mapa-rx", `${MAPA.INCLINACION_X_DEG - ny * MAPA.PARALLAX_DEG * 2}deg`);
+    disco.current.style.setProperty("--mapa-ry", `${nx * MAPA.PARALLAX_DEG * 2}deg`);
+  };
+  const soltar = () => { disco.current?.style.removeProperty("--mapa-rx"); disco.current?.style.removeProperty("--mapa-ry"); };
+
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[640px]">
+    <div className="mapa-3d mx-auto w-full max-w-[640px]" onPointerMove={mover} onPointerLeave={soltar}>
+    <div ref={disco} className="mapa-disco relative aspect-square w-full" style={{ ["--mapa-rx" as string]: `${MAPA.INCLINACION_X_DEG}deg` }}>
       <svg role="img" aria-label={T.sitios.mapa(sitios.length)} viewBox={`0 0 ${L} ${L}`} className="size-full overflow-visible">
         <defs>
           <clipPath id={`${id}-disco`}><circle cx={C} cy={C} r={R} /></clipPath>
@@ -49,8 +61,9 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
         {/* Anillos de latitud (el del ecuador lo dibuja el horizonte continuo) */}
         {/* Aparecen uno tras otro cuando el horizonte ya se ha enrollado (stagger de 60 ms) */}
         {MAPA.ANILLOS.filter((lat) => lat !== MAPA.ANILLO_HORIZONTE).map((lat, i) => (
-          <circle key={lat} cx={C} cy={C} r={radioLatitud(lat, R)} className="stroke-linea animate-aparecer fill-none" strokeWidth={1}
-            style={{ animationDelay: `${MOVIMIENTO.LARGA + i * MOVIMIENTO.STAGGER}ms` }} />
+          <circle key={lat} cx={C} cy={C} r={radioLatitud(lat, R)} pathLength={1}
+            className={unir("stroke-linea mapa-trazo fill-none", lat === MAPA.ANILLO_POLAR_SUR && "mapa-respira")} strokeWidth={lat === MAPA.ANILLO_POLAR_SUR ? 1.5 : 1}
+            style={{ animationDelay: `${i * MAPA.STAGGER_ANILLO_MS}ms`, ["--mapa-trazo" as string]: `${MAPA.TRAZO_ANILLO_MS}ms` }} />
         ))}
         <circle cx={C} cy={C} r={R} className="stroke-linea fill-none" strokeWidth={1} strokeDasharray="1 4" />
         {/* Anillo de latitud del sitio resaltado: relaciona el punto con su latitud */}
@@ -92,12 +105,18 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
         </g>
       </svg>
 
+      {/* Luz del Sol (ilustrativa): abanico ámbar que gira alrededor del polo, con la sombra opuesta */}
+      <div aria-hidden="true" className="pointer-events-none absolute z-10 overflow-hidden rounded-full"
+        style={{ left: pct(C - R), top: pct(C - R), width: pct(2 * R), height: pct(2 * R) }}>
+        <div className="mapa-barrido size-full rounded-full" style={{ ["--mapa-vuelta" as string]: `${MAPA.VUELTA_SOL_S}s` }} />
+      </div>
+
       {/* Ancla del horizonte: el cuadrado que circunscribe el anillo del ecuador */}
       <div ref={ancla} aria-hidden="true" className="pointer-events-none absolute"
         style={{ left: pct(C - rHorizonte), top: pct(C - rHorizonte), width: pct(2 * rHorizonte), height: pct(2 * rHorizonte) }} />
 
       {/* Puntos: botones reales de 44 px sobre el mapa; la forma indica la categoría */}
-      {!cargando && sitios.map((s) => {
+      {!cargando && sitios.map((s, i) => {
         const p = proyectarPolar(s.lat_deg, s.lon_este_deg, R);
         const esActivo = s.site_id === activo || s.site_id === seleccionado;
         // A la izquierda también los puntos pegados al borde derecho: su nombre no cabe hacia fuera en un móvil.
@@ -113,13 +132,14 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
             onPointerLeave={() => alActivar(null)}
             onFocus={() => alActivar(s.site_id)}
             onBlur={() => alActivar(null)}
-            className={unir("group absolute z-20 flex size-11 -translate-1/2 items-center justify-center rounded-full active:[&>svg]:scale-[0.92]", esActivo && "z-30")}
-            style={{ left: pct(C + p.x), top: pct(C + p.y) }}
+            className={unir("group animate-aparecer absolute z-20 flex size-11 -translate-1/2 items-center justify-center rounded-full active:[&>svg]:scale-[0.92]", esActivo && "z-30")}
+            style={{ left: pct(C + p.x), top: pct(C + p.y), animationDelay: `${i * MAPA.STAGGER_SITIO_MS}ms` }}
           >
             <svg aria-hidden="true" viewBox="-12 -12 24 24"
               className={unir("size-6 overflow-visible transition-transform duration-(--dur-corta) ease-salida motion-reduce:transform-none",
                 esActivo ? "scale-[1.6] text-texto" : "text-texto-2")}
               fill="currentColor">
+              <circle r={14} className="mapa-halo fill-sol" style={{ animationDelay: `${i * MAPA.STAGGER_HALO_MS}ms` }} />
               <circle r={10} className="fill-vacio" opacity={0.85} />
               <FormaCategoria categoria={s.categoria} r={5} />
             </svg>
@@ -134,6 +154,8 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
           </button>
         );
       })}
+    </div>
+    <p className="text-texto-3 mt-3 text-center text-xs">{T.sitios.notaBarrido}</p>
     </div>
   );
 }

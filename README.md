@@ -1,72 +1,61 @@
 # Apogeo Navigator · Frontend
 
 **See where the Sun and the Earth sit on the horizon of any lunar landing site.**
-Web interface of *Lunar Landing Site Navigator*, our project for the NASA Space Apps Challenge 2026 (challenge: [Lunar Landing Site Navigator](https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/)).
+Web interface of *Lunar Landing Site Navigator*, the Apogeo Team project for the NASA Space Apps Challenge 2026 ([challenge](https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/)).
 
 ![Home: the Sun rolls along the horizon above Shackleton crater, December 2026](docs/images/home.png)
 
-> **Language note:** the interface is currently in **Spanish**. This README is in English; a short Spanish summary is at the end (*Resumen en español*).
-> **Backend repository:** https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend
-<!-- TODO before submitting: add the live demo URL and the demo video URL here. -->
+- **Live app:** https://apogeo-514716.web.app
+- **Backend repository:** https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend
+- The interface is in **Spanish** with an **ES/EN** selector (see "Language"). A short Spanish summary is at the end (*Resumen en español*).
 
 ## What it does
-Pick a lunar site and a month and the app shows, from that site's horizon, where the Sun and the Earth are, hour by hour, and what that means for a lander:
+Pick a lunar site and a period and the app shows, from that site's horizon, where the Sun and the Earth are, hour by hour, and what that means for a lander:
 
 - **Hours of sunlight** (energy) and **hours of direct line of sight to Earth** (communications).
-- **Time until the next sunset and the next Earthset.**
-- A **traffic light** for energy and communications, with the reason in words and a shape (not only a colour).
-- A **"terrain-sensitive" warning** when the Sun never rises above 3° (a nearby hill could hide it).
-- **Comparison** of two or three sites, or of the same site in different months.
-- **CSV upload** for analysts, validated by the backend before anything is saved.
+- **Time until the next sunset and Earthset.**
+- A **traffic light** for energy and communications, with the reason in words and a different shape per level (not only colour).
+- A **terrain-sensitivity** warning when the Sun never rises above 3° over the ideal horizon.
+- **Comparison** of sites and dates, and a **Top 5 ranking** of where landing is most favourable.
+- **CSV upload**, validated by the backend before anything is saved.
 
-## Why it matters
-At the lunar south pole the Sun does not rise and set: it rolls along the horizon. A small change of place or date can leave a lander without power or without a direct link to Earth. With real [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/) data for ten locations over six months (December 2026 to May 2027, hourly), for example:
-
-| Site (December 2026) | Maximum Sun elevation | Earth above the horizon |
-|---|---|---|
-| Apollo 11 | 88.1° | 100% |
-| Shackleton crater (centre) | 1.7° | 39% |
-| Chang'e 4 (far side) | 46.0° | **0%** (a relay such as Queqiao is needed) |
-
-All figures assume an **ideal horizon** (a smooth Moon, no terrain). Shackleton's centre shows 100% Sun in December, but the real crater floor is in permanent shadow: that number is an artefact of the smooth-sphere model, and the app says so next to each result. Data and queries: [`docs/datos/informe-fuentes.md`](https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend/blob/dev/docs/datos/informe-fuentes.md) in the backend repository.
-
-## The concept: "Rasante" (grazing)
-Everything that matters for choosing a site happens **on the horizon**: is the Sun above it, and by how much? Is the Earth above it? How long until one of them crosses it? So the interface is built around **one line, the horizon**, which persists between screens and changes shape: the lunar limb on the home page, the concentric rings of the polar map, the zero-degree axis of the sky, the base of the light bars. The palette is nearly monochrome (regolith greys) with only two lights in colour: the **Sun in amber** and the **Earth in blue**. The vertical scale of the sky is **magnified near the horizon**, because at the poles both bodies live within a few degrees of it.
+All figures assume an **ideal horizon** (a smooth Moon, no terrain); the app says so next to each result.
 
 ## Screens
-**Home.** A three-act scroll story over the real December 2026 sky above Shackleton crater (the problem, the exploration, the decision), with the key figures counted from the data (744 h of Sun, 291 h of Earth, the Sun never above 1.74°), a timeline you can play, "three questions before landing", a short explanation of why the pole is extreme, a glossary and the data sources.
+Routes live in `src/routes/` and are lazy-loaded (the initial JS only carries the layout and the Home page).
 
-**Sites.** Ten sites placed around the south pole by latitude (the closer to the centre, the more grazing the Sun), filterable by category: Apollo, Artemis, CLPS and international missions.
+| Screen | Route | What it does |
+|---|---|---|
+| **Home** (immersive) | `/` | A scroll story over the real sky above Shackleton crater, with key figures read from the data, the "Three steps to decide" tour (Sky, Compare, Analysis), why the pole is extreme, a glossary and the data sources. |
+| **Sites** | `/sitios` | Polar map and catalogue of sites, filterable by category. |
+| **Sky** | `/sitios/:id/cielo` | Azimuth and elevation of the Sun and the Earth seen from the site, with a full-screen scene and a reading panel (UTC, local time, whether each body is above the horizon and when it sets). |
+| **Light windows** | `/sitios/:id/ventanas` | Hour-by-hour bars of when the Sun and the Earth are up, metrics with their meaning, and the traffic light. |
+| **Lunar day** | `/sitios/:id/dia-lunar` | Elevation of the Sun and the Earth over the period, with the horizon as the zero axis and marks at every rise and set. |
+| **Analysis** | `/sitios/:id/analisis` | Analysis transparency: the path of every figure from the CSV file to the chart, with file fingerprints and the manifest signature. |
+| **Projection** (administration only) | `/sitios/:id/proyeccion` | Values projected by a statistical model up to 2028, always labelled as a projection, not an ephemeris, and shown with the error measured against JPL Horizons. Without the administration role the tab asks to sign in and requests no data. |
+| **Landing window** | `/sitios/:id/ventana` | "When to land?": for a stay length (3, 6.5 or 14 days) it finds the best window with Sun and Earth up at the same time and shows it in a heat calendar. |
+| **Compare** | `/comparar` | Two or three sites in the same month, or one site in different months, with horizon rows, a comparison table, a single time control and a one-sentence verdict. It includes the **Top 5** ranking (order: energy and communications verdict first; then the most consecutive hours with Sun and Earth up together). State is kept in the URL. |
+| **Upload data** | header button | A pop-up to drop CSV files (`sites`, `metricas`, `efemerides_<site>`); the backend validates them and a table shows errors by row and column before saving. |
+| **Sign in** | `/acceso` | Sign-in with **email and password**. The session lives in a cookie the page code cannot read. The public app is read-only and needs no account. |
+| **Profile** | `/perfil` | Who you are, your role (analyst, reviewer or administrator) and the public fingerprints of your post-quantum keys. It never shows private material. |
+| **Key manager** | `/admin/claves` | Administrator role only: list, generate, rotate and revoke keys per user. |
 
-![Sites: polar map and catalogue of ten locations](docs/images/sites.png)
+Custom coordinates are also supported (`punto_…` sites): Sky and Light windows can query an arbitrary point live through the backend (`/api/horizons`, at most 35 days per query).
 
-**Site → Sky.** The sky seen from the site, with four views: magnifier, linear, panorama and zenithal. The reading panel gives azimuth and elevation, UTC and local time, whether each body is above the horizon, and when it will set.
+![Sites: polar map and catalogue](docs/images/sites.png)
 
 ![Sky from Shackleton crater: the Sun at 1.7° and the Earth on the horizon](docs/images/sky-shackleton.png)
 
-At Chang'e 4, on the far side, the Earth never leaves the lower half of the sky:
+![Lunar day at Shackleton crater, December 2026](docs/images/lunar-day.png)
 
-![Sky from Chang'e 4: the Earth stays below the horizon](docs/images/sky-change4.png)
-
-**Site → Light windows.** A bar for every hour of the period showing when the Sun and the Earth are up, plus the metrics, each one with its meaning in plain words and its comparison with the catalogue average, and the traffic light.
-
-**Site → Lunar day.** The elevation of the Sun and of the Earth over the period, with the horizon as the zero axis and marks at every rise and set:
-
-![Lunar day at Shackleton crater, December 2026: the Sun grazes the horizon and the Earth rises on 14 Dec and sets on 27 Dec](docs/images/lunar-day.png)
-
-**Compare.** Two or three sites in the same month, or one site in different months, with horizon rows, a comparison table, a shared time cursor and a one-sentence verdict. The state is kept in the URL (`/comparar?s=shackleton,apollo11,change4`).
-
-**Upload data** (button in the header). A pop-up where analysts enter the upload key, drop CSV files and see each one validated by the backend, with a table of errors by row and column, before saving.
-
-**Access and key manager.** The sign-in page announces OAuth 2.0 (not available yet; the public app is read-only). The administration screen lists the post-quantum key pairs per user (ML-KEM-1024 and ML-DSA-65) and lets an administrator generate, rotate or revoke them; the private key is shown once and never stored by the server.
-
-<!-- TODO: add screenshots of Compare, Light windows and the Upload pop-up. Automated headless captures do not draw the light bars (their animation does not run), so capture them by hand in a real browser. -->
+## Language
+The settings dialog ("Configuración" button in the header) lets you choose **Español** or **English**. Dates and figures follow the chosen language and the page reloads on change. The choice is stored in the browser; if the browser does not allow storage, the selector says so. Strings live in `src/lib/textos.es.ts` and `src/lib/textos.en.ts` (every new key goes in both). Site names, notes and analysis steps come from the dataset and are shown in Spanish in both languages.
 
 ## Run it locally
-You need Node.js and the backend running. **Without Docker**, in two terminals:
+You need Node.js and the backend running. In two terminals:
 
 ```bash
-# Terminal 1 · backend (see its README for details)
+# Terminal 1 · backend (see its README)
 git clone https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend && cd ApogeoNavigator-Backend
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
@@ -74,41 +63,55 @@ DATA_DIR=data uvicorn app.main:app --port 8080       # API docs: http://localhos
 
 # Terminal 2 · frontend
 git clone https://github.com/ACHAVESTA-Git/ApogeoNavigator-Frontend && cd ApogeoNavigator-Frontend
-npm install
+npm ci
 npm run dev                                           # http://localhost:5173 (/api is proxied to http://localhost:8080)
 ```
 
-Other scripts: `npm run build` (type-check and production build), `npm run preview`, `npm run test:run` (Vitest, single run) and `npm run datos:muestra` (regenerates the bundled sample data).
+### Scripts (`package.json`)
+| Command | What it does |
+|---|---|
+| `npm run dev` | Vite dev server. |
+| `npm run build` | Checks palette contrast (`scripts/contraste.mjs`), type-checks (`tsc -b`) and builds for production. |
+| `npm run preview` | Serves the built app. |
+| `npm test` | Vitest in watch mode. |
+| `npm run test:run` | Vitest, single run (Testing Library and jsdom). |
+| `npm run contraste` | Only the palette contrast check. |
+| `npm run datos:muestra` | Regenerates the bundled sample data. |
 
-**No backend?** With `VITE_USE_SAMPLE_DATA=auto` (the default) the app falls back to bundled sample data (`public/muestra/`) when the API does not respond, so you can still explore it.
+**No backend?** With `VITE_USE_SAMPLE_DATA=auto` (the default) the app falls back to the bundled sample data in `public/muestra/` when the API does not respond, and shows a banner saying so.
 
 ## Configuration
-Copy `.env.example` to `.env` and edit. Every `VITE_*` variable is **public** (it ends up in the browser): never put secrets here. The upload key is typed in the upload pop-up and is never stored in the repository.
+Copy `.env.example` to `.env` and edit. Every `VITE_*` variable is **public** (it ends up in the browser): never put secrets here.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `VITE_API_BASE_URL` | empty | Base URL of the API, **without a trailing slash**. Empty means the same origin (relative `/api/...` calls, as in local development through the proxy). For a deployment on another origin, e.g. static hosting plus a separate API: `https://your-api.example.com`. The backend must then allow your origin with `CORS_ORIGINS` or `CORS_ORIGIN_REGEX`. |
+| `VITE_API_BASE_URL` | empty | Base URL of the API, **without a trailing slash**. Empty means the same origin (relative `/api/...` calls): in production Firebase Hosting rewrites `/api/**` to the backend, and locally the Vite proxy does it. Only fill it in if the API is on another origin (e.g. `https://your-api.example.com`); the backend must then allow that origin with CORS. |
 | `VITE_USE_SAMPLE_DATA` | `auto` | `auto`: use the API and fall back to sample data only if it does not respond; `true`: always sample data; `false`: API only. |
-| `VITE_API_TARGET` | `http://localhost:8080` | Only for `npm run dev`: where the dev server proxies `/api`. |
+| `VITE_API_TARGET` | `http://localhost:8080` | Only for `npm run dev` and `npm run preview`: where `/api` is proxied. |
 
 Vite reads these at build time: change them and rebuild.
 
+## Tests and build
+```bash
+npm run test:run    # Vitest
+npm run build       # contrast + types + production build (dist/ folder)
+```
+Tests live next to the code (`*.test.ts` and `*.test.tsx`). Verification results and screenshots are in [`docs/verificacion.md`](docs/verificacion.md) and `docs/frontend/capturas/`.
+
 ## Tech stack
-React 18 · Vite · TypeScript · Tailwind CSS 4 · TanStack Query · React Router 7 · d3-scale and d3-shape (charts) · Motion (animation) · Vitest and Testing Library · Docker/nginx image for local use. Fonts: Archivo and JetBrains Mono (SIL Open Font License), via Fontsource. Source layout: `src/routes` (screens), `src/components`, `src/hooks`, `src/lib` (API client, astronomy helpers, constants, all interface texts in `textos.ts`).
+React 18 · Vite · TypeScript · Tailwind CSS 4 · TanStack Query · React Router 7 · d3-scale and d3-shape (charts) · Motion (animation) · Vitest and Testing Library. Fonts: Archivo and JetBrains Mono (SIL Open Font License) via Fontsource. Layout: `src/routes` (screens), `src/components`, `src/hooks`, `src/lib` (API client, astronomy helpers, constants in `constants.ts`, interface texts). The repository includes a `Dockerfile` with nginx for local use.
 
 ## NASA data and sources
-All sunlight and Earth-visibility figures come from **NASA/JPL Horizons** ([system](https://ssd.jpl.nasa.gov/horizons/), [API](https://ssd-api.jpl.nasa.gov/doc/horizons.html)): hourly apparent azimuth and elevation of the Sun and the Earth seen from ten locations on the Moon, 2026-12-01 to 2027-06-01 (ephemerides DE441, observer `coord@301`, no refraction). Site coordinates come from the **NSSDC** ([lunar landing sites](https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html): Apollo 11, 15, 17), **LROC** (Shackleton, Blue Ghost 1, Chandrayaan-3, Chang'e 4 and 6, SLIM) and **NASA/LRO** (IM-1 Odysseus). The data files and their sources live in the [backend repository](https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend). Moon Trek, QuickMap and the PGDA products were **not consulted and not used as data** (they are planned for validation and for real terrain horizons).
+The position of the Sun and the Earth (azimuth and elevation, hourly, seen from each lunar site) comes from **NASA/JPL Horizons** ([system](https://ssd.jpl.nasa.gov/horizons/), [API](https://ssd-api.jpl.nasa.gov/doc/horizons.html)). Site coordinates come from **NSSDC** (Apollo sites), **LROC** (Shackleton and recent landings) and **NASA/LRO** (IM-1 Odysseus). The data files and their sources live in the [backend repository](https://github.com/ACHAVESTA-Git/ApogeoNavigator-Backend). Model projections, traffic-light thresholds and the illustrative terrain are **not** NASA data and are labelled as such in the interface.
+
+## Mission patches (Apollo 11, 15 and 17)
+The Apollo 11, 15 and 17 sites show the authentic patch of their mission, uncropped and uncoloured, from the NASA Image and Video Library, with the credit **"Imagen: NASA"** and the note "NASA does not endorse this project". This is informational and educational use, **without NASA endorsement or written approval**; if NASA asks, they are removed. All other sites use a neutral monogram generated in code. Sources, conditions and accepted risk: [`public/insignias/README.md`](public/insignias/README.md).
 
 ## Limitations
-- **Ideal horizon:** no terrain. Real horizons from LOLA are future work.
-- **Six months** of ephemerides (not a full year) and ten locations. Artemis III candidate regions are not included because NASA has not published their coordinates.
-- **Viability thresholds** (energy green ≥ 45%, yellow 25% to < 45%, red < 25%; communications green ≥ 70%, yellow 40% to < 70%, red < 40%) are provisional engineering judgement, not mission requirements.
-- The interface is in Spanish only for now.
-
-## Use of AI
-This project was built with AI agents: Anthropic's Claude models, used through the Claude Code command-line tool in parallel sessions, coordinated and reviewed by the project owner.
-<!-- {{PENDING owner confirmation before publishing: complete this declaration with the text approved in docs/entrega/formulario-en.md, section 6 "Use of Super Intelligence (SI)": what AI generated or assisted (code, tests, data scripts, documentation, design, review), what the owner decided, the model list, and who conceived the idea of the solution.}} -->
-No NASA logos, flags or mission identifiers were used or generated.
+- **Ideal horizon:** no terrain. A real hill can hide the Sun or the Earth.
+- **Bounded ephemeris data:** a six-month period and the catalogue sites; outside it the API answers 422 and the interface shows an empty state.
+- **Provisional traffic-light thresholds:** team engineering judgement, not mission requirements.
+- **The projection** is a statistical model, not an ephemeris, and only administrators see it.
 
 ## Contributing
 Read [CONTRIBUTING.md](CONTRIBUTING.md): branches, commits with the user-story ID and pull requests.
@@ -119,6 +122,4 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md): branches, commits with the user-story I
 ---
 
 ## Resumen en español
-**Apogeo Navigator** muestra dónde están el Sol y la Tierra sobre el horizonte de un sitio de alunizaje lunar, hora por hora, y lo traduce en horas de energía, horas de enlace directo con la Tierra, tiempo hasta las puestas y un semáforo de viabilidad. Usa datos reales de **NASA/JPL Horizons** para diez ubicaciones durante seis meses (diciembre de 2026 a mayo de 2027). Permite comparar sitios y fechas y subir CSV que el backend valida. El concepto de diseño, «Rasante», convierte la línea del horizonte en la interfaz.
-
-**Ejecutar:** `npm install` y `npm run dev` con el backend en el puerto 8080 (ver «Run it locally»). **Configuración:** `VITE_API_BASE_URL` (vacía = mismo origen), `VITE_USE_SAMPLE_DATA` y `VITE_API_TARGET`. **Límites:** horizonte ideal (sin relieve), seis meses, umbrales provisionales. **Datos:** JPL Horizons, NSSDC, LROC y NASA/LRO; la NASA no respalda este proyecto. **Licencia:** MIT.
+**Apogeo Navigator** muestra dónde están el Sol y la Tierra sobre el horizonte de un sitio de alunizaje lunar, hora por hora, y lo traduce en horas de energía, horas de enlace directo con la Tierra, tiempo hasta las puestas y un semáforo de viabilidad. Pantallas: Inicio inmersivo, Sitios, Cielo, Ventanas de luz, Día lunar, Análisis, Ventana de alunizaje, Comparar (Top 5, sitios y fechas), Subir datos, Acceso (correo y contraseña), Perfil, Gestor de claves y una pestaña Proyección solo para administración. Selector ES/EN. App en producción: https://apogeo-514716.web.app. **Ejecutar:** `npm ci` y `npm run dev` con el backend en el puerto 8080; `VITE_API_BASE_URL` va vacía en producción porque Firebase Hosting reenvía `/api/**`. **Datos:** posiciones del Sol y la Tierra de NASA/JPL Horizons; la NASA no respalda este proyecto. **Licencia:** MIT.

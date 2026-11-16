@@ -192,6 +192,7 @@ export const T = {
     titulo: "Diez sitios, vistos desde el polo sur",
     entrada: "El polo sur está en el centro y la Tierra queda hacia arriba. Cuanto más cerca del centro, más rasante es el Sol.",
     mapa: (n: number) => `Mapa polar de la Luna centrado en el polo sur con ${n} sitios de alunizaje. La lista de al lado contiene los mismos sitios.`,
+    notaBarrido: "Ilustrativo: el Sol da una vuelta al horizonte polar cada día lunar.",
     haciaTierra: "0° · hacia la Tierra",
     caraOculta: "Cara oculta: sin Tierra en el cielo",
     regionPolarSur: "región polar sur",

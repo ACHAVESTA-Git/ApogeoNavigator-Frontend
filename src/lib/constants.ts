@@ -348,6 +348,9 @@ export const MAPA = {
   LADO: 640,
   MARGEN: 34,
   RADIO_PUNTO: 6,
+  VUELTA_SOL_S: 40, // ilustrativo: un día lunar comprimido
+  TRAZO_ANILLO_MS: 420, STAGGER_ANILLO_MS: 50, STAGGER_SITIO_MS: 30, STAGGER_HALO_MS: 260,
+  INCLINACION_X_DEG: 14, PARALLAX_DEG: 4, // leve rotateX fija y giro máximo que sigue al puntero
   ESCALA_ACTIVO: 1.6,
   LON_CARA_OCULTA: 90,
   ANILLO_HORIZONTE: 0, // visto desde el polo sur, el limbo de la Luna es el ecuador
