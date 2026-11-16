@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { columnasRejilla, enlaceCielo, estanciaDeUrl, hayEmpate, mesesCalendario, moverEnRejilla, nivelCalor, retrasoCelda, sinVentanaUtil } from "./alunizaje";
+import { ALUNIZAJE } from "./constants";
+import { horasEntre } from "./fechas";
+import { columnasRejilla, enlaceCielo, estanciaDeUrl, hayEmpate, mesesCalendario, moverEnRejilla, nivelCalor, rangoEstancia, retrasoCelda, sinVentanaUtil } from "./alunizaje";
 import type { DiaVentana, VentanaAlunizaje } from "./tipos";
 
 const dia = (d: string, horas: number, pct: number): DiaVentana => ({ dia_utc: d, llegada_utc: `${d}T23:00Z`, horas_sol_y_tierra: horas, pct_sol_y_tierra: pct });
@@ -78,5 +80,16 @@ describe("rejilla", () => {
 describe("salto al Cielo", () => {
   it("lleva el instante de llegada y el mes que lo contiene", () => {
     expect(decodeURIComponent(enlaceCielo("shackleton", "2026-12-14T23:00Z"))).toBe("/sitios/shackleton/cielo?desde=2026-12-01T00:00Z&hasta=2027-01-01T00:00Z&t=2026-12-14T23:00Z");
+  });
+});
+
+describe("efemérides de la estancia", () => {
+  it("la salida es exclusiva: con los dos extremos incluidos se piden tantas filas como horas de estancia", () => {
+    for (const estancia of ALUNIZAJE.ESTANCIAS_H) {
+      const { salida, desde, hasta } = rangoEstancia("2026-12-14T23:00Z", estancia);
+      expect(horasEntre(desde, salida)).toBe(estancia);
+      expect(horasEntre(desde, hasta) + 1).toBe(estancia); // filas de [desde, hasta], una por hora
+    }
+    expect(rangoEstancia("2026-12-01T00:00Z", 72)).toEqual({ salida: "2026-12-04T00:00Z", desde: "2026-12-01T00:00Z", hasta: "2026-12-03T23:00Z" });
   });
 });

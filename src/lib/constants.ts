@@ -249,6 +249,18 @@ export const ESCENA = {
   HALO_SOL: { RADIO_PX: 250, OPACIDAD: 0.1, OPACIDAD_RASANTE: 0.1 },
   BLOOM_SOL: [[7, 0.3], [2.6, 0.8]], // [radios del disco, opacidad]
   RAZON_TIERRA_SOL: 3.6,
+  // Astros AMPLIADOS (portada y relato): el disco se dibuja mayor que su tamaño aparente para que se lea como una
+  // simulación; la posición sigue siendo la de la efeméride y la interfaz lo avisa. Medidas en radios del disco.
+  AMPLIADO: {
+    SOL: { HALO_RADIOS: 9, CORONA: [[6, 0.22], [3.2, 0.45], [1.7, 0.85]], BORDE: 1.07, NUCLEO: 0.62 }, // corona: [radios, opacidad]
+    TIERRA: {
+      HALO_RADIOS: 1.34, HALO_OPACIDAD: 0.5, HALO_DESVIO: 0.1, // atmósfera: halo azul tenue, corrido hacia el Sol
+      BRILLO: 0.34, LIMBO: 0.58, // brillo bajo el Sol y oscurecimiento del limbo (esfera, no disco)
+      TERMINADOR: [-0.05, -0.02, 0.02, 0.05], SOMBRA: 0.5, // el terminador se funde en capas: sin borde duro
+      NUBES: [[-0.2, -0.46, 0.56, 0.09, -0.3], [0.16, 0.08, 0.62, 0.07, 0.2], [-0.12, 0.5, 0.42, 0.06, -0.14]], // ilustrativas: [cx, cy, rx, ry, giro]
+      NUBES_OPACIDAD: 0.2, FILO: 0.04,
+    },
+  },
   ESTRELLAS: 260,
   ROCAS: 46,
   // Relieve ILUSTRATIVO (no sale de datos de topografía): tres capas, de la más lejana a la más cercana.
@@ -442,10 +454,24 @@ export const PORTADA = {
   HORIZONTE_FRACCION: { movil: 0.62, escritorio: 0.7 }, // altura del horizonte en la escena
   TIERRA_FRACCION_X: { movil: 0.72, escritorio: 0.7 }, // dónde cae la Tierra cuando no se centra con el Sol
   LUPA_MAX_PX: 320,
+  // Radio en pantalla del Sol y de la Tierra ampliados: núcleo solar de 72 px y Tierra de 170 px en escritorio.
+  ASTROS: { movil: { radioSol: 20, radioTierra: 48 }, escritorio: { radioSol: 36, radioTierra: 85 } },
   ROTULO_MARGEN_PX: 70, // el rótulo de un astro no se sale de la pantalla
   HUELLA_CARACTERES: 8, // caracteres de la huella SHA3-256 que se muestran como cifra
   REVELADO_MARGEN: "0px 0px -12% 0px", // un bloque se revela cuando ha entrado un 12 % en pantalla
   PASO_ACTIVO_MARGEN: "-25% 0px -60% 0px", // el paso activo del recorrido es el que cruza la franja del 25 % al 40 % del alto de la pantalla
+} as const;
+
+/** Relato con scroll de la portada: tres actos sobre una escena fija; el desplazamiento hace avanzar el cielo real. */
+export const RELATO = {
+  ALTO_SVH: 340,
+  CORTES: [0.34, 0.67], // fracción del scroll donde empiezan los actos 2 y 3
+  ACTO: { MARGEN: 0.04, DESPLAZAMIENTO_PX: 24 }, // tramo de scroll en que un acto entra o sale y cuánto se desplaza
+  SALTO: 0.02, // al ir a un acto se cae un poco dentro de él
+  // Efemérides que recorre: dos peticiones de un mes (la API limita el rango a 35 días).
+  TRAMOS: [{ desde: "2026-12-01T00:00Z", hasta: "2027-01-01T00:00Z" }, { desde: "2027-01-01T00:00Z", hasta: "2027-02-01T00:00Z" }],
+  HORIZONTE_FRACCION: { movil: 0.76, escritorio: 0.7 },
+  TIERRA_FRACCION_X: { movil: 0.72, escritorio: 0.7 },
 } as const;
 
 /** Pantalla de Acceso (login). */
