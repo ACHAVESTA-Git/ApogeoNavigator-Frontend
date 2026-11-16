@@ -118,6 +118,18 @@ export const T: Textos = {
       // Day and time of a crossing inside a sentence of the story: "14 Dec at 23:00".
       momento: (utc: Utc) => `${diaCorto(utc)} at ${soloHora(utc)}`,
     },
+    // Scroll story under the cover: three acts over the same scene; scrolling moves the real sky forward.
+    relato: {
+      nota: "Sizes enlarged for viewing; real positions.",
+      escena: (desde: string, hasta: string) => `Panorama of the horizon at Shackleton: as you scroll, the Sun and the Earth move along their ephemeris, from ${desde} to ${hasta} (UTC).`,
+      sigue: "Scroll the page: the sky moves with you.",
+      progreso: "Acts of the story",
+      ir: (n: number) => `Go to act ${n}`,
+      de: (total: string) => `of ${total}`,
+      uno: { rotulo: "Act 1 · The Sun", titular: { antes: "All December, ", acento: "the Sun", despues: " circles the horizon without setting." }, kpi: "Hours of sunlight in December 2026" },
+      dos: { rotulo: "Act 2 · The Earth", titular: { antes: "But ", acento: "the Earth", despues: " does hide, and the direct link goes with it." }, kpi: "Hours with the Earth in view" },
+      tres: { rotulo: "Act 3 · The decision", titular: "Weeks later, the Sun sets too.", kpi: "Sunset at Shackleton" },
+    },
     cifras: {
       titulo: "The catalogue in three figures",
       sitios: { rotulo: "Sites", contexto: "landing sites to explore and compare" },
