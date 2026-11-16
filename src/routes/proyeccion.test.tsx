@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter, Outlet, Route, Routes } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PROYECCION_MODELO } from "../lib/constants";
+import { T } from "../lib/textos";
 import type { ErrorModelo, ModeloProyeccion, ProyeccionModelo, ResultadoProyeccion } from "../lib/proyeccionModelo";
 import type { Rol } from "../lib/sesion";
 import type { Site } from "../lib/tipos";
@@ -153,9 +154,9 @@ describe("ruta /sitios/:id/proyeccion con rol admin", () => {
     montarRuta("admin");
     expect(screen.getAllByText("Proyección del modelo, no efeméride").length).toBeGreaterThan(0); // ya durante la carga
     expect(screen.getByText(/horizonte ideal \(Luna lisa, sin relieve\)/)).toBeTruthy();
-    await screen.findByText("Limitación de prueba: no es efeméride.");
-    expect(screen.getByText("Limitación de prueba: horizonte ideal.")).toBeTruthy();
-    expect(screen.getByText("Limitación de prueba: no es efeméride.").closest("[inert]")).toBeNull(); // no van plegadas
+    await screen.findByText(T.notasApi.limitaciones.proyeccion_no_es_efemeride);
+    expect(screen.getByText(T.notasApi.limitaciones.horizonte_ideal)).toBeTruthy();
+    expect(screen.getByText(T.notasApi.limitaciones.proyeccion_no_es_efemeride).closest("[inert]")).toBeNull(); // no van plegadas
   });
   it("acto 2: cada mes es un botón de 48 px con el semáforo en glifo + palabra; elegirlo muestra su detalle", async () => {
     montarRuta("admin");
@@ -251,7 +252,7 @@ describe("respuesta vacía real (aún no hay CSV): nada se cae", () => {
   const sinDatos = [{ site_id: "shackleton", sha3_256: null, serie: [], meses: [] }];
   const comprobar = async () => {
     await screen.findByText("Sin veredicto");
-    for (const l of LIMITACIONES) expect(screen.getByText(l.mensaje)).toBeTruthy();
+    for (const l of LIMITACIONES) expect(screen.getByText(T.notasApi.limitaciones[l.codigo] ?? l.mensaje)).toBeTruthy(); // por código; el texto de la API solo si el código no se conoce
     expect(screen.getByRole("heading", { level: 2, name: "Cómo se hizo esta proyección" })).toBeTruthy();
     expect(screen.getAllByText("Error a largo plazo pendiente de validar.").length).toBeGreaterThan(0);
     expect(screen.getByText("No hay muestras de la serie en este periodo.")).toBeTruthy();
