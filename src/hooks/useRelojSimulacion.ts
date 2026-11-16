@@ -47,7 +47,7 @@ function instanteInicial(filas: readonly FilaEfemeride[], deUrl: string | null, 
  * Reloj compartido por el Cielo y el Día lunar. El instante vive en `?t=` (replace con debounce: no crea una
  * entrada de historial por hora). Se pausa con un modal abierto; con movimiento reducido salta 1 h por segundo.
  */
-export function useRelojSimulacion(filas: readonly FilaEfemeride[], siteId: string): RelojSimulacion {
+export function useRelojSimulacion(filas: readonly FilaEfemeride[], siteId: string, { autoplay = false } = {}): RelojSimulacion {
   const [params] = useSearchParams();
   const escribir = useEscribirUrl();
   const reducido = useMovimientoReducido();
@@ -59,7 +59,9 @@ export function useRelojSimulacion(filas: readonly FilaEfemeride[], siteId: stri
   const inicial = useMemo(() => instanteInicial(filas, params.get(PARAM_URL.T), siteId), [filas, siteId]); // eslint-disable-line react-hooks/exhaustive-deps
   const t = useMotionValue(inicial.ms);
   const [indice, setIndice] = useState(() => Math.floor((inicial.ms - desdeMs) / pasoMs));
-  const [reproduciendo, setReproduciendo] = useState(false);
+  // `autoplay`: la escena arranca viva. Nunca con movimiento reducido, ni si la URL trae un instante elegido
+  // (quien llega a «este instante» quiere verlo quieto).
+  const [reproduciendo, setReproduciendo] = useState(() => autoplay && !reducido && !esUtc(params.get(PARAM_URL.T)));
   useEffect(() => {
     fijarFranjaTiempo(0, (t.get() - desdeMs) / (hastaMs - desdeMs));
     return () => fijarFranjaTiempo(0, 0);

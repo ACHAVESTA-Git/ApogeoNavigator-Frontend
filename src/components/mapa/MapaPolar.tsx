@@ -13,7 +13,7 @@ const C = L / 2;
 const R = C - MAPA.MARGEN;
 const RAD = Math.PI / 180;
 const pct = (v: number) => `${(v / L) * 100}%`;
-const ROTULO_ANILLO: Partial<Record<number, string>> = { [MAPA.ANILLO_ARTEMIS]: T.sitios.zonaArtemis, 0: T.sitios.ecuador };
+const ROTULO_ANILLO: Partial<Record<number, string>> = { [MAPA.ANILLO_POLAR_SUR]: T.sitios.regionPolarSur, 0: T.sitios.ecuador };
 const ROTULO_MERIDIANO: Record<number, string> = { 0: T.sitios.haciaTierra, 90: "90° E", 180: "180°", 270: `90° ${T.oeste}` };
 
 /**
@@ -40,7 +40,7 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
         <g clipPath={`url(#${id}-disco)`}>
           <rect x={0} y={C} width={L} height={C} className="fill-regolito" />
         </g>
-        <circle cx={C} cy={C} r={radioLatitud(MAPA.ANILLO_ARTEMIS, R)} className="fill-sol-tenue" />
+        <circle cx={C} cy={C} r={radioLatitud(MAPA.ANILLO_POLAR_SUR, R)} className="fill-sol-tenue" />
         {/* Meridianos */}
         {meridianos.map((lon) => (
           <line key={lon} x1={C} y1={C} x2={C + R * Math.sin(lon * RAD)} y2={C - R * Math.cos(lon * RAD)}
@@ -58,23 +58,23 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
           <circle cx={C} cy={C} r={radioLatitud(resaltado.lat_deg, R)} className="stroke-texto fill-none transition-opacity duration-(--dur-corta)" strokeWidth={1} opacity={0.7} />
         )}
         {/* Rótulos de anillos, sobre el meridiano 315° para no pisar los sitios */}
-        <g aria-hidden="true" className="fill-texto-3 font-mono text-[12px] max-sm:text-[24px]">
+        <g aria-hidden="true" className="fill-texto-3 max-sm:fill-texto-2 font-mono text-[12px] max-sm:text-[24px]">
           {MAPA.ANILLOS.map((lat) => {
             const r = radioLatitud(lat, R);
-            // El anillo de Artemis es tan pequeño que su rótulo va fuera, abajo a la derecha del polo.
-            const dentro = lat === MAPA.ANILLO_ARTEMIS;
+            // El anillo de la región polar sur es tan pequeño que su rótulo va fuera, abajo a la derecha del polo.
+            const dentro = lat === MAPA.ANILLO_POLAR_SUR;
             const [x, y] = dentro ? [C + r + 8, C + 18] : [C - r * Math.SQRT1_2 - 4, C - r * Math.SQRT1_2 - 4];
             const nombre = ROTULO_ANILLO[lat];
             // En móvil el texto mide el doble: un rótulo con nombre anclado por su final no cabe a la izquierda
             // del anillo en una línea, así que allí va en dos (latitud arriba, nombre abajo).
-            const partido = Boolean(nombre) && !dentro;
+            const partido = Boolean(nombre);
             return (
               <Fragment key={lat}>
                 <text x={x} y={y} textAnchor={dentro ? "start" : "end"} className={nombre && !partido ? undefined : "max-sm:hidden"}>
                   {latitud(lat, 0)}{nombre ? ` · ${nombre}` : ""}
                 </text>
                 {partido && (
-                  <text x={x} y={y} textAnchor="end" className="sm:hidden">
+                  <text x={x} y={dentro ? y + MAPA.INTERLINEA_ROTULO_MOVIL : y} textAnchor={dentro ? "start" : "end"} className="sm:hidden">
                     <tspan x={x} dy={-MAPA.INTERLINEA_ROTULO_MOVIL}>{latitud(lat, 0)}</tspan>
                     <tspan x={x} dy={MAPA.INTERLINEA_ROTULO_MOVIL}>{nombre}</tspan>
                   </text>
@@ -100,7 +100,8 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
       {!cargando && sitios.map((s) => {
         const p = proyectarPolar(s.lat_deg, s.lon_este_deg, R);
         const esActivo = s.site_id === activo || s.site_id === seleccionado;
-        const aLaIzquierda = s.lon_este_deg < 0 || Math.hypot(p.x, p.y) < MAPA.RADIO_ETIQUETA_IZQ;
+        // A la izquierda también los puntos pegados al borde derecho: su nombre no cabe hacia fuera en un móvil.
+        const aLaIzquierda = s.lon_este_deg < 0 || Math.hypot(p.x, p.y) < MAPA.RADIO_ETIQUETA_IZQ || p.x > R * MAPA.ETIQUETA_IZQ_DESDE_X;
         return (
           <button
             key={s.site_id}
@@ -125,7 +126,9 @@ export function MapaPolar({ sitios, activo, seleccionado, alActivar, alSeleccion
             <span aria-hidden="true"
               className={unir("text-dato-sm pointer-events-none absolute top-1/2 -translate-y-1/2 font-mono whitespace-nowrap",
                 aLaIzquierda ? "right-full -mr-1.5" : "left-full -ml-1.5",
-                esActivo ? "text-texto bg-vacio z-10 px-1" : "text-texto-2 hidden lg:block")}>
+                // Por debajo de lg el mapa mide la mitad: los nombres van a 12 px y recortados, pero van (un punto sin nombre no dice nada).
+                "max-lg:max-w-[8.5rem] max-lg:truncate max-lg:text-[0.75rem] max-lg:leading-none",
+                esActivo ? "text-texto bg-vacio z-10 px-1" : "text-texto-2")}>
               {nombreCorto(s.nombre)}
             </span>
           </button>

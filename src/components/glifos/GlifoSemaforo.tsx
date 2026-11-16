@@ -16,9 +16,9 @@ function Forma({ nivel }: { nivel: NivelSemaforo }) {
   );
 }
 
-/** Semáforo con glifo + palabra. `nota` añade el asterisco de «sensible al relieve». */
-export function GlifoSemaforo({ nivel, conTexto = true, nota, className }: {
-  nivel: NivelSemaforo; conTexto?: boolean; nota?: boolean; className?: string;
+/** Semáforo con glifo + palabra. `nota` añade el asterisco de «sensible al relieve»; `etiqueta` cambia la palabra del nivel. */
+export function GlifoSemaforo({ nivel, conTexto = true, nota, etiqueta, className }: {
+  nivel: NivelSemaforo; conTexto?: boolean; nota?: boolean; etiqueta?: string; className?: string;
 }) {
   return (
     <span className={unir("inline-flex items-center gap-2 whitespace-nowrap", className)}>
@@ -26,7 +26,7 @@ export function GlifoSemaforo({ nivel, conTexto = true, nota, className }: {
         <Forma nivel={nivel} />
       </svg>
       <span className={conTexto ? "text-apoyo text-texto font-semibold" : "sr-only"}>
-        {NOMBRE_NIVEL[nivel]}
+        {etiqueta ?? NOMBRE_NIVEL[nivel]}
         {nota && <span aria-hidden="true">*</span>}
       </span>
     </span>

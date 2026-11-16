@@ -1,33 +1,37 @@
 import { Link } from "react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { m as motion } from "motion/react";
-import { useMediaCatalogo } from "../../hooks/useMediaCatalogo";
 import { useMetricas } from "../../hooks/useMetricas";
 import { esSensibleAlRelieve } from "../../lib/astro";
-import { ID_NOMBRE_SITIO, MOVIMIENTO, RANGO_POR_DEFECTO, RUTAS } from "../../lib/constants";
+import { ID_MEDIDORES_SITIO, ID_NOMBRE_SITIO, MOVIMIENTO, RANGO_POR_DEFECTO, RUTAS } from "../../lib/constants";
 import { horasEntre } from "../../lib/fechas";
-import { coordenadas } from "../../lib/formato";
+import { coordenadas, horas } from "../../lib/formato";
 import { recordarOrigen } from "../../lib/motion/vuelo";
-import { NOMBRE_CATEGORIA, T, periodoLegible } from "../../lib/textos";
-import type { Site } from "../../lib/tipos";
+import { NOMBRE_CATEGORIA, T, periodoLegible, agenciaLegible } from "../../lib/textos";
+import type { Metrica, Site } from "../../lib/tipos";
 import { GlifoCategoria } from "../glifos/GlifoCategoria";
 import { Boton, EnlaceBoton, EnlaceExterno } from "../ui/Boton";
 import { Lectura } from "../ui/Lectura";
-import { CifraMetrica } from "../ventanas/CifraMetrica";
+import { PanelVidrio } from "../lujo";
+import { ChipNivel } from "../mision/ChipNivel";
+import { EnlacePlanear } from "../mision/EnlacePlanear";
+import { MedidoresMision } from "../mision/MedidoresMision";
+import { Desplegable } from "../ui/Desplegable";
 import { BotonComparar } from "./BotonComparar";
 
 const RANGO = RANGO_POR_DEFECTO;
 
 /** Detalle bajo demanda de un sitio: datos del catálogo, dos mini-lecturas del periodo y las acciones. */
-export function FichaSitio({ sitio, alVolver, idTitulo, compartir = false }: {
+export function FichaSitio({ sitio, metrica, alVolver, idTitulo, compartir = false }: {
   sitio: Site; alVolver?: () => void; idTitulo: string;
+  /** La métrica que ya tiene la tarjeta (mismo periodo): la ficha abre con sus cifras, sin hueco ni otra petición. */
+  metrica?: Metrica;
   /** El título es el mismo elemento que el nombre de la fila de la lista (transición compartida). */
   compartir?: boolean;
 }) {
   const t = T.sitios;
-  const { data } = useMetricas([sitio.site_id], RANGO);
-  const m = data?.resultados[0];
-  const media = useMediaCatalogo(RANGO);
+  const { data } = useMetricas(metrica ? [] : [sitio.site_id], RANGO);
+  const m = metrica ?? data?.resultados[0];
   const total = horasEntre(RANGO.desde, RANGO.hasta);
   const periodo = t.enPeriodo(periodoLegible(RANGO.desde, RANGO.hasta));
   return (
@@ -44,39 +48,49 @@ export function FichaSitio({ sitio, alVolver, idTitulo, compartir = false }: {
       </p>
       <motion.h2 id={idTitulo} tabIndex={-1} layoutId={compartir ? ID_NOMBRE_SITIO(sitio.site_id) : undefined} layout="position" transition={MOVIMIENTO.SPRING_SUAVE}
         className="titulo-instrumento text-titulo text-texto mt-2 text-balance outline-none">{sitio.nombre}</motion.h2>
-      <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4">
-        <Lectura rotulo={t.mision}><span className="font-sans">{sitio.mision}</span></Lectura>
-        <Lectura rotulo={t.agencia}><span className="font-sans">{sitio.agencia}</span></Lectura>
-        <Lectura rotulo={t.coordenadas} className="col-span-2">{coordenadas(sitio.lat_deg, sitio.lon_este_deg)}</Lectura>
-      </dl>
 
       <section aria-busy={!m} aria-label={periodo} className="mt-5">
-        {m ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <CifraMetrica compacto titulo="h3" astro="sol" porcentaje={m.pct_sol} horasVisibles={m.horas_sol} horasTotales={total}
-              nivel={m.semaforo.energia} sensible={esSensibleAlRelieve(m)} media={media && { valor: media.pct_sol, n: media.n }} />
-            <CifraMetrica compacto titulo="h3" astro="tierra" porcentaje={m.pct_tierra} horasVisibles={m.horas_tierra_visible} horasTotales={total}
-              nivel={m.semaforo.comunicacion} media={media && { valor: media.pct_tierra, n: media.n }} />
-          </div>
-        ) : <div className="panel h-64" />}
+        {/* Los medidores son los mismos de la tarjeta (layoutId): viajan de la tarjeta a la ficha y vuelven por el mismo camino. */}
+        <PanelVidrio relleno="compacto" className="flex flex-col items-center gap-3">
+          <motion.div layoutId={compartir ? ID_MEDIDORES_SITIO(sitio.site_id) : undefined} layout="position" transition={MOVIMIENTO.SPRING_SUAVE}>
+            <MedidoresMision metrica={m} tamano="md" animar={!compartir} etiqueta={t.medidores(periodoLegible(RANGO.desde, RANGO.hasta))} />
+          </motion.div>
+          <p className="flex min-h-7 items-center">
+            {m ? <ChipNivel nivel={m.semaforo.global} rotulo={T.semaforo.global} nota={esSensibleAlRelieve(m)} /> : <span className="text-apoyo text-texto-2">{T.lujo.sinDato}</span>}
+          </p>
+          {m && (
+            <p className="text-texto-2 text-center text-[0.75rem]">
+              {t.solPeriodo}: {T.ventanas.deHoras(horas(m.horas_sol), horas(total))} · {t.tierraPeriodo}: {T.ventanas.deHoras(horas(m.horas_tierra_visible), horas(total))}
+            </p>
+          )}
+        </PanelVidrio>
         <p className="text-texto-3 mt-3 text-[0.75rem] first-letter:uppercase">{periodo}. {T.avisoHorizonteCorto}{m && esSensibleAlRelieve(m) ? ` * ${T.semaforo.sensible}.` : ""}</p>
       </section>
 
-      {sitio.notas && <p className="text-apoyo text-texto-2 mt-4 max-w-medida">{sitio.notas}</p>}
-      <p className="text-apoyo mt-3">
-        <EnlaceExterno href={sitio.fuente_url}>{T.fuente}: {new URL(sitio.fuente_url).hostname}</EnlaceExterno>
-      </p>
+      {/* Un gesto principal: ver el cielo (y planear el alunizaje cuando exista su pantalla). Lo demás, plegado. */}
       <div className="mt-6 flex flex-wrap gap-3">
-        <EnlaceBoton to={RUTAS.CIELO(sitio.site_id)} variante="primario"
+        <EnlaceBoton to={RUTAS.CIELO(sitio.site_id)} variante="primario" className="min-h-12"
           onClick={() => recordarOrigen(ID_NOMBRE_SITIO(sitio.site_id), document.getElementById(idTitulo))}>
           {t.verCielo}
           <ArrowRight aria-hidden="true" className="size-4" />
         </EnlaceBoton>
-        <BotonComparar siteId={sitio.site_id} />
+        <EnlacePlanear siteId={sitio.site_id} className="min-h-12" />
       </div>
-      <p className="text-apoyo mt-4">
-        <Link to={RUTAS.ANALISIS(sitio.site_id)} className="text-texto-2 hover:text-texto underline decoration-linea underline-offset-4">{T.analisis.enlace}</Link>
-      </p>
+      <Desplegable titulo={t.detalles} className="mt-6 border-b">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
+          <Lectura rotulo={t.mision}><span className="font-sans">{sitio.mision}</span></Lectura>
+          <Lectura rotulo={t.agencia}><span className="font-sans">{agenciaLegible(sitio.agencia)}</span></Lectura>
+          <Lectura rotulo={t.coordenadas} className="col-span-2">{coordenadas(sitio.lat_deg, sitio.lon_este_deg)}</Lectura>
+        </dl>
+        {sitio.notas && <p className="text-apoyo text-texto-2 mt-4 max-w-medida">{sitio.notas}</p>}
+        <p className="text-apoyo mt-3">
+          <EnlaceExterno href={sitio.fuente_url}>{T.fuente}: {new URL(sitio.fuente_url).hostname}</EnlaceExterno>
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-3">
+          <BotonComparar siteId={sitio.site_id} />
+          <Link to={RUTAS.ANALISIS(sitio.site_id)} className="text-apoyo text-texto-2 hover:text-texto inline-flex min-h-12 items-center underline decoration-linea underline-offset-4">{T.analisis.enlace}</Link>
+        </div>
+      </Desplegable>
     </article>
   );
 }

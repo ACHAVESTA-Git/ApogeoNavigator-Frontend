@@ -1,4 +1,5 @@
-import { Outlet, useOutletContext, useParams } from "react-router";
+import { Outlet, useMatch, useOutletContext, useParams } from "react-router";
+import { EstadoMision } from "../components/mision/EstadoMision";
 import { BotonComparar } from "../components/mapa/BotonComparar";
 import { EnlaceBoton } from "../components/ui/Boton";
 import { EstadoCarga, EstadoError, EstadoVacio } from "../components/ui/Estados";
@@ -7,12 +8,14 @@ import { BarraTiempo } from "../components/tiempo/BarraTiempo";
 import { PestanasRuta } from "../components/ui/Segmentado";
 import { SelectorMes } from "../components/ui/SelectorMes";
 import { usePeriodo } from "../hooks/useParametrosUrl";
+import { useSesion } from "../hooks/useSesion";
 import { useSitio } from "../hooks/useSitio";
 import { useLlegadaCompartida } from "../hooks/useLlegadaCompartida";
-import { ID_NOMBRE_SITIO, RUTAS } from "../lib/constants";
+import { useDesde } from "../hooks/useMedia";
+import { ID_NOMBRE_SITIO, PROYECCION_MODELO, RUTAS } from "../lib/constants";
 import { coordenadas } from "../lib/formato";
 import { esPuntoPropio } from "../lib/puntoPropio";
-import { NOMBRE_CATEGORIA, T } from "../lib/textos";
+import { NOMBRE_CATEGORIA, T, agenciaLegible } from "../lib/textos";
 import type { Site, Utc } from "../lib/tipos";
 
 export interface ContextoSitio {
@@ -29,7 +32,12 @@ export default function SitioLayout() {
   const periodo = usePeriodo();
   const t = T.sitio;
   const propio = esPuntoPropio(siteId);
+  const { usuario } = useSesion();
   const nombre = useLlegadaCompartida<HTMLParagraphElement>(ID_NOMBRE_SITIO(siteId ?? ""));
+  // Los medidores e indicadores del periodo se abren solos solo en Ventanas (la pestaña de las cifras del periodo) y en
+  // pantallas anchas; en el resto quedan plegados bajo las 3 cifras «ahora» para no repetirse en cada pestaña.
+  const enVentanas = useMatch(RUTAS.VENTANAS(":siteId")) !== null;
+  const esTableta = useDesde("md");
 
   if (estado === "cargando") return <div className="contenedor min-h-[60svh]"><EstadoCarga /></div>;
   if (estado === "error") return <div className="contenedor py-12"><EstadoError alReintentar={reintentar} /></div>;
@@ -48,6 +56,8 @@ export default function SitioLayout() {
     { a: `${RUTAS.DIA_LUNAR(id)}${periodo.consulta}`, etiqueta: t.diaLunar },
     // El análisis es del archivo entero, no del mes: los puntos propios (sin archivo) no lo tienen.
     ...(propio ? [] : [{ a: `${RUTAS.ANALISIS(id)}${periodo.consulta}`, etiqueta: t.analisis }]),
+    // La proyección del modelo es solo para la administración: para el resto de roles y sin sesión, la pestaña no existe.
+    ...(!propio && usuario?.rol === PROYECCION_MODELO.ROL ? [{ a: `${RUTAS.PROYECCION(id)}${periodo.consulta}`, etiqueta: t.proyeccion }] : []),
   ];
   return (
     <>
@@ -55,7 +65,7 @@ export default function SitioLayout() {
         <div className="min-w-0">
           <p className="rotulo flex items-center gap-2 max-md:hidden">
             <GlifoCategoria categoria={sitio.categoria} className="size-3" />
-            {propio ? T.puntoPropio.marca : `${NOMBRE_CATEGORIA[sitio.categoria]} · ${sitio.agencia}`}
+            {propio ? T.puntoPropio.marca : `${NOMBRE_CATEGORIA[sitio.categoria]} · ${agenciaLegible(sitio.agencia)}`}
           </p>
           <p ref={nombre} className="titulo-instrumento text-seccion text-texto truncate md:mt-1.5">{sitio.nombre}</p>
           <p className="text-dato-sm text-texto-2 font-mono md:mt-1" data-dato>
@@ -70,6 +80,9 @@ export default function SitioLayout() {
           {!propio && <BotonComparar siteId={id} compacto className="max-sm:px-2.5" />}
         </div>
       </header>
+      <div className="contenedor mt-3 md:mt-4">
+        <EstadoMision key={id} sitio={sitio} desde={periodo.desde} hasta={periodo.hasta} plegado={!enVentanas || !esTableta} />
+      </div>
       <div className="material sticky top-(--nav-alto-movil) z-20 mt-1 md:top-(--nav-alto) md:mt-2">
         <div className="contenedor">
           <PestanasRuta etiqueta={t.pestanas} pestanas={pestanas} />
