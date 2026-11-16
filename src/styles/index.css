@@ -322,3 +322,23 @@ a:focus-visible + .banda-ventana { opacity: 1; }
                            transition-property: opacity, color, background-color, border-color !important;
                            transition-duration: 120ms !important; scroll-behavior: auto !important; }
 }
+
+/* Mapa polar vivo: ilustrativo. Solo transform y opacity; con movimiento reducido todo queda quieto. */
+.mapa-barrido { animation: mapa-girar var(--mapa-vuelta, 40s) linear infinite; will-change: transform;
+  background: conic-gradient(from 0deg, rgb(255 181 71 / 0.34) 0deg, rgb(255 181 71 / 0.12) 38deg, transparent 70deg,
+    transparent 150deg, rgb(0 0 0 / 0.5) 190deg, rgb(0 0 0 / 0.5) 250deg, transparent 300deg, transparent 340deg, rgb(255 181 71 / 0.2) 360deg); }
+@keyframes mapa-girar { to { transform: rotate(360deg); } }
+.mapa-trazo { stroke-dasharray: 1; animation: mapa-trazar var(--mapa-trazo, 420ms) var(--ease-salida) both; }
+@keyframes mapa-trazar { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.mapa-halo { transform-box: fill-box; transform-origin: center; animation: mapa-pulso 2.6s ease-in-out infinite; }
+@keyframes mapa-pulso { 0%, 100% { opacity: 0.15; transform: scale(1); } 50% { opacity: 0.55; transform: scale(1.15); } }
+.mapa-respira { animation: mapa-respirar 4s ease-in-out infinite; }
+@keyframes mapa-respirar { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.95; } }
+.mapa-3d { perspective: 1200px; }
+.mapa-disco { transform: rotateX(var(--mapa-rx, 0deg)) rotateY(var(--mapa-ry, 0deg)); transition: transform 300ms var(--ease-salida); }
+@media (prefers-reduced-motion: reduce) {
+  .mapa-barrido, .mapa-halo, .mapa-respira { animation: none; }
+  .mapa-halo { opacity: 0.3; }
+  .mapa-trazo { animation: aparecer var(--dur-corta) var(--ease-salida) both; stroke-dasharray: none; }
+  .mapa-disco { transform: none !important; transition: none; }
+}
