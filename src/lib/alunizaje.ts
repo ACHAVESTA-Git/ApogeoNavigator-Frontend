@@ -1,7 +1,7 @@
 // Lectura de GET /api/ventanas-alunizaje: escalones del calendario de calor, meses, empates y teclado de la rejilla.
 // Aquí no se calcula ninguna ventana: todas las cifras son de la API.
 import { ALUNIZAJE, DATOS, HORAS_POR_DIA, MS_POR_HORA, PARAM_URL, RUTAS } from "./constants";
-import { aMs, aUtc, inicioDeMes, sumarMeses } from "./fechas";
+import { aMs, aUtc, inicioDeMes, sumarHoras, sumarMeses } from "./fechas";
 import type { DiaVentana, EstanciaH, ResultadoVentanas, Utc, VentanaAlunizaje } from "./tipos";
 
 export type NivelCalor = 0 | 1 | 2 | 3 | 4;
@@ -58,6 +58,15 @@ export function hayEmpate(r: Pick<ResultadoVentanas, "mejores" | "serie_diaria">
   if (!mejor || !(mejor.horas_sol_y_tierra > 0)) return false;
   const iguala = (horas: number) => horas >= mejor.horas_sol_y_tierra - ALUNIZAJE.TOLERANCIA_EMPATE_H;
   return r.mejores.slice(1).some((v) => iguala(v.horas_sol_y_tierra)) || r.serie_diaria.filter((d) => iguala(d.horas_sol_y_tierra)).length > 1;
+}
+
+/**
+ * Estancia [llegada, salida): `salida` es EXCLUSIVA y GET /api/efemerides incluye ambos extremos, así que la
+ * última fila que se pide es la de un paso antes de la salida (tantas filas como horas de estancia).
+ */
+export function rangoEstancia(llegada: Utc, estanciaH: EstanciaH): { salida: Utc; desde: Utc; hasta: Utc } {
+  const salida = sumarHoras(llegada, estanciaH);
+  return { salida, desde: llegada, hasta: sumarHoras(salida, -DATOS.PASO_HORAS) };
 }
 
 /** Mes del Cielo que contiene un instante: el Cielo trabaja por meses completos. */
