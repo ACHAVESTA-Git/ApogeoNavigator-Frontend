@@ -4,6 +4,7 @@ import { PROYECCION_MODELO } from "../../lib/constants";
 import { esUtc, fechaHora } from "../../lib/fechas";
 import { grados } from "../../lib/formato";
 import { fechaDeModelo, type ModeloProyeccion, type ProyeccionModelo, type ResultadoProyeccion } from "../../lib/proyeccionModelo";
+import { textoLimitacion, textoMetodoProyeccion } from "../../lib/notasApi";
 import { T } from "../../lib/textos";
 import { Sello } from "../lujo";
 import { Desplegable } from "../ui/Desplegable";
@@ -21,7 +22,7 @@ export function LimitacionesProyeccion({ limitaciones, className }: { limitacion
       <ul className="mt-3 grid gap-x-8 gap-y-2.5 md:grid-cols-2">
         {lista.map((l, i) => (
           <li key={l.codigo ?? i} className="text-apoyo text-texto flex gap-2.5" data-limitacion={l.codigo}>
-            <TriangleAlert aria-hidden="true" className="text-reservas mt-0.5 size-4 shrink-0" />{l.mensaje}
+            <TriangleAlert aria-hidden="true" className="text-reservas mt-0.5 size-4 shrink-0" />{textoLimitacion(l.codigo ?? "", l.mensaje)}
           </li>
         ))}
       </ul>
@@ -53,7 +54,7 @@ export function ActoDetalleProyeccion({ modelo, resultado, certificado }: { mode
   const origen = origenDelSello(resultado.sha3_256, certificado);
   const [desde, hasta] = [fechaDeModelo(modelo.entrenado_desde), fechaDeModelo(modelo.entrenado_hasta)];
   const ficha: [string, string | null | undefined][] = [
-    [t.metodo, modelo.metodo],
+    [t.metodo, textoMetodoProyeccion(modelo.metodo)],
     [t.version, modelo.version],
     [t.entrenado, desde && hasta ? `${desde} → ${hasta}` : null],
     [t.proyectado, fechaDeModelo(modelo.proyectado_hasta)],
