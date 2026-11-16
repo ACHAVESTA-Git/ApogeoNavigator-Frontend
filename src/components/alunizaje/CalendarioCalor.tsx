@@ -130,7 +130,7 @@ export function CalendarioCalor({ meses, mesActivo, alCambiarMes, seleccion, alE
                       elegida && "outline-texto outline-2 outline-offset-2",
                     )}>
                     <span className="text-[0.75rem] leading-none">{diaDelMes(utc)}</span>
-                    <span className="text-dato-sm leading-none font-semibold" aria-hidden="true">{d.dato ? `${Math.round(d.dato.pct_sol_y_tierra)}%` : "–"}</span>
+                    <span className="text-dato-sm leading-none font-semibold" aria-hidden="true">{d.dato ? pct(Math.round(d.dato.pct_sol_y_tierra)) : "–"}</span>
                     {mejor && <Star aria-hidden="true" fill="currentColor" className="absolute top-1 right-1 size-2.5" />}
                   </button>
                 );

@@ -220,7 +220,7 @@ export const PANORAMA = {
     { deg: 0, letra: "N" },
     { deg: 90, letra: "E" },
     { deg: 180, letra: "S" },
-    { deg: 270, letra: "O" },
+    { deg: 270, letra: IDIOMA === "en" ? "W" : "O" },
   ],
   MARCAS_ELEVACION: [90, 60, 30, 10, 5, 2, 1, 0, -5, -30, -90],
   MARCAS_ELEVACION_LINEAL: [90, 60, 30, 0, -30, -60, -90],

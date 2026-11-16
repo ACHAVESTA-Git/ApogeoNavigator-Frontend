@@ -1,3 +1,4 @@
+import { textoLimitacion, textoNotaAjuste } from "../../lib/notasApi";
 import { Check, Minus, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 import {
@@ -47,7 +48,7 @@ function Cifras({ a }: { a: Analisis }) {
   return (
     <>
       <p className="rotulo">{tm.r2}</p>
-      <p className="text-apoyo text-texto-2 mt-2 max-w-medida">{a.modelo.nota_ajuste || tm.r2Nota}</p>
+      <p className="text-apoyo text-texto-2 mt-2 max-w-medida">{textoNotaAjuste(a.modelo.nota_ajuste) || tm.r2Nota}</p>
       <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
         {VARIABLES_ANALISIS.filter((k) => a.modelo.r2[k] !== undefined).map((k) => (
           <Cifra key={k} rotulo={T.analisis.serie.variables[k]} valor={numero(a.modelo.r2[k] as number, 4)}
@@ -105,13 +106,13 @@ export function ActoDetalle({ a }: { a: Analisis }) {
           <Desplegable titulo={ti.limitaciones(aplican.length)} abierto>
             <ul className="space-y-3">
               {aplican.map((l) => (
-                <li key={l.codigo} className="text-texto flex gap-3"><TriangleAlert aria-hidden="true" className="text-reservas mt-1 size-4 shrink-0" />{l.mensaje}</li>
+                <li key={l.codigo} className="text-texto flex gap-3"><TriangleAlert aria-hidden="true" className="text-reservas mt-1 size-4 shrink-0" />{textoLimitacion(l.codigo, l.mensaje)}</li>
               ))}
             </ul>
             {otras.length > 0 && (
               <>
                 <p className="rotulo mt-6">{t.limitaciones.otras}</p>
-                <ul className="text-apoyo text-texto-2 mt-2 space-y-2">{otras.map((l) => <li key={l.codigo}>{l.mensaje}</li>)}</ul>
+                <ul className="text-apoyo text-texto-2 mt-2 space-y-2">{otras.map((l) => <li key={l.codigo}>{textoLimitacion(l.codigo, l.mensaje)}</li>)}</ul>
               </>
             )}
           </Desplegable>

@@ -25,7 +25,9 @@ export function grados(valor: number, decimales = 2, conSigno = false): string {
   return `${signo}${numero(valor, decimales)}°`;
 }
 /** '39,11 %' en español; '39.11%' en inglés. */
-export const pct = (valor: number): string => `${numeroCorto(valor)}${IDIOMA === "en" ? "" : " "}%`;
+/** Separador entre la cifra y la unidad: el porcentaje va pegado en inglés y con espacio fino en español. */
+export const separadorUnidad = (unidad: string): string => (unidad === "%" && IDIOMA === "en" ? "" : " ");
+export const pct = (valor: number): string => `${numeroCorto(valor)}${separadorUnidad("%")}%`;
 export const horas = (valor: number): string => `${numeroCorto(valor)} h`;
 
 export const latitud = (lat: number, decimales = 2): string => `${numero(Math.abs(lat), decimales)}° ${lat < 0 ? "S" : "N"}`;
