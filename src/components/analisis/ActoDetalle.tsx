@@ -1,4 +1,4 @@
-import { textoLimitacion, textoNotaAjuste } from "../../lib/notasApi";
+import { textoLimitacion, textoMotivoValidacion, textoNotaAjuste } from "../../lib/notasApi";
 import { Check, Minus, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 import {
@@ -56,7 +56,7 @@ function Cifras({ a }: { a: Analisis }) {
         ))}
       </dl>
       <p className="rotulo mt-8">{tv.rmse}</p>
-      {estado === "ausente" ? <p className="text-texto-2 mt-2">{tv.ausente} {v.motivo}</p> : (
+      {estado === "ausente" ? <p className="text-texto-2 mt-2">{tv.ausente} {textoMotivoValidacion(v.motivo)}</p> : (
         <>
           <p className="text-apoyo text-texto-2 mt-2 max-w-medida">
             {referencia && (
