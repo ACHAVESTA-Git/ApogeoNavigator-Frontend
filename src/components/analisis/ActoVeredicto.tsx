@@ -3,6 +3,7 @@ import type { Analisis } from "../../lib/analisis";
 import { CONFIANZA } from "../../lib/constants";
 import { grados, numero } from "../../lib/formato";
 import { umbralesAciertos, veredictoConfianza } from "../../lib/informe";
+import { textoMotivoValidacion } from "../../lib/notasApi";
 import { T } from "../../lib/textos";
 import { CifraHeroe, Medidor, PanelVidrio, Veredicto } from "../lujo";
 import { NotaAyuda } from "./NotaAyuda";
@@ -26,7 +27,7 @@ export function ActoVeredicto({ a }: { a: Analisis }) {
     : base === null ? t.veredicto.sinSemaforo
     : v.rmseSol !== null ? t.veredicto.conError(base, grados(v.rmseSol, 2)) : t.veredicto.sinError(base);
   const etiqueta = v.estado === "ausente" ? t.veredicto.etiquetas.ausente : referencia ? t.veredicto.etiquetas.referencia : t.veredicto.etiquetas[v.nivel];
-  const nota = v.estado === "ausente" ? a.validacion.motivo : referencia ? t.veredicto.referenciaNota : t.veredicto.propiaNota;
+  const nota = v.estado === "ausente" ? textoMotivoValidacion(a.validacion.motivo) : referencia ? t.veredicto.referenciaNota : t.veredicto.propiaNota;
   const uAciertos = v.meses ? umbralesAciertos(v.meses) : null;
   const medidores = [
     { clave: "r2Sol", rotulo: t.medidores.r2Sol, valor: a.modelo.r2.sol_el_deg ?? null, umbrales: CONFIANZA.R2, max: 1, formato: r2, unidad: undefined, niveles: t.medidores.nivelesR2,
