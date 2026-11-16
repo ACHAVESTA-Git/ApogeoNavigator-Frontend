@@ -146,6 +146,64 @@ export interface Encuadre {
    * con el puntero; los astros y la línea del horizonte no se mueven. Sin este campo la escena es la de la portada.
    */
   realista?: { paralaje: number };
+  /** Astros ampliados (portada y relato): radios en px y trazo realista. La posición no cambia. */
+  astros?: { radioSol: number; radioTierra: number };
+}
+
+/** Tierra ampliada, con el eje x hacia el Sol (`giro` = ángulo ya aplicado): atmósfera, esfera, nubes y terminador suave. */
+function pintarTierraAmpliada(ctx: CanvasRenderingContext2D, c: Colores, r: number, fase: number, giro: number): void {
+  const A = ESCENA.AMPLIADO.TIERRA;
+  const TAU = Math.PI * 2;
+  const halo = ctx.createRadialGradient(r * A.HALO_DESVIO, 0, r * 0.9, r * A.HALO_DESVIO, 0, r * A.HALO_RADIOS);
+  halo.addColorStop(0, conAlfa(c.tierra, A.HALO_OPACIDAD * (0.3 + 0.7 * fase)));
+  halo.addColorStop(1, "transparent");
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(r * A.HALO_DESVIO, 0, r * A.HALO_RADIOS, 0, TAU);
+  ctx.fill();
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, TAU);
+  ctx.clip();
+  ctx.fillStyle = c.tierra; // océano iluminado
+  ctx.fillRect(-r, -r, 2 * r, 2 * r);
+  const brillo = ctx.createRadialGradient(r * 0.45, 0, 0, r * 0.2, 0, r * 0.95);
+  brillo.addColorStop(0, conAlfa(c.texto, A.BRILLO));
+  brillo.addColorStop(1, "transparent");
+  ctx.fillStyle = brillo;
+  ctx.fillRect(-r, -r, 2 * r, 2 * r);
+  ctx.save();
+  ctx.rotate(-giro); // las nubes (ilustrativas) no giran con el Sol
+  ctx.fillStyle = conAlfa(c.texto, A.NUBES_OPACIDAD);
+  for (const [cx, cy, rx, ry, g] of A.NUBES) {
+    ctx.beginPath();
+    ctx.ellipse(cx * r, cy * r, rx * r, ry * r, g, 0, TAU);
+    ctx.fill();
+  }
+  ctx.restore();
+  const limbo = ctx.createRadialGradient(r * 0.2, 0, r * 0.35, 0, 0, r);
+  limbo.addColorStop(0, "transparent");
+  limbo.addColorStop(1, conAlfa(c.vacio, A.LIMBO));
+  ctx.fillStyle = limbo;
+  ctx.fillRect(-r, -r, 2 * r, 2 * r);
+  // Lado nocturno: semidisco opuesto al Sol más (creciente) o menos (gibosa) la elipse del terminador, en capas.
+  ctx.fillStyle = conAlfa(c.vacio, A.SOMBRA);
+  for (const d of A.TERMINADOR) {
+    const f = limitar(fase + d, 0, 1);
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.02, Math.PI / 2, -Math.PI / 2);
+    ctx.ellipse(0, 0, r * Math.abs(1 - 2 * f), r * 1.02, 0, -Math.PI / 2, Math.PI / 2, f > 0.5);
+    ctx.fill();
+  }
+  ctx.restore();
+  // Filo de la atmósfera en el limbo iluminado.
+  ctx.globalAlpha = 0.3 + 0.5 * fase;
+  ctx.strokeStyle = c.tierra;
+  ctx.lineWidth = Math.max(1.5, r * A.FILO);
+  ctx.beginPath();
+  ctx.arc(0, 0, r, -Math.PI / 2.3, Math.PI / 2.3);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
 }
 
 /** Luz general del suelo (0…LUZ_MAX): irradiancia de Lambert, sin(elevación), llevada a brillo percibido. */
@@ -190,8 +248,8 @@ export function pintarEscena(ctx: CanvasRenderingContext2D, e: Encuadre, p: Posi
   const ys = e.yDe(p.sol_el_deg);
   const xt = x(p.tierra_az_deg);
   const yt = e.yDe(p.tierra_el_deg);
-  const rSol = ESCENA.RADIO_SOL_PX;
-  const rTierra = rSol * ESCENA.RAZON_TIERRA_SOL;
+  const rSol = e.astros?.radioSol ?? ESCENA.RADIO_SOL_PX;
+  const rTierra = e.astros?.radioTierra ?? rSol * ESCENA.RAZON_TIERRA_SOL;
 
   // 1 · Cielo: negro, sin atmósfera. Solo un resplandor bajo junto al Sol.
   ctx.globalAlpha = 1;
@@ -213,6 +271,13 @@ export function pintarEscena(ctx: CanvasRenderingContext2D, e: Encuadre, p: Posi
   enCopias(xt, rTierra * 3, (cx) => {
     ctx.save();
     ctx.translate(cx, yt);
+    if (e.astros) {
+      ctx.globalAlpha = 1;
+      ctx.rotate(haciaSol);
+      pintarTierraAmpliada(ctx, c, rTierra, fase, haciaSol);
+      ctx.restore();
+      return;
+    }
     ctx.globalAlpha = 0.5;
     const halo = ctx.createRadialGradient(0, 0, rTierra * 0.6, 0, 0, rTierra * 2.6);
     halo.addColorStop(0, c.tierra);
@@ -255,11 +320,13 @@ export function pintarEscena(ctx: CanvasRenderingContext2D, e: Encuadre, p: Posi
 
   // 4 · Sol: resplandor por capas y disco. Bajo el horizonte lo tapa el terreno.
   if (p.sol_el_deg > -3) {
-    enCopias(xs, ESCENA.HALO_SOL.RADIO_PX, (cx) => {
-      // halo ancho y tenue + bloom de dos capas pegado al disco
+    const S = ESCENA.AMPLIADO.SOL;
+    const radioHalo = e.astros ? Math.max(ESCENA.HALO_SOL.RADIO_PX, rSol * S.HALO_RADIOS) : ESCENA.HALO_SOL.RADIO_PX;
+    enCopias(xs, radioHalo, (cx) => {
+      // halo ancho y tenue + bloom por capas pegado al disco (corona, si el astro va ampliado)
       const capas: [number, number][] = [
-        [ESCENA.HALO_SOL.RADIO_PX, ESCENA.HALO_SOL.OPACIDAD + ESCENA.HALO_SOL.OPACIDAD_RASANTE * rasante],
-        ...ESCENA.BLOOM_SOL.map(([radios, alfa]) => [rSol * radios, alfa] as [number, number]),
+        [radioHalo, ESCENA.HALO_SOL.OPACIDAD + ESCENA.HALO_SOL.OPACIDAD_RASANTE * rasante],
+        ...(e.astros ? S.CORONA : ESCENA.BLOOM_SOL).map(([radios, alfa]) => [rSol * radios, alfa] as [number, number]),
       ];
       for (const [r, alfa] of capas) {
         const g = ctx.createRadialGradient(cx, ys, 0, cx, ys, r);
@@ -272,6 +339,19 @@ export function pintarEscena(ctx: CanvasRenderingContext2D, e: Encuadre, p: Posi
         ctx.fill();
       }
       ctx.globalAlpha = 1;
+      if (e.astros) {
+        // Disco: núcleo blanco cálido, limbo que se enrojece y borde fundido con la corona (sin canto duro).
+        const disco = ctx.createRadialGradient(cx, ys, 0, cx, ys, rSol * S.BORDE);
+        disco.addColorStop(0, c.solNucleo);
+        disco.addColorStop(S.NUCLEO, c.solNucleo);
+        disco.addColorStop(1 / S.BORDE, c.sol);
+        disco.addColorStop(1, "transparent");
+        ctx.fillStyle = disco;
+        ctx.beginPath();
+        ctx.arc(cx, ys, rSol * S.BORDE, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
       ctx.fillStyle = c.solNucleo;
       ctx.beginPath();
       ctx.arc(cx, ys, rSol, 0, Math.PI * 2);
