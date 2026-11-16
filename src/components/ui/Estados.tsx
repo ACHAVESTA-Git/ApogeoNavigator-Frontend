@@ -74,9 +74,12 @@ export function EstadoError({ error, titulo, alReintentar, alIntroducirClave, co
   };
   if (e.accion === "mes") return <EstadoMesSinDatos e={e} className={className} />;
   return (
-    <div role="alert" className={unir("panel border-l-critico max-w-xl border-l-2", compacto ? "p-3" : "p-4 md:p-5", className)}>
-      <p className="text-texto flex items-start gap-2 font-semibold">
-        <TriangleAlert aria-hidden="true" className="text-critico mt-1 size-4 shrink-0" />
+    <div role="alert" className={unir("panel max-w-xl", compacto ? "p-3" : "p-4 md:p-5", className)}>
+      {/* El fallo se dice con icono en un halo + título (texto), nunca con una franja lateral. */}
+      <p className="text-texto flex items-start gap-2.5 font-semibold">
+        <span aria-hidden="true" className="bg-critico/12 text-critico grid size-6 shrink-0 place-items-center rounded-full">
+          <TriangleAlert className="size-3.5" />
+        </span>
         {tituloVisible}
       </p>
       {(e.mensaje || e.sugerencia) && (

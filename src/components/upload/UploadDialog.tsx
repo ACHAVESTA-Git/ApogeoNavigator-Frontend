@@ -69,7 +69,7 @@ export default function UploadDialog({ alCerrar }: { alCerrar: () => void }) {
       </div>
 
       {u.errorRed && (
-        <div role="alert" className="border-critico mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-l-2 py-1 pl-3">
+        <div role="alert" className="bg-critico/10 rounded-control mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2">
           <TriangleAlert aria-hidden="true" className="text-critico size-4 shrink-0" />
           <p className="text-apoyo text-texto min-w-0 flex-1">{t.errorRed}</p>
           <Boton onClick={u.errorRed}>{T.reintentar}</Boton>
