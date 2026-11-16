@@ -193,6 +193,7 @@ export const T: Textos = {
     titulo: "Ten sites, seen from the south pole",
     entrada: "The south pole is at the centre and the Earth lies towards the top. The closer to the centre, the lower the Sun grazes.",
     mapa: (n: number) => `Polar map of the Moon centred on the south pole with ${n} landing sites. The list beside it holds the same sites.`,
+    notaBarrido: "Illustrative: the Sun makes one turn around the polar horizon every lunar day.",
     haciaTierra: "0° · towards Earth",
     caraOculta: "Far side: no Earth in the sky",
     regionPolarSur: "south polar region",
