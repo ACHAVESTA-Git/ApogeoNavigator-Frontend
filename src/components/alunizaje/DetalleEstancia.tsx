@@ -1,8 +1,8 @@
 import { ArrowRight } from "lucide-react";
 import { useEfemerides } from "../../hooks/useEfemerides";
-import { enlaceCielo } from "../../lib/alunizaje";
+import { enlaceCielo, rangoEstancia } from "../../lib/alunizaje";
 import { BANDA } from "../../lib/constants";
-import { diaCorto, fechaHora, soloHora, sumarHoras } from "../../lib/fechas";
+import { diaCorto, fechaHora, soloHora } from "../../lib/fechas";
 import { horas, pct } from "../../lib/formato";
 import { T } from "../../lib/textos";
 import type { DiaVentana, EstanciaH } from "../../lib/tipos";
@@ -17,8 +17,9 @@ const ALTO_BANDA_PX = BANDA.ALTO_PX.media + 56;
 export function DetalleEstancia({ siteId, dato, estanciaH, rayado = false }: { siteId: string; dato: DiaVentana; estanciaH: EstanciaH; rayado?: boolean }) {
   const t = T.alunizaje;
   const llegada = dato.llegada_utc;
-  const salida = sumarHoras(llegada, estanciaH);
-  const efemerides = useEfemerides(siteId, { desde: llegada, hasta: salida });
+  // La salida es exclusiva: se piden las filas de [llegada, salida − 1 h] (la API incluye ambos extremos).
+  const { salida, desde, hasta } = rangoEstancia(llegada, estanciaH);
+  const efemerides = useEfemerides(siteId, { desde, hasta });
   const deEstaEstancia = efemerides.data?.site_id === siteId && !efemerides.isPlaceholderData;
   return (
     <section aria-live="polite">

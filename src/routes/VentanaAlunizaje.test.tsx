@@ -138,6 +138,9 @@ describe("Ventana de alunizaje", () => {
     expect(within(rejilla).getByRole("gridcell", { name: /^1 dic\.: sin datos/ })).toHaveAttribute("aria-disabled", "true");
     fireEvent.click(within(rejilla).getByRole("gridcell", { name: /13 dic\.: 84,62 %/ }));
     expect(await screen.findByRole("heading", { name: "Si llegas el 13 dic. a las 23:00 UTC" })).toBeInTheDocument();
+    // La salida (20 dic. 11:00) es exclusiva y la API incluye ambos extremos: la última fila pedida es la de las 10:00 (156 filas).
+    const pedida = vi.mocked(fetch).mock.calls.map(([u]) => new URL(String(u), "http://localhost")).find((u) => u.pathname === "/api/efemerides/shackleton" && u.searchParams.get("desde") === "2026-12-13T23:00Z");
+    expect(pedida?.searchParams.get("hasta")).toBe("2026-12-20T10:00Z");
     // Flechas: el foco pasa al día siguiente (foco itinerante)
     act(() => mejor.focus());
     fireEvent.keyDown(mejor, { key: "ArrowRight" });
