@@ -1,7 +1,7 @@
 import { useId, type CSSProperties, type ReactNode } from "react";
 import { useCifraAnimada } from "../../hooks/useCifraAnimada";
 import { LUJO } from "../../lib/constants";
-import { numeroCorto } from "../../lib/formato";
+import { numeroCorto, separadorUnidad } from "../../lib/formato";
 import { fraccion, masEsMejor, nivelPorUmbrales, puntoArco, type UmbralesMedidor } from "../../lib/lujo";
 import { NOMBRE_NIVEL, T } from "../../lib/textos";
 import type { NivelSemaforo } from "../../lib/tipos";
@@ -74,7 +74,7 @@ export function Medidor({ valor, umbrales, nivel: nivelDado, rotulo, unidad, min
   const cifra = useCifraAnimada<HTMLSpanElement>(hayDato ? valor : 0, fmt, animar && hayDato, LUJO.CONTEO_MS);
   const nivel = hayDato ? (nivelDado ?? nivelPorUmbrales(valor, umbrales)) : null;
   const f = hayDato ? fraccion(valor, min, max) : 0;
-  const conUnidad = (v: number) => `${fmt(v)}${unidad ? ` ${unidad}` : ""}`;
+  const conUnidad = (v: number) => `${fmt(v)}${unidad ? `${separadorUnidad(unidad)}${unidad}` : ""}`;
   const textoUmbrales = masEsMejor(umbrales)
     ? T.lujo.medidor.umbralesMayor(conUnidad(umbrales.reservas), conUnidad(umbrales.viable))
     : T.lujo.medidor.umbralesMenor(conUnidad(umbrales.viable), conUnidad(umbrales.reservas));

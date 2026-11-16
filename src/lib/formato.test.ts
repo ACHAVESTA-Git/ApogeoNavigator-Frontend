@@ -27,3 +27,11 @@ describe("formato de cifras", () => {
     expect(tamanoArchivo(5 * 1024 * 1024)).toBe("5,0 MB");
   });
 });
+
+describe("separador del porcentaje por idioma", () => {
+  it("pct usa el idioma activo (las pruebas corren en español)", async () => {
+    const { pct, separadorUnidad } = await import("./formato");
+    expect(pct(39.11)).toBe("39,11 %");
+    expect(separadorUnidad("h")).toBe(" ");
+  });
+});

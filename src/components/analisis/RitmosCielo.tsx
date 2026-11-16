@@ -1,3 +1,4 @@
+import { textoNotaEspectro } from "../../lib/notasApi";
 import type { Analisis } from "../../lib/analisis";
 import { numero } from "../../lib/formato";
 import { ritmoDominante } from "../../lib/informe";
@@ -36,7 +37,7 @@ export function RitmosCielo({ a }: { a: Analisis }) {
         <div className="grid gap-x-8 lg:grid-cols-2">
           {a.espectro.series.map((s) => <GraficoEspectro key={s.variable} serie={s} sinodico={a.espectro.sinodico_teorico_dias} />)}
         </div>
-        <p className="text-apoyo text-texto-2 mt-3 max-w-medida">{a.espectro.nota}</p>
+        <p className="text-apoyo text-texto-2 mt-3 max-w-medida">{textoNotaEspectro(a.espectro.nota)}</p>
       </Desplegable>
     </section>
   );

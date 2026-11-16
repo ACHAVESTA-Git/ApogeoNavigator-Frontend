@@ -41,6 +41,20 @@ export const T: Textos = {
   descripcion: "Compare lunar landing sites: where the Sun and the Earth sit above the horizon, how many hours of power and direct link there are, and when they set. Data from JPL Horizons.",
   utc: "UTC",
   oeste: "W",
+  // Notes and limitations that arrive from the backend in Spanish: the client translates them by `codigo` (or by their known shape).
+  notasApi: {
+    limitaciones: {
+      horizonte_ideal: "Ideal horizon: the Moon is assumed to be smooth. Real relief (mountains, craters) can hide a low Sun.",
+      no_sustituye_efemerides: "The projection is a statistical estimate and does not replace the physical Horizons ephemerides.",
+      validacion_no_ciega: "Model versions were discarded by looking at the validation error: the figures are not a strictly blind test.",
+      sol_rasante_polo: `Grazing Sun: if the Sun does not rise above ${UMBRAL_RASANTE_DEG}° of elevation, a 1° error changes the result and sunsets are barely predictable.`,
+      cenit_ecuador: "Sun near the zenith: the solar azimuth swings abruptly and its projection is not reliable.",
+      validacion_de_otros_datos: "This data is not the data used for validation: its errors are for reference and were not measured with your data.",
+    } as Record<string, string>,
+    ventanaCorta: (dias: string, anio: string) => `The data window is ${dias} days, shorter than the eclipse year (${anio} d): long cycles cannot be identified and the model does not fit them.`,
+    espectro: (sinodico: string, anomalistico: string, draconico: string) => `With the available data window, the FFT cannot separate the synodic month (${sinodico} d) from the anomalistic (${anomalistico} d) or the draconic (${draconico} d): that is why the model takes those physical periods and the FFT only confirms them.`,
+    r2: "R² and residuals describe the fit INSIDE the data, which the model has already seen: they can approach 1 and do not measure how well it does outside them. The validation measures that (validation RMSE).",
+  },
   config: {
     abrir: "Settings",
     titulo: "Settings",
@@ -377,7 +391,7 @@ export const T: Textos = {
       tabla: "See the rhythms as a table",
       columnas: ["Period (days)", "Relative weight", "Matches"],
       ninguno: "no known lunar period",
-      candidatos: { sinodico: "synodic month", anomalistico: "anomalistic month", draconico: "draconic month", sideral: "sidereal month", tropico: "tropical month" } as Record<string, string>,
+      candidatos: { sinodico: "synodic month", anomalistico: "anomalistic month", draconico: "draconic month", anio_de_eclipses: "eclipse year (~346.6 d)", sideral: "sidereal month", tropico: "tropical month" } as Record<string, string>,
     },
     modelo: {
       titulo: "How well the model describes this data",
