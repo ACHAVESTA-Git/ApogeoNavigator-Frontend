@@ -6,7 +6,7 @@ import { Pie } from "../components/layout/Pie";
 import { TituloPagina } from "../components/layout/TituloPagina";
 import { EnlaceBoton, EnlaceExterno } from "../components/ui/Boton";
 import { Desplegable } from "../components/ui/Desplegable";
-import { DATOS, ENLACES, INCLINACION_EJE_LUNAR_DEG, MUESTRA, RUTAS } from "../lib/constants";
+import { DATOS, ENLACES, INCLINACION_EJE_LUNAR_DEG, MUESTRA, RELATO, RUTAS } from "../lib/constants";
 import { aUtc, soloFecha } from "../lib/fechas";
 import { grados } from "../lib/formato";
 import { diaPortada } from "../lib/portada";
@@ -25,6 +25,8 @@ const TITULAR_PORTADA = unir(
 );
 
 // Bajo la portada: en un trozo aparte para no engordar el JS inicial. Su hueco reserva alto (no hay salto al llegar).
+// El relato con scroll también llega aparte; su hueco reserva todo su alto.
+const RelatoInicio = lazy(() => import("../components/inicio/RelatoInicio"));
 const RecorridoInicio = lazy(() => import("../components/inicio/RecorridoInicio"));
 
 export default function Inicio() {
@@ -33,6 +35,12 @@ export default function Inicio() {
   // «Hoy» se lee una vez al entrar: el día de la portada no cambia mientras se mira.
   const [ahora] = useState(() => Date.now());
   const dia = useMemo(() => diaPortada(ahora), [ahora]);
+  const elegir = (
+    <EnlaceBoton to={RUTAS.SITIOS} variante="primario" className="px-6" onPointerEnter={() => void cargarSitios()} onFocus={() => void cargarSitios()}>
+      {t.cta}
+      <ArrowRight aria-hidden="true" className="size-4" />
+    </EnlaceBoton>
+  );
   return (
     <>
       <HeroPortada
@@ -45,13 +53,12 @@ export default function Inicio() {
             {t.titular.antes}<span className="text-sol">{t.titular.acento}</span>{t.titular.despues}
           </TituloPagina>
         }
-        cta={
-          <EnlaceBoton to={RUTAS.SITIOS} variante="primario" className="px-6" onPointerEnter={() => void cargarSitios()} onFocus={() => void cargarSitios()}>
-            {t.cta}
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </EnlaceBoton>
-        }
+        cta={elegir}
       />
+
+      <Suspense fallback={<div className="bg-vacio" style={{ height: `${RELATO.ALTO_SVH}svh` }} />}>
+        <RelatoInicio cta={elegir} />
+      </Suspense>
 
       <div className="bg-regolito">
         <Suspense fallback={<div className="min-h-[120svh]" />}>

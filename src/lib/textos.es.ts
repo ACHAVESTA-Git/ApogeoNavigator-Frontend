@@ -117,6 +117,18 @@ export const T = {
       // Día y hora de un cruce dentro de una frase del relato: «14/12 a las 23:00».
       momento: (utc: Utc) => `${diaDelMes(utc)}/${utc.slice(5, 7)} a las ${soloHora(utc)}`,
     },
+    // Relato con scroll bajo la portada: tres actos sobre la misma escena; el desplazamiento hace avanzar el cielo real.
+    relato: {
+      nota: "Tamaños ampliados para la vista; posiciones reales.",
+      escena: (desde: string, hasta: string) => `Panorama del horizonte de Shackleton: al desplazar la página, el Sol y la Tierra avanzan por su efeméride, del ${desde} al ${hasta} (UTC).`,
+      sigue: "Desplaza la página: el cielo avanza contigo.",
+      progreso: "Actos del relato",
+      ir: (n: number) => `Ir al acto ${n}`,
+      de: (total: string) => `de ${total}`,
+      uno: { rotulo: "Acto 1 · El Sol", titular: { antes: "Todo diciembre, ", acento: "el Sol", despues: " rodea el horizonte sin ponerse." }, kpi: "Horas de sol en diciembre de 2026" },
+      dos: { rotulo: "Acto 2 · La Tierra", titular: { antes: "Pero ", acento: "la Tierra", despues: " sí se esconde, y con ella el enlace directo." }, kpi: "Horas con la Tierra a la vista" },
+      tres: { rotulo: "Acto 3 · La decisión", titular: "Semanas después, el Sol también se pone.", kpi: "Puesta del Sol en Shackleton" },
+    },
     cifras: {
       titulo: "El catálogo, en tres cifras",
       sitios: { rotulo: "Sitios", contexto: "lugares de alunizaje para explorar y comparar" },

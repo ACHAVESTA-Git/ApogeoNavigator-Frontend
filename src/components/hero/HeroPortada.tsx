@@ -42,6 +42,7 @@ export function HeroPortada({ dia, hoy, titulo, cta }: { dia: DiaPortada; hoy: s
   const tamano = esEscritorio ? "escritorio" : "movil";
   const yHorizonte = Math.round(alto * PORTADA.HORIZONTE_FRACCION[tamano]);
   const ventana = HERO.RELATO.VENTANA_DEG[tamano];
+  const astros = PORTADA.ASTROS[tamano];
   const ppd = ancho / ventana;
   const medio = filas.length ? filas[Math.floor(filas.length / 2)] : null;
   const centro = medio ? centroDeVista(medio.sol_az_deg, medio.tierra_az_deg, ventana, PORTADA.TIERRA_FRACCION_X[tamano]) : 0;
@@ -62,7 +63,7 @@ export function HeroPortada({ dia, hoy, titulo, cta }: { dia: DiaPortada; hoy: s
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       colores.current ??= leerColores(el);
       const pos = interpolarFila(filas, ms);
-      pintarEscena(ctx, { ancho, alto, yHorizonte, ppd, centro, yDe, incertidumbre: 0 }, pos, paisaje, colores.current);
+      pintarEscena(ctx, { ancho, alto, yHorizonte, ppd, centro, yDe, incertidumbre: 0, astros }, pos, paisaje, colores.current);
       // Rótulos que siguen a los astros y lectura de la hora: se escriben en el DOM sin pasar por React.
       for (const astro of ASTROS) {
         const nodo = etiquetas.current[astro];
@@ -70,7 +71,7 @@ export function HeroPortada({ dia, hoy, titulo, cta }: { dia: DiaPortada; hoy: s
         const elev = pos[`${astro}_el_deg`];
         const delta = ((pos[`${astro}_az_deg`] - centro + 540) % GRADOS_VUELTA) - 180;
         const x = ancho / 2 + delta * ppd;
-        const radio = astro === "sol" ? ESCENA.RADIO_SOL_PX : ESCENA.RADIO_SOL_PX * ESCENA.RAZON_TIERRA_SOL;
+        const radio = astro === "sol" ? astros.radioSol : astros.radioTierra;
         // Sobre el horizonte el rótulo va encima del astro; bajo él, debajo de su fantasma.
         const yRotulo = elev > 0 ? yDe(elev) - radio - HERO.RELATO.ROTULO.SOBRE_PX : yDe(elev) + radio + HERO.RELATO.ROTULO.BAJO_PX;
         nodo.style.transform = `translate(${limitar(x, PORTADA.ROTULO_MARGEN_PX, ancho - PORTADA.ROTULO_MARGEN_PX)}px, ${yRotulo}px) translateX(-50%)`;
@@ -89,7 +90,7 @@ export function HeroPortada({ dia, hoy, titulo, cta }: { dia: DiaPortada; hoy: s
       if (relojLima.current) relojLima.current.textContent = horaLocal(horaLima(utc));
       fijarInstanteGlobal(utc);
     },
-    [ancho, alto, yHorizonte, ppd, centro, yDe, paisaje, filas],
+    [ancho, alto, yHorizonte, ppd, centro, yDe, paisaje, filas, astros],
   );
 
   // El día avanza solo mientras la portada está en pantalla y la pestaña visible; el ciclo se reanuda donde quedó.
@@ -139,7 +140,7 @@ export function HeroPortada({ dia, hoy, titulo, cta }: { dia: DiaPortada; hoy: s
             <span ref={relojLima} className="text-dato-sm text-texto-2 block font-normal">{horaLocal(horaLima(inicial))}</span>
           </p>
           <p className="text-texto-2 max-w-medida mt-1.5 text-[0.75rem]">
-            {fallo ? t.sinEfemeride : dia.fuera ? t.fuera[dia.fuera](hoy, diaVisto) : t.hoy} {T.avisoHorizonteCorto}
+            {fallo ? t.sinEfemeride : dia.fuera ? t.fuera[dia.fuera](hoy, diaVisto) : t.hoy} {T.avisoHorizonteCorto} {T.inicio.relato.nota}
           </p>
         </div>
       </div>
