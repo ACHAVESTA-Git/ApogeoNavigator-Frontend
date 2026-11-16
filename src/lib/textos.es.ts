@@ -39,6 +39,7 @@ export const T = {
   oeste: "O",
   // Notas y limitaciones que llegan del backend en español: el cliente las traduce por `codigo` (o por su forma conocida).
   notasApi: {
+    sinValidacion: "Este sitio no tiene validación contra Horizons.",
     limitaciones: {
       horizonte_ideal: "Horizonte ideal: se supone una Luna lisa. El relieve real (montañas, cráteres) puede tapar un Sol bajo.",
       no_sustituye_efemerides: "La proyección es una estimación estadística y no sustituye a las efemérides físicas de Horizons.",
