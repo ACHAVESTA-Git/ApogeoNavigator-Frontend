@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PANORAMA } from "./constants";
+import { textoMotivoValidacion } from "./notasApi";
 import * as en from "./textos.en";
 import * as es from "./textos.es";
 
@@ -7,6 +8,13 @@ const CODIGOS = ["horizonte_ideal", "no_sustituye_efemerides", "validacion_no_ci
 const ESPANOL = /\b(el|la|los|las|del|que|puede|ventana|ajuste|datos|luna|modelo|periodos|mide|estos)\b|[áéíóúñ]/i;
 
 describe("notas de la API traducidas", () => {
+  it("el motivo de validación ausente se traduce por su forma; lo desconocido se deja como llega", () => {
+    expect(en.T.notasApi.sinValidacion).not.toMatch(ESPANOL);
+    expect(es.T.notasApi.sinValidacion).toBe("Este sitio no tiene validación contra Horizons.");
+    expect(textoMotivoValidacion("Este sitio no tiene validación contra Horizons")).toBe(es.T.notasApi.sinValidacion); // pruebas en español
+    expect(textoMotivoValidacion("Otro motivo desconocido")).toBe("Otro motivo desconocido");
+    expect(textoMotivoValidacion(null)).toBeNull();
+  });
   it("cada código conocido tiene traducción EN y ES", () => {
     for (const c of CODIGOS) {
       expect(en.T.notasApi.limitaciones[c], c).toBeTruthy();

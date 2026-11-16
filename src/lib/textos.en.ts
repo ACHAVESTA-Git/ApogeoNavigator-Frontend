@@ -43,6 +43,7 @@ export const T: Textos = {
   oeste: "W",
   // Notes and limitations that arrive from the backend in Spanish: the client translates them by `codigo` (or by their known shape).
   notasApi: {
+    sinValidacion: "This site has no validation against Horizons.",
     limitaciones: {
       horizonte_ideal: "Ideal horizon: the Moon is assumed to be smooth. Real relief (mountains, craters) can hide a low Sun.",
       no_sustituye_efemerides: "The projection is a statistical estimate and does not replace the physical Horizons ephemerides.",
