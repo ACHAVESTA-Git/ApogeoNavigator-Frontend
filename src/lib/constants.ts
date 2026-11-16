@@ -9,6 +9,8 @@ export const API = {
   SITES: "/api/sites",
   EFEMERIDES: (id: string) => `/api/efemerides/${encodeURIComponent(id)}`,
   METRICAS: "/api/metricas",
+  VENTANAS_ALUNIZAJE: "/api/ventanas-alunizaje",
+  PARAM_ESTANCIA: "estancia_h",
   PUESTAS: (id: string) => `/api/puestas/${encodeURIComponent(id)}`,
   SIMULACION: (id: string) => `/api/simulacion/${encodeURIComponent(id)}`,
   ANALISIS: (id: string) => `/api/analisis/${encodeURIComponent(id)}`,
@@ -129,8 +131,13 @@ export const UMBRALES_MISION = {
 export const ENTRADA_LUJO = { PASO_MS: 50, MAX_ESCALONADAS: 5 } as const;
 /** Identidad compartida de la pareja de medidores de un sitio: tarjeta ↔ ficha (`layoutId`). */
 export const ID_MEDIDORES_SITIO = (siteId: string) => `medidores-sitio-${siteId}`;
+/**
+ * Mini horizonte de las tarjetas: el horizonte queda al 68 % del alto (cielo arriba, suelo abajo) y un astro bajo
+ * el horizonte se hunde con `HUNDIDO` veces la escala de lupa. `ALTO_PX` reserva el alto antes de que llegue la serie.
+ */
+export const MINI_HORIZONTE = { HORIZONTE: 0.68, HUNDIDO: 1.6, ALTO_PX: 56, REFRESCO_RELOJ_HZ: 6 } as const;
 /** Línea de tiempo de ventanas: ancho mínimo de una banda en pantalla (una ventana de 1 h sigue siendo pulsable). */
-export const LINEA_VENTANAS = { MIN_ANCHO_PX: 10 } as const;
+export const LINEA_VENTANAS = { MIN_ANCHO_PX: 10, MIN_PULSABLE_PX: 44 } as const;
 // El semáforo y los avisos los calcula la API. Estos umbrales existen SOLO para el respaldo con datos de
 // ejemplo y la prueba de oro (deben coincidir con app/core/config.py); los componentes no los aplican.
 export const UMBRAL_RASANTE_DEG = 3; // sol_el_max < 3° ⇒ aviso «sensible al relieve»
@@ -293,6 +300,21 @@ export const COMPARAR = {
   FONDO_MAX: 0.7, UNA_DE_CADA: 2, // rocas y cráteres que se dibujan en la escena pequeña: los lejanos, uno de cada dos
 } as const;
 
+/** Ranking de Comparar: cuántos puestos se muestran y dónde empieza la «región polar sur» (etiqueta y conmutador). */
+export const RANKING = {
+  PUESTOS: 5,
+  POLAR_SUR_LAT_MAX_DEG: -80, // latitud ≤ −80°: del paralelo 80° S al polo
+  MONOGRAMA_MAX: 4,           // caracteres del monograma de un sitio
+  /**
+   * Parches auténticos de misión disponibles en `public/insignias/<site_id>.jpg` (sin modificar; fuentes y condiciones en
+   * `public/insignias/README.md`). Los demás sitios llevan monograma. Para revertir, basta con borrar el archivo: la insignia cae sola al monograma.
+   */
+  INSIGNIAS: ["apollo11", "apollo15", "apollo17"] as readonly string[],
+  RUTA_INSIGNIA: (siteId: string) => `/insignias/${siteId}.jpg`,
+  /** Si existe la pantalla «Ventana de alunizaje» (`/sitios/:id/ventana`). Mientras no esté en las rutas, el acceso no se pinta. */
+  VENTANA_ALUNIZAJE: true,
+} as const;
+
 /** Espera de un 429 (Retry-After): hasta 90 s se dice en segundos; por encima, en minutos (redondeando hacia arriba). */
 export const ESPERA = { EN_MINUTOS_DESDE_S: 90, S_POR_MINUTO: 60 } as const;
 
@@ -312,19 +334,16 @@ export const HERO = {
   ROTULO_MEDIO_PX: 44, // media anchura del rótulo de un glifo
   ROTULO_ALTO_PX: 26,
   CLAVE_SESION_INTRO: "apogeo.introVista",
-  // Relato con scroll: tramo del desplazamiento (0…1) de cada acto y fecha en la que termina.
-  RELATO: {
-    // MARGEN: fracción del scroll que dura cada entrada o salida de un acto
-    ACTO: { MARGEN: 0.06, DESPLAZAMIENTO_PX: 16, DESENFOQUE_PX: 4 },
-    ALTO_SVH: 340, CORTES: [0.34, 0.7], FECHAS: ["2026-12-13T00:00Z", "2026-12-28T00:00Z"], CONTEO_MS: 900, VENTANA_DEG: { movil: 150, escritorio: 360 },
-    ROTULO: { SOBRE_PX: 30, BAJO_PX: 8 } }, // separación del rótulo de cada astro: encima si está visible, bajo su fantasma si no
+  // Encuadre de la escena de la portada: grados de azimut que caben en pantalla y separación del rótulo de cada astro
+  // (encima si está visible, bajo su fantasma si no).
+  RELATO: { VENTANA_DEG: { movil: 150, escritorio: 360 }, ROTULO: { SOBRE_PX: 30, BAJO_PX: 8 } },
 } as const;
 
 export const MAPA = {
   LAT_BORDE: 30,
   LAT_POLO: -90,
   ANILLOS: [-80, -60, -30, 0, 20],
-  ANILLO_ARTEMIS: -80,
+  ANILLO_POLAR_SUR: -80,
   MERIDIANOS_CADA: 30,
   LADO: 640,
   MARGEN: 34,
@@ -332,7 +351,8 @@ export const MAPA = {
   ESCALA_ACTIVO: 1.6,
   LON_CARA_OCULTA: 90,
   ANILLO_HORIZONTE: 0, // visto desde el polo sur, el limbo de la Luna es el ecuador
-  RADIO_ETIQUETA_IZQ: 30, // los sitios pegados al polo se rotulan a la izquierda
+  RADIO_ETIQUETA_IZQ: 30,
+  ETIQUETA_IZQ_DESDE_X: 0.6, // fracción del radio: más a la derecha, el nombre del punto va hacia dentro // los sitios pegados al polo se rotulan a la izquierda
   MERIDIANOS_ROTULADOS: [0, 90, 180, 270],
   INTERLINEA_ROTULO_MOVIL: 28, // unidades del viewBox entre las dos líneas de un rótulo de anillo en móvil (texto de 24)
   SEPARADOR_NOMBRE: " - ",
@@ -366,6 +386,7 @@ export const RUTAS = {
   DIA_LUNAR: (id: string) => `/sitios/${id}/dia-lunar`,
   ANALISIS: (id: string) => `/sitios/${id}/analisis`,
   PROYECCION: (id: string) => `/sitios/${id}/proyeccion`,
+  VENTANA_ALUNIZAJE: (id: string) => `/sitios/${id}/ventana`,
   COMPARAR: "/comparar",
   ACCESO: "/acceso",
   CLAVES: "/admin/claves",
@@ -382,7 +403,7 @@ export const PUNTO_PROPIO = {
   CACHE_MAX: 6, // respuestas de /api/horizons que se guardan en memoria (una por punto y periodo)
 } as const;
 
-export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", VARIABLE: "variable", PASO: "paso" } as const;
+export const PARAM_URL = { T: "t", DESDE: "desde", HASTA: "hasta", SITIOS: "s", VISTA: "vista", ESCALA: "escala", SITIO: "sitio", CATEGORIA: "cat", MODO: "modo", MESES: "meses", ZONA: "zona", VARIABLE: "variable", ESTANCIA: "estancia", DIA: "dia", PASO: "paso" } as const;
 
 export const ENLACES = {
   HORIZONS: "https://ssd.jpl.nasa.gov/horizons/",
@@ -409,7 +430,21 @@ export const ANALISIS_GRAFICO = {
   DECIMALES_HUELLA: 12, // caracteres de la huella SHA3-256 que se enseñan antes de la elipsis
 } as const;
 
-/** Primitivas del rediseño «Lujo inmersivo» (src/components/lujo). Duraciones en ms; espejo de --dur-lujo-* en index.css. */
+// Portada (Inicio): la escena recorre el día real en bucle y debajo van las cifras del catálogo y el recorrido.
+export const PORTADA = {
+  // El día (24 h) avanza a 1 h por segundo, se detiene y vuelve al inicio con una curva suave.
+  CICLO: { AVANCE_MS: 24_000, PAUSA_MS: 1_600, RETORNO_MS: 900 },
+  SALTO_MAX_MS: 100, // tras un cuadro largo (pestaña en segundo plano) el día no da un salto
+  HOLGURA_VENTANA: 0.7, // el Sol y la Tierra se centran juntos si su separación cabe en esta fracción de la ventana
+  HORIZONTE_FRACCION: { movil: 0.62, escritorio: 0.7 }, // altura del horizonte en la escena
+  TIERRA_FRACCION_X: { movil: 0.72, escritorio: 0.7 }, // dónde cae la Tierra cuando no se centra con el Sol
+  LUPA_MAX_PX: 320,
+  ROTULO_MARGEN_PX: 70, // el rótulo de un astro no se sale de la pantalla
+  HUELLA_CARACTERES: 8, // caracteres de la huella SHA3-256 que se muestran como cifra
+  REVELADO_MARGEN: "0px 0px -12% 0px", // un bloque se revela cuando ha entrado un 12 % en pantalla
+  PASO_ACTIVO_MARGEN: "-25% 0px -60% 0px", // el paso activo del recorrido es el que cruza la franja del 25 % al 40 % del alto de la pantalla
+} as const;
+
 /** Pantalla de Acceso (login). */
 export const ACCESO = {
   SACUDIDA_MS: 280, // sacudida del formulario ante un error (techo del plan: 300 ms); no se ejecuta con movimiento reducido
@@ -418,6 +453,7 @@ export const ACCESO = {
   RETRASOS_ENTRADA_MS: [0, 50, 90], // escalonado no uniforme de «sesión iniciada»: identidad, huellas, acciones
 } as const;
 
+/** Primitivas del rediseño «Lujo inmersivo» (src/components/lujo). Duraciones en ms; espejo de --dur-lujo-* en index.css. */
 export const LUJO = {
   CONTEO_MS: 600, // una cifra héroe cuenta hacia su valor UNA vez; techo del plan (≤ 600 ms)
   COPIADO_MS: 2000, // cuánto se mantiene el aviso «Huella copiada»
@@ -446,4 +482,19 @@ export const PROYECCION_MODELO = {
   DECIMALES_ERROR: 2,
   TACTIL_MIN_PX: 48, // objetivo táctil del astronauta (plan 2, §1)
   GRAFICO: { ANCHO: 960, RAZON: 0.4, ALTO_MIN: 260, ALTO_MAX: 420, MARGEN: { sup: 22, der: 16, inf: 30, izq: 44 }, MARGEN_COMPACTO: { sup: 22, der: 8, inf: 30, izq: 40 } },
+} as const;
+/** Ventana de alunizaje (HU-18): contrato de GET /api/ventanas-alunizaje y lectura del calendario de calor. */
+export const ALUNIZAJE = {
+  ESTANCIAS_H: [72, 156, 336], // 3 d, 6,5 d (estancia de referencia) y 14 d: las únicas que acepta la API
+  ESTANCIA_POR_DEFECTO: 156,
+  MAX_SITIOS: 5,
+  // Calendario de calor: límite inferior (%) de los escalones 2, 3 y 4. El 0 es «nada»; el 1, «algo, menos del 25 %».
+  ESCALA_PCT: [25, 50, 75],
+  // Rejilla: celdas táctiles de 48 px con 8 px de separación; dentro del panel caben 5 columnas a 360 px.
+  CELDA_PX: 48,
+  HUECO_PX: 8,
+  COLUMNAS: { MIN: 5, MAX: 16 },
+  // Entrada escalonada de las celdas: retrasos decrecientes y techo, para que todo acabe en ≤ 320 ms.
+  ENTRADA: { PASO_MS: 5, RETRASO_MAX_MS: 120, DESDE_PX: 4 },
+  TOLERANCIA_EMPATE_H: 1e-6,
 } as const;

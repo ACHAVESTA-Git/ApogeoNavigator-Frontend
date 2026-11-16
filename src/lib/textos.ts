@@ -21,6 +21,8 @@ export const FORMA_CATEGORIA = activo.FORMA_CATEGORIA;
 export const ERRORES_POR_ESTADO = activo.ERRORES_POR_ESTADO;
 export const ERRORES_DE_DOMINIO = activo.ERRORES_DE_DOMINIO;
 export const SIN_LINEA_DIRECTA = activo.SIN_LINEA_DIRECTA;
+/** `agencia` del catálogo, traducida si es una etiqueta conocida (los nombres propios se dejan como llegan). */
+export const agenciaLegible = (agencia: string): string => activo.AGENCIAS_CONOCIDAS[agencia] ?? agencia;
 export const ANALISIS_API = activo.ANALISIS_API;
 export const umbralNivel = activo.umbralNivel;
 export const esperaYReintenta = activo.esperaYReintenta;

@@ -4,7 +4,7 @@ import { useId, useMemo } from "react";
 import { useDimensiones } from "../../hooks/useDimensiones";
 import { lienzoGrafico } from "../../lib/analisis";
 import { PROYECCION_MODELO } from "../../lib/constants";
-import { aUtc, diaCorto, mesCorto, soloFecha } from "../../lib/fechas";
+import { aUtc, diaCorto, mesAnio, soloFecha } from "../../lib/fechas";
 import { grados, numero } from "../../lib/formato";
 import { bandaError, msDeFecha, type AstroBanda, type ModeloProyeccion } from "../../lib/proyeccionModelo";
 import { NOMBRE_ASTRO, T } from "../../lib/textos";
@@ -60,7 +60,7 @@ export function GraficoProyeccion({ serie, modelo, sitio, dominio }: { serie: re
   if (!g) return <p className="text-texto-2 mt-5">{t.vacia}</p>;
   const finEntrenamiento = msDeFecha(modelo.entrenado_hasta);
   const xFin = finEntrenamiento !== null && finEntrenamiento > g.x.domain()[0] && finEntrenamiento < g.x.domain()[1] ? g.x(finEntrenamiento) : null;
-  const rotuloX = dominio ? diaCorto : mesCorto;
+  const rotuloX = dominio ? diaCorto : mesAnio;
   return (
     <figure className="mt-5" data-banda={g.tipoBanda ?? "ninguna"}>
       <p className="text-apoyo text-tierra flex items-center gap-2 font-semibold">{T.proyeccion.etiqueta}</p>

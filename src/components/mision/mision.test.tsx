@@ -4,6 +4,9 @@ import { describe, expect, it } from "vitest";
 import { sumarHoras } from "../../lib/fechas";
 import type { FilaEfemeride, Metrica } from "../../lib/tipos";
 import { LineaVentanas } from "../ventanas/LineaVentanas";
+import * as en from "../../lib/textos.en";
+import * as es from "../../lib/textos.es";
+import { ChipNivel } from "./ChipNivel";
 import { IndicadoresAstronauta } from "./IndicadoresAstronauta";
 import { MedidoresMision } from "./MedidoresMision";
 
@@ -71,6 +74,53 @@ describe("IndicadoresAstronauta", () => {
   });
 });
 
+describe("puesta nula cuando el astro no sale en el periodo (auditoría del #86)", () => {
+  /** Chang'e 4 en diciembre: 0 h de Tierra visible y `proxima_puesta_tierra_utc: null`. */
+  const sinTierra: Metrica = { ...SHACKLETON, horas_tierra_visible: 0, pct_tierra: 0,
+    indicadores_astronauta: { ...SHACKLETON.indicadores_astronauta, proxima_puesta_tierra_utc: null } };
+  it("dice que la Tierra no está a la vista; no «Sin puesta de la Tierra antes de…»", () => {
+    pintar(sinTierra);
+    expect(screen.getByText("La Tierra no está a la vista en este periodo.")).toBeInTheDocument();
+    expect(screen.queryByText(/Sin puesta de la Tierra/)).toBeNull();
+  });
+  it("con 0 h de sol dice que el Sol no sale; con sol y sin puesta, mantiene «Sin puesta… antes del fin del periodo»", () => {
+    pintar({ ...SHACKLETON, horas_sol: 0, pct_sol: 0 });
+    expect(screen.getByText("El Sol no sale en este periodo.")).toBeInTheDocument();
+    expect(screen.queryByText(/Sin puesta del Sol/)).toBeNull();
+  });
+  it("los textos existen en los dos idiomas", () => {
+    expect(en.T.mision.noSaleSol).toBe("The Sun does not rise in this period");
+    expect(en.T.mision.noSaleTierra).toBe("The Earth is not in view in this period");
+    expect(es.T.mision.noSaleTierra).toBe("La Tierra no está a la vista en este periodo");
+  });
+});
+
+describe("aviso «sensible al relieve» en el estado de misión (auditoría del #86)", () => {
+  it("el chip lleva el mismo asterisco que Ventanas solo si se le pide", () => {
+    const { container, rerender } = render(<ChipNivel nivel="verde" nota />);
+    expect(container).toHaveTextContent("Viable*");
+    rerender(<ChipNivel nivel="verde" />);
+    expect(container).not.toHaveTextContent("*");
+  });
+  it("los medidores escriben la línea del aviso bajo la energía", () => {
+    const { container, rerender } = render(<MedidoresMision metrica={{ pct_sol: 100, pct_tierra: 39.11 }} sensible />);
+    expect(container.querySelector("[data-aviso-relieve]")).toHaveTextContent("* sensible al relieve");
+    rerender(<MedidoresMision metrica={{ pct_sol: 100, pct_tierra: 39.11 }} />);
+    expect(container.querySelector("[data-aviso-relieve]")).toBeNull();
+  });
+});
+
+describe("rótulo del anillo de 80° S en el mapa polar", () => {
+  it("dice «región polar sur» y ningún texto de Sitios nombra a Artemis (rótulo sin fuente)", () => {
+    expect(es.T.sitios.regionPolarSur).toBe("región polar sur");
+    expect(en.T.sitios.regionPolarSur).toBe("south polar region");
+    for (const t of [es.T.sitios, en.T.sitios]) {
+      expect(Object.keys(t).filter((k) => /artemis/i.test(k))).toEqual([]);
+      expect(Object.values(t).filter((v) => typeof v === "string" && /artemis/i.test(v))).toEqual([]);
+    }
+  });
+});
+
 describe("MedidoresMision", () => {
   it("lee energía y comunicación de la métrica y trunca la cifra para no contradecir el nivel", () => {
     render(<MedidoresMision metrica={{ pct_sol: 44.6, pct_tierra: 100 }} />);
@@ -80,6 +130,25 @@ describe("MedidoresMision", () => {
   it("sin métrica dibuja las pistas vacías: «Sin dato», nunca un valor", () => {
     render(<MedidoresMision metrica={undefined} />);
     for (const m of screen.getAllByRole("meter")) expect(m).not.toHaveAttribute("aria-valuenow");
+  });
+});
+
+describe("ajustes de la validación de QA", () => {
+  it("el medidor usa el nivel de la API si llega, aunque los umbrales del cliente dijeran otra cosa", () => {
+    render(<MedidoresMision metrica={{ pct_sol: 44.6, pct_tierra: 100, semaforo: { energia: "verde", comunicacion: "rojo", global: "rojo" } }} />);
+    expect(screen.getByRole("meter", { name: "Energía" })).toHaveAttribute("aria-valuetext", "44 % · Viable");
+    expect(screen.getByRole("meter", { name: "Comunicación" })).toHaveAttribute("aria-valuetext", "100 % · Crítico");
+  });
+  it("«Referencia (JPL Horizons)» se traduce en inglés; los nombres propios y el español se dejan como llegan", () => {
+    expect(en.AGENCIAS_CONOCIDAS["Referencia (JPL Horizons)"]).toBe("Reference (JPL Horizons)");
+    expect(en.AGENCIAS_CONOCIDAS["NASA"]).toBeUndefined();
+    expect(es.AGENCIAS_CONOCIDAS).toEqual({});
+  });
+  it("cada ventana tiene una zona pulsable de 44 px como mínimo, aunque dure una hora", () => {
+    const T0 = "2026-12-01T00:00Z";
+    const filas: FilaEfemeride[] = Array.from({ length: 700 }, (_, i) => ({ utc: sumarHoras(T0, i), sol_az_deg: 90, sol_el_deg: i === 300 ? 2 : -2, tierra_az_deg: 180, tierra_el_deg: 5 }));
+    render(<MemoryRouter><LineaVentanas filas={filas} desde={T0} hasta={sumarHoras(T0, 700)} siteId="apollo11" /></MemoryRouter>);
+    expect(screen.getByRole("link", { name: /Sol y Tierra a la vez: desde 2026-12-13 12:00 UTC, 1 h\./ })).toHaveStyle({ minWidth: "44px" });
   });
 });
 

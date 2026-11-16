@@ -3,7 +3,7 @@
 import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
 import { diaDelMes, esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha, soloHora } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
-import { decidir, diferencias, type Diferencia, type LineaComparada } from "./comparar";
+import { decidir, diferencias, type Diferencia, type FraseRacha, type LineaComparada } from "./comparar";
 import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
 
 export const NOMBRE_ASTRO: Record<Astro, string> = { sol: "Sol", tierra: "Tierra" };
@@ -92,46 +92,56 @@ export const T = {
   },
   inicio: {
     documento: "Inicio",
-    rotulo: (coordenada: string, periodo: string) => `Cráter Shackleton · ${coordenada} · ${periodo}`,
-    // El acento de color va solo en «el Sol». La frase vale para el mes del relato: con más meses de datos, el Sol
-    // de Shackleton sí llega a ponerse (27/01/2027), así que no se afirma que no se ponga «nunca».
-    titular: { antes: "En Shackleton, junto al polo\u00a0sur, ", acento: "el Sol", despues: " no se pone en diciembre: rueda por el horizonte." },
-    apoyo: "Un cambio pequeño de lugar o de fecha puede decidir si un módulo tiene energía y línea directa con la Tierra. Compáralo en minutos.",
-    // Relato con scroll en tres actos. Todas las cifras salen de hero-shackleton.json (CSV reales).
+    // El acento de color va solo en «el Sol». La frase vale para todo el periodo con datos: junto al polo el Sol nunca
+    // se aleja del horizonte, y con más meses sí llega a ponerse (27/01/2027), así que no se afirma que no se ponga «nunca».
+    titular: { antes: "Junto al polo\u00a0sur de la Luna, ", acento: "el Sol", despues: " apenas se levanta: rueda por el horizonte." },
+    apoyo: "Un cambio pequeño de lugar o de fecha decide si un módulo tiene energía y línea directa con la Tierra.",
+    cta: "Elige un sitio",
+    // Escena de la portada: el día real (UTC) de Shackleton. Si hoy queda fuera del periodo con datos, se dice.
+    hero: {
+      lugar: (dia: string) => `Cráter Shackleton · ${dia}`,
+      escena: (dia: string) => `Panorama del horizonte de Shackleton el ${dia} (UTC): el Sol y la Tierra recorren el día según su efeméride, hora a hora.`,
+      instante: "Instante de la escena",
+      hoy: "El cielo de hoy, hora a hora.",
+      fuera: {
+        antes: (hoy: string, dia: string) => `Hoy (${hoy}) aún no hay datos: se muestra el primer día con datos, ${dia}.`,
+        despues: (hoy: string, dia: string) => `Hoy (${hoy}) ya no hay datos: se muestra el último día con datos, ${dia}.`,
+      },
+      sinEfemeride: "No se pudo cargar la efeméride de este día.",
+    },
+    // Hechos del mes de referencia (diciembre de 2026) que acompañan el recorrido. Salen de hero-shackleton.json (CSV reales).
     actos: {
-      progreso: "Actos del relato",
-      ir: (n: number) => `Ir al acto ${n}`,
-      uno: { rotulo: "Acto 1 · Centro de Shackleton, diciembre de 2026, horizonte ideal", kpi: "Horas con Sol en diciembre", contexto: (min: string, max: string) => `En diciembre el Sol no sube de ${max} ni baja de ${min}: da la vuelta al horizonte sin ponerse. El relieve real puede taparlo.` },
-      dos: {
-        rotulo: "Acto 2 · La exploración",
-        titular: { antes: "Pero ", acento: "la Tierra", despues: " sí se esconde." },
-        kpi: "Horas con enlace directo",
-        contexto: (salida: string, puesta: string, sin: string) => `Sale el ${salida} y se pone el ${puesta} (UTC). El resto del mes, ${sin} sin línea directa con la Tierra.`,
-      },
-      tres: {
-        rotulo: "Acto 3 · La decisión",
-        titular: "Elige dónde aterrizar.",
-        kpi: "Sitios para comparar",
-        contexto: (puesta: string) => `Un cambio de lugar o de fecha lo cambia todo: el ${puesta} (UTC) el Sol de Shackleton también se pone. Compara energía y enlace antes de decidir.`,
-      },
-      de: (total: string) => `de ${total}`,
+      uno: { contexto: (min: string, max: string) => `En diciembre el Sol no sube de ${max} ni baja de ${min}: da la vuelta al horizonte sin ponerse. El relieve real puede taparlo.` },
+      dos: { contexto: (salida: string, puesta: string, sin: string) => `Sale el ${salida} y se pone el ${puesta} (UTC). El resto del mes, ${sin} sin línea directa con la Tierra.` },
+      tres: { contexto: (puesta: string) => `Un cambio de lugar o de fecha lo cambia todo: el ${puesta} (UTC) el Sol de Shackleton también se pone. Compara energía y enlace antes de decidir.` },
       // Día y hora de un cruce dentro de una frase del relato: «14/12 a las 23:00».
       momento: (utc: Utc) => `${diaDelMes(utc)}/${utc.slice(5, 7)} a las ${soloHora(utc)}`,
-      sigue: "Desplázate para avanzar el mes",
     },
-    explorar: "Explorar sitios",
-    verCielo: "Ver el cielo de Shackleton",
-    escena: "Panorama de 360° del horizonte de Shackleton. El Sol recorre el horizonte sin ponerse; la Tierra sale y se pone.",
-    escala: "Escala vertical ampliada cerca del horizonte",
-    regla: "Recorrer el mes en Shackleton",
-    datosReales: "Datos reales de JPL Horizons, una muestra cada 3 h.",
-    preguntas: {
-      titulo: "Tres preguntas antes de alunizar",
-      lista: [
-        { astro: "sol", pregunta: "¿Hay Sol?", respuesta: "Sin Sol sobre el horizonte no hay energía. Medimos cuántas horas lo tiene cada sitio y a qué altura." },
-        { astro: "tierra", pregunta: "¿Se ve la Tierra?", respuesta: "La Tierra es la línea de vida: si no está sobre el horizonte, no hay enlace directo de comunicación." },
-        { astro: "puesta", pregunta: "¿Cuánto falta para la puesta?", respuesta: "Saber cuántas horas quedan antes de que uno de los dos cruce la línea decide el plan de la misión." },
-      ],
+    cifras: {
+      titulo: "El catálogo, en tres cifras",
+      sitios: { rotulo: "Sitios", contexto: "lugares de alunizaje para explorar y comparar" },
+      horas: { rotulo: "Efemérides", contexto: (desde: string, hasta: string) => `de posiciones del Sol y la Tierra en Shackleton, hora a hora, del ${desde} al ${hasta} (UTC)` },
+      huella: { rotulo: "Huella del archivo", contexto: (firma: string) => `SHA3-256 de las efemérides de Shackleton · ${firma}`, completa: (huella: string) => `Huella SHA3-256 que empieza por ${huella}` },
+    },
+    recorrido: {
+      titulo: "Tres pasos para decidir",
+      indice: "Pasos del recorrido",
+      paso: (n: number, nombre: string) => `Paso ${n} · ${nombre}`,
+      cielo: {
+        nombre: "Cielo", titulo: "Mira dónde están el Sol y la Tierra", enlace: "Ver el cielo de Shackleton",
+        instante: (cuando: string) => `Shackleton · ${cuando} UTC`, tierra: "La Tierra sí se esconde.",
+        elevacion: (astro: string) => `Elevación · ${astro}`, sobre: "sobre el horizonte", bajo: "bajo el horizonte",
+      },
+      comparar: {
+        nombre: "Comparar", titulo: "Compara energía y enlace entre sitios", enlace: "Abrir la comparación",
+        periodo: (mes: string) => `Viabilidad en ${mes}`,
+        fila: (sol: string, tierra: string) => `${sol} de Sol · ${tierra} con la Tierra a la vista`,
+      },
+      analisis: {
+        nombre: "Análisis", titulo: "Comprueba de dónde sale cada cifra", enlace: "Abrir el análisis de Shackleton",
+        texto: "Cada archivo de efemérides lleva su huella y la firma del manifiesto. El análisis muestra el camino del dato, del CSV al gráfico, y con qué error se ajusta.",
+      },
+      sinDatos: "No se pudieron cargar estos datos. Vuelve a intentarlo en un momento.",
     },
     polo: {
       titulo: "Por qué el polo es extremo",
@@ -184,7 +194,7 @@ export const T = {
     mapa: (n: number) => `Mapa polar de la Luna centrado en el polo sur con ${n} sitios de alunizaje. La lista de al lado contiene los mismos sitios.`,
     haciaTierra: "0° · hacia la Tierra",
     caraOculta: "Cara oculta: sin Tierra en el cielo",
-    zonaArtemis: "zona Artemis",
+    regionPolarSur: "región polar sur",
     ecuador: "ecuador",
     filtro: "Filtrar por categoría",
     todas: "Todas",
@@ -204,6 +214,12 @@ export const T = {
     ficha: (nombre: string) => `Ficha de ${nombre}`,
     tarjeta: (nombre: string) => `Abrir la ficha de ${nombre}`,
     veredicto: "Veredicto",
+    verCieloDe: (nombre: string) => `Ver el cielo de ${nombre}`,
+    miniHorizonte: "Sol y Tierra sobre el horizonte ideal en el instante del reloj",
+    relojPausar: "Pausar el movimiento",
+    relojReproducir: "Reproducir el movimiento",
+    detalles: "Detalles del sitio",
+    planear: "Planear alunizaje",
     medidores: (periodo: string) => `Energía y comunicación en ${periodo}`,
   },
   mision: {
@@ -213,16 +229,30 @@ export const T = {
     mostrar: "Mostrar el estado de misión",
     ocultar: "Ocultar el estado de misión",
     medidores: "Energía y comunicación del periodo",
-    resumen: (energia: string, comunicacion: string) => `Energía ${energia} · Comunicación ${comunicacion}`,
-    puestaCorta: (horas: string) => `puesta del Sol en ${horas}`,
     energia: "Energía",
     comunicacion: "Comunicación",
     puestaSol: (horas: string, fecha: string) => `Próxima puesta del Sol en ${horas} · ${fecha} UTC`,
     puestaTierra: (horas: string, fecha: string) => `Próxima puesta de la Tierra en ${horas} · ${fecha} UTC`,
     sinPuestaSol: (fin: string) => `Sin puesta del Sol antes del ${fin} UTC, fin del periodo consultado.`,
     sinPuestaTierra: (fin: string) => `Sin puesta de la Tierra antes del ${fin} UTC, fin del periodo consultado.`,
+    noSaleSol: "El Sol no sale en este periodo",
+    noSaleTierra: "La Tierra no está a la vista en este periodo",
     desdeInicio: (inicio: string) => `Horas contadas desde el inicio del periodo (${inicio} UTC). Paso horario, ±1 h.`,
     tierraVisible: (pct: string, horas: string) => `La Tierra es visible el ${pct} del periodo (${horas}).`,
+    solAhora: "Sol ahora",
+    tierraAhora: "Tierra ahora",
+    proximoEvento: "Próximo evento",
+    sobre: "sobre el horizonte",
+    bajo: "bajo el horizonte",
+    puestaDe: (astro: "sol" | "tierra", fecha: string) => `Puesta ${astro === "sol" ? "del Sol" : "de la Tierra"} · ${fecha} UTC · paso horario, ±1 h`,
+    sinEvento: "Sin puestas por delante en los datos de este periodo",
+    fueraDePeriodo: "El instante de la simulación queda fuera de este periodo",
+    instante: (fecha: string) => `Instante de la simulación: ${fecha} UTC`,
+    operativa: {
+      noche: { racha: (h: string) => `Sin Sol durante ${h} seguidas`, cero: "Sin noche en este periodo", todo: (h: string) => `Sin Sol todo el periodo (${h})` },
+      apagon: { racha: (h: string) => `Sin enlace con la Tierra durante ${h}`, cero: "Enlace con la Tierra todo el periodo", todo: (h: string) => `Sin enlace con la Tierra todo el periodo (${h})` },
+      ventana: { racha: (h: string) => `Tendrás Sol y Tierra a la vez ${h} seguidas`, cero: "Sin Sol y Tierra a la vez en este periodo", todo: (h: string) => `Tendrás Sol y Tierra a la vez todo el periodo (${h})` },
+    },
     indicadores: "Indicadores para astronautas",
     sinIndicadores: "Estos datos no traen los indicadores para astronautas: no se muestra ninguna cifra.",
     alMenos: (valor: string) => `al menos ${valor}`,
@@ -842,6 +872,74 @@ export const T = {
     verCielo: (nombre: string) => `Abrir el cielo de ${nombre} en este instante`,
     verSitio: (nombre: string) => `Ver las ventanas de ${nombre}`,
     cargando: "Comparando…",
+    // Horas seguidas más largas (indicadores para astronautas) y su lectura operativa.
+    // Ranking de sitios (Top 5): el criterio se dice en una línea y cada fila se lee de un vistazo.
+    top: {
+      titulo: (n: number, periodo: string) => `Dónde conviene alunizar · Top ${n} de ${periodo}`,
+      criterio: "Orden: primero el veredicto de energía y comunicación; a igualdad, más horas seguidas con Sol y Tierra a la vez.",
+      lista: (n: number) => `Ranking de los ${n} primeros sitios`,
+      zona: "Sitios del ranking",
+      todos: "Todos",
+      polarSur: "Región polar sur",
+      polarSurAyuda: (grados: string) => `Latitud de ${grados} S o más al sur.`,
+      puesto: (n: number) => `Puesto ${n}`,
+      decisiva: "seguidas con Sol y Tierra a la vez",
+      decisivaLeida: (valor: string) => `Tendrás Sol y Tierra a la vez ${valor} seguidas`,
+      sinVentana: "Sin datos de ventana",
+      // Con qué se compara la cifra decisiva: «14 h más que Chandrayaan-3 (puesto 2)».
+      frente: (dif: number, valor: string, rival: string, puesto: number) =>
+        dif === 0 ? `Las mismas que ${rival} (puesto ${puesto})` : `${valor} ${dif > 0 ? "más" : "menos"} que ${rival} (puesto ${puesto})`,
+      elegir: (nombre: string) => `Abrir el detalle de ${nombre}`,
+      enDetalle: "En el detalle",
+      tocar: "Toca un sitio para ver su horizonte. Hasta 3 a la vez.",
+      elegidos: (n: number, max: number) => `${n} de ${max} en el detalle`,
+      irAlDetalle: "Ver el detalle",
+      sinPolares: "Ningún sitio del catálogo está en la región polar sur.",
+      detalle: "Detalle",
+      detalleDe: (nombres: string) => `Horizonte de ${nombres}`,
+      planear: "Planear alunizaje",
+      planearDe: (nombre: string) => `Planear el alunizaje en ${nombre}`,
+      sitio: "Sitio",
+      insignia: (nombre: string) => `Insignia de la misión ${nombre}`,
+      creditoInsignia: "Insignia: NASA",
+      avalInsignias: "Insignias de misión: NASA, sin modificar. La NASA no avala este proyecto.",
+    },
+    podio: {
+      sensible: "Sensible al relieve",
+      alMenosLeido: (valor: string) => `al menos ${valor}`,
+      enInstante: (sol: number, tierra: number, n: number) => `En el instante elegido: ${sol} de ${n} con Sol · ${tierra} de ${n} con la Tierra`,
+      mision: "Qué significa para tu misión",
+      rachas: {
+        noche_mas_larga: "Noche más larga",
+        apagon_tierra_mas_largo: "Apagón de la Tierra más largo",
+        ventana_sol_y_tierra: "Ventana con Sol y Tierra",
+      },
+      // Frases de docs/datos/indicadores-astronauta.md (§4). `borde`: la racha empezó antes o el periodo no es un mes natural.
+      frases: {
+        noche_mas_larga: {
+          normal: (f: FraseRacha) => `Hasta ${f.horas} seguidas sin Sol en ${f.sitio} (${f.mes}). Dimensiona la batería para cubrir esa noche.`,
+          cero: (f: FraseRacha) => `No hay noche en ${f.mes}: el Sol se mantiene sobre el horizonte ideal. El relieve aún podría taparlo.`,
+          sigue: (f: FraseRacha) => `Al menos ${f.horas} seguidas sin Sol; la noche continúa el mes siguiente. Dimensiona la batería para más de ${f.horas}.`,
+          borde: (f: FraseRacha) => `Al menos ${f.horas} seguidas sin Sol; la noche sigue fuera de ${f.mes}. Dimensiona la batería para más de ${f.horas}.`,
+          todo: (f: FraseRacha) => `Sin Sol durante todo ${f.mes} (${f.horas}); puede seguir después. No hay energía solar en este periodo.`,
+        },
+        apagon_tierra_mas_largo: {
+          normal: (f: FraseRacha) => `Hasta ${f.horas} seguidas sin ver la Tierra en ${f.sitio} (${f.mes}). Dimensiona el relé o el almacenamiento de datos.`,
+          cero: (f: FraseRacha) => `La Tierra nunca se oculta en ${f.mes}: hay línea directa todo el periodo con horizonte ideal. El relieve podría cortarla.`,
+          sigue: (f: FraseRacha) => `Al menos ${f.horas} sin ver la Tierra; el apagón continúa el mes siguiente. Dimensiona relé o almacenamiento para más.`,
+          borde: (f: FraseRacha) => `Al menos ${f.horas} sin ver la Tierra; el apagón sigue fuera de ${f.mes}. Dimensiona relé o almacenamiento para más.`,
+          todo: (f: FraseRacha) => `La Tierra no se ve en todo ${f.mes} (${f.horas}). Sin enlace directo: la comunicación depende de un relé.`,
+        },
+        ventana_sol_y_tierra: {
+          normal: (f: FraseRacha) => `Hasta ${f.horas} seguidas con Sol y Tierra a la vez: la mejor ventana para operar con energía solar y enlace directo.`,
+          cero: (f: FraseRacha) => `En ${f.mes} nunca coinciden Sol y Tierra sobre el horizonte: no hay operación con energía solar y enlace directo a la vez.`,
+          sigue: (f: FraseRacha) => `Al menos ${f.horas} seguidas con Sol y Tierra; la ventana continúa el mes siguiente.`,
+          borde: (f: FraseRacha) => `Al menos ${f.horas} seguidas con Sol y Tierra; la ventana sigue fuera de ${f.mes}.`,
+          todo: (f: FraseRacha) => `Sol y Tierra sobre el horizonte todo ${f.mes} (${f.horas}): ventana continua durante el periodo.`,
+        },
+      },
+      avisoRachas: "Horizonte ideal: sin relieve. Cifras calculadas con efemérides de JPL Horizons, no medidas; las horas seguidas son múltiplos de 1 h.",
+    },
   },
   diaLunar: {
     documento: (nombre: string) => `Día lunar · ${nombre}`,
@@ -955,6 +1053,85 @@ export const T = {
     volver: "Volver a Sitios",
   },
   // Primitivas del rediseño «Lujo inmersivo» (src/components/lujo).
+  alunizaje: {
+    documento: (sitio: string) => `Ventana de alunizaje · ${sitio}`,
+    rotulo: "Ventana de alunizaje",
+    titulo: (sitio: string) => `¿Cuándo alunizar en ${sitio}?`,
+    acceso: "Planear alunizaje",
+    sitio: "Sitio",
+    estancia: "Duración de la estancia",
+    estancias: { "72": "3 días", "156": "6,5 días", "336": "14 días" },
+    estanciaCorta: { "72": "3 d", "156": "6,5 d", "336": "14 d" },
+    referencia: "referencia",
+    notaReferencia: "6,5 días es la estancia de referencia de esta herramienta.",
+    cargando: "Calculando ventanas de alunizaje…",
+    mejor: {
+      rotulo: "Mejor ventana",
+      llega: (dia: string, hora: string) => `Llega el ${dia} a las ${hora} UTC`,
+      sale: (dia: string, hora: string) => `Salida: ${dia}, ${hora} UTC`,
+      enLima: (dia: string, hora: string) => `${dia}, ${hora}`,
+      conSolYTierra: "con Sol y Tierra a la vez",
+      deEstancia: (pct: string, estancia: string) => `${pct} de una estancia de ${estancia}`,
+      empate: "Primera de varias ventanas equivalentes",
+      empateCalendario: "Las demás están en el calendario de calor.",
+      sinVentana: "Sin ventana con Sol y enlace directo con la Tierra en este periodo",
+      sinVentanaDetalle: "Ninguna fecha de llegada da horas con el Sol y la Tierra a la vez sobre el horizonte. Un enlace con la Tierra necesitaría un satélite de retransmisión.",
+      sinEvaluadas: "No hay ventanas evaluadas para esta estancia",
+      sinEvaluadasDetalle: "La estancia no cabe en los datos cargados. Prueba con una estancia más corta.",
+      verCielo: "Ver el cielo al llegar",
+      relieve: (nota: string) => `* Sol rasante, ${nota}: con el relieve real puede haber menos horas de las calculadas.`,
+    },
+    alLlegar: {
+      titulo: "¿Hay Sol y Tierra al llegar?",
+      sol: { si: "Sol al llegar", no: "Sin Sol al llegar" },
+      tierra: { si: "Tierra al llegar", no: "Sin Tierra al llegar" },
+    },
+    riesgo: {
+      sinEnlace: (horas: string) => `Sin enlace con la Tierra durante ${horas} seguidas`,
+      todaLaEstancia: (horas: string) => `Sin enlace con la Tierra durante toda la estancia (≥ ${horas})`,
+      enlaceContinuo: "Enlace con la Tierra durante toda la estancia",
+    },
+    alternativas: {
+      titulo: "Alternativas",
+      item: (dia: string, hora: string) => `${dia}, ${hora} UTC`,
+      elegir: (dia: string, hora: string, horas: string) => `Ver en el calendario la llegada del ${dia}, ${hora} UTC: ${horas} con Sol y Tierra`,
+    },
+    calendario: {
+      titulo: "Calendario de llegadas",
+      ayuda: "Cada día dice qué parte de la estancia tendría Sol y Tierra a la vez si llegas a la mejor hora de ese día. Toca un día para ver la estancia.",
+      meses: "Mes",
+      mes: (mes: string, max: string) => `${mes}: hasta ${max}`,
+      mesSinDatos: (mes: string) => `${mes}: sin datos`,
+      rejilla: (mes: string) => `Fechas de llegada de ${mes}. Flechas para moverte entre días, Re Pág y Av Pág para cambiar de mes, Enter para elegir.`,
+      celda: (dia: string, pct: string, horas: string, hora: string) => `${dia}: ${pct} de la estancia con Sol y Tierra (${horas}), llegando a las ${hora} UTC`,
+      celdaMejor: "Mejor ventana",
+      celdaSinDatos: (dia: string) => `${dia}: sin datos, la estancia no cabe en el periodo`,
+      leyenda: "% de la estancia con Sol y Tierra a la vez",
+      escalones: ["0 %", "menos de 25 %", "25 a 50 %", "50 a 75 %", "75 % o más"],
+      mejorMarca: "mejor ventana",
+      tabla: "Ver el mes como tabla",
+      tablaTitulo: (mes: string) => `Llegadas de ${mes}`,
+      columnas: { dia: "Día de llegada", hora: "Mejor hora (UTC)", horas: "Horas con Sol y Tierra", pct: "% de la estancia" },
+      sinDatos: "sin datos",
+    },
+    detalle: {
+      titulo: (dia: string, hora: string) => `Si llegas el ${dia} a las ${hora} UTC`,
+      resumen: (horas: string, pct: string) => `${horas} con Sol y Tierra a la vez (${pct} de la estancia)`,
+      banda: (desde: string, hasta: string) => `Sol y Tierra sobre el horizonte durante la estancia, del ${desde} al ${hasta} UTC.`,
+      cargando: "Cargando la estancia…",
+      elige: "Toca un día del calendario para ver la estancia sobre la línea de tiempo.",
+      verCielo: "Ver el cielo en ese instante",
+    },
+    notas: {
+      datos: "Datos: seis meses de efemérides hora a hora (diciembre de 2026 a mayo de 2027).",
+      descartadas: (n: string) => `No se evaluaron ${n} horas de llegada del final del periodo: su estancia sale de los datos.`,
+    },
+    noDisponible: {
+      titulo: "La ventana de alunizaje aún no está disponible",
+      texto: "El servidor todavía no ofrece este cálculo. No se muestran datos de ejemplo.",
+    },
+    puntoPropio: "La ventana de alunizaje solo se calcula para los sitios del catálogo.",
+  },
   lujo: {
     sinDato: "Sin dato",
     medidor: {
@@ -1056,6 +1233,7 @@ export const ERRORES_DE_DOMINIO: Record<string, { titulo: string; mensaje: strin
   FECHA_ANTES_DE_LOS_DATOS: { titulo: "Fecha anterior a los datos", mensaje: "La fecha inicial es anterior al primer dato disponible.", accion: "Elige una fecha de inicio dentro del periodo con datos." },
   FECHA_FUERA_DE_PROYECCION: { titulo: "Fecha demasiado lejana", mensaje: "La fecha final queda demasiado lejos de los datos para estimarla.", accion: "Elige una fecha final más cercana al último dato." },
   RANGO_SIN_DATOS: { titulo: "Sin datos en ese rango", mensaje: "No hay datos en el rango de fechas pedido.", accion: "Prueba con otro rango de fechas." },
+  ESTANCIA_INVALIDA: { titulo: "Estancia no válida", mensaje: "La duración de la estancia no es una de las permitidas.", accion: "Elige una estancia de 72, 156 o 336 horas." },
   SITIO_REQUERIDO: { titulo: "Falta elegir un sitio", mensaje: "No indicaste ningún sitio.", accion: "Elige al menos un sitio." },
   COMPARACION_SITIOS_INVALIDA: { titulo: "Demasiados sitios", mensaje: "Solo se pueden comparar unos pocos sitios a la vez.", accion: "Reduce la selección de sitios." },
   HORIZONS_FECHAS_FUERA_DE_RANGO: { titulo: "Fechas fuera de rango", mensaje: "Las fechas quedan fuera del periodo que se puede consultar en vivo.", accion: "Elige fechas dentro del periodo permitido." },
@@ -1131,6 +1309,8 @@ export function describirInstante(utc: Utc, fila: FilaCielo): string {
 
 export const horaLocal = (hora: string): string => `${hora} ${ZONA_HORARIA_LOCAL.NOMBRE}, ${ZONA_HORARIA_LOCAL.DESFASE}`;
 
+/** Valores de `agencia` del catálogo que no son nombres propios y hay que traducir (en español ya llegan bien). */
+export const AGENCIAS_CONOCIDAS: Record<string, string> = {};
 export const SIN_LINEA_DIRECTA: string = "Sin línea directa con la Tierra: requiere satélite de retransmisión.";
 
 export interface FilaVeredicto {

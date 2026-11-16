@@ -15,7 +15,7 @@ import { useDesde } from "../hooks/useMedia";
 import { ID_NOMBRE_SITIO, PROYECCION_MODELO, RUTAS } from "../lib/constants";
 import { coordenadas } from "../lib/formato";
 import { esPuntoPropio } from "../lib/puntoPropio";
-import { NOMBRE_CATEGORIA, T } from "../lib/textos";
+import { NOMBRE_CATEGORIA, T, agenciaLegible } from "../lib/textos";
 import type { Site, Utc } from "../lib/tipos";
 
 export interface ContextoSitio {
@@ -34,9 +34,9 @@ export default function SitioLayout() {
   const propio = esPuntoPropio(siteId);
   const { usuario } = useSesion();
   const nombre = useLlegadaCompartida<HTMLParagraphElement>(ID_NOMBRE_SITIO(siteId ?? ""));
-  // En el Cielo manda la escena, y en móvil el contenido de la pestaña: ahí el estado de misión queda plegado
-  // (la franja con el veredicto y el resumen en una línea) y se abre a demanda.
-  const enCielo = useMatch(RUTAS.CIELO(":siteId")) !== null;
+  // Los medidores e indicadores del periodo se abren solos solo en Ventanas (la pestaña de las cifras del periodo) y en
+  // pantallas anchas; en el resto quedan plegados bajo las 3 cifras «ahora» para no repetirse en cada pestaña.
+  const enVentanas = useMatch(RUTAS.VENTANAS(":siteId")) !== null;
   const esTableta = useDesde("md");
 
   if (estado === "cargando") return <div className="contenedor min-h-[60svh]"><EstadoCarga /></div>;
@@ -65,7 +65,7 @@ export default function SitioLayout() {
         <div className="min-w-0">
           <p className="rotulo flex items-center gap-2 max-md:hidden">
             <GlifoCategoria categoria={sitio.categoria} className="size-3" />
-            {propio ? T.puntoPropio.marca : `${NOMBRE_CATEGORIA[sitio.categoria]} · ${sitio.agencia}`}
+            {propio ? T.puntoPropio.marca : `${NOMBRE_CATEGORIA[sitio.categoria]} · ${agenciaLegible(sitio.agencia)}`}
           </p>
           <p ref={nombre} className="titulo-instrumento text-seccion text-texto truncate md:mt-1.5">{sitio.nombre}</p>
           <p className="text-dato-sm text-texto-2 font-mono md:mt-1" data-dato>
@@ -81,7 +81,7 @@ export default function SitioLayout() {
         </div>
       </header>
       <div className="contenedor mt-3 md:mt-4">
-        <EstadoMision key={id} sitio={sitio} desde={periodo.desde} hasta={periodo.hasta} plegado={enCielo || !esTableta} />
+        <EstadoMision key={id} sitio={sitio} desde={periodo.desde} hasta={periodo.hasta} plegado={!enVentanas || !esTableta} />
       </div>
       <div className="material sticky top-(--nav-alto-movil) z-20 mt-1 md:top-(--nav-alto) md:mt-2">
         <div className="contenedor">

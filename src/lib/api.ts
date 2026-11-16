@@ -7,7 +7,7 @@ import type { ProyeccionModelo } from "./proyeccionModelo";
 import { CLAVE_DE_SESION, accesoApi } from "./sesion";
 import { efemeridesMuestra, marcarMuestraActiva, metricasMuestra, puestasMuestra, sitiosMuestra } from "./muestra";
 import { idDePunto, puntoDeId, type Punto } from "./puntoPropio";
-import type { Efemerides, InformeCsv, Metrica, Puestas, Rango, RespuestaHorizons, RespuestaMetricas, ResultadoGuardado, Simulacion, Site, TipoArchivo, Utc } from "./tipos";
+import type { Efemerides, EstanciaH, InformeCsv, Metrica, Puestas, Rango, RespuestaHorizons, RespuestaMetricas, RespuestaVentanas, ResultadoGuardado, Simulacion, Site, TipoArchivo, Utc } from "./tipos";
 
 type Params = Record<string, string | readonly string[] | undefined>;
 
@@ -146,6 +146,13 @@ export const obtenerPuestas = (id: string, desde?: Utc, { signal, modo }: Opcion
  */
 export const obtenerSimulacion = (id: string, rango: Rango = {}, { signal }: Opciones = {}): Promise<Simulacion> =>
   pedir<Simulacion>(API.SIMULACION(id), { ...rango }, signal);
+
+/**
+ * Ventanas de alunizaje de 1 a 5 sitios para una estancia de 72, 156 o 336 h, sobre todos los datos cargados.
+ * Sin respaldo de ejemplo: si la API no ofrece el cálculo, la pantalla lo dice; no se inventa una ventana.
+ */
+export const obtenerVentanasAlunizaje = (ids: readonly string[], estanciaH: EstanciaH, { signal }: Opciones = {}): Promise<RespuestaVentanas> =>
+  pedir<RespuestaVentanas>(API.VENTANAS_ALUNIZAJE, { [API.PARAM.SITE_ID]: ids, [API.PARAM_ESTANCIA]: String(estanciaH) }, signal);
 
 /** Transparencia del análisis de un sitio: siempre la API real, sin muestra (un fallo es un error con su acción). */
 export const obtenerAnalisis = (id: string, variable?: VariableAnalisis, { signal }: Opciones = {}): Promise<Analisis> =>

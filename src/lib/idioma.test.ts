@@ -139,6 +139,7 @@ const CODIGOS_BACKEND = [
   "HORIZONS_OCUPADO", "HORIZONS_TIEMPO_AGOTADO", "HORIZONS_NO_DISPONIBLE", "HORIZONS_RESPUESTA_INVALIDA", "HORIZONS_RESULTADO_NO_VALIDO",
   "CARGA_EN_CONFLICTO", "AUDITORIA_NO_DISPONIBLE", "CATALOGO_NO_DISPONIBLE", "CATALOGO_INVALIDO", "EFEMERIDES_INVALIDAS",
   "METRICAS_INVALIDAS", "SIMULACION_NO_DISPONIBLE",
+  "ESTANCIA_INVALIDA", // ventanas de alunizaje (app/routers/ventanas.py)
 ];
 describe("catálogo de códigos de error del backend", () => {
   const catalogo = (m: typeof es | typeof en) => ({ ...Object.fromEntries(Object.values(m.ERRORES_POR_ESTADO).map((e) => [e.codigo, e])), ...m.ERRORES_DE_DOMINIO });

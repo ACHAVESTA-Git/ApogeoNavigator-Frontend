@@ -42,8 +42,11 @@ export const fechaLarga = (utc: Utc): string => `${fmtLarga.format(aMs(utc))}, $
 /** '14 dic'. */
 export const diaCorto = (utc: Utc): string => fmtDiaMes.format(aMs(utc));
 /** 'dic 2026' (mes abreviado y año, para rejillas de meses). */
-const fmtMesCorto = new Intl.DateTimeFormat(LOCALE, { timeZone: "UTC", month: "short", year: "numeric" });
-export const mesCorto = (utc: Utc): string => fmtMesCorto.format(aMs(utc));
+const fmtMesAnio = new Intl.DateTimeFormat(LOCALE, { timeZone: "UTC", month: "short", year: "numeric" });
+export const mesAnio = (utc: Utc): string => fmtMesAnio.format(aMs(utc));
+const fmtMesCorto = new Intl.DateTimeFormat(LOCALE, { timeZone: "UTC", month: "short" });
+/** 'dic'. */
+export const mesCorto = (utc: Utc): string => fmtMesCorto.format(aMs(utc)).replace(".", "");
 /** 'diciembre de 2026'. */
 export const mesLargo = (utc: Utc): string => fmtMes.format(aMs(utc));
 

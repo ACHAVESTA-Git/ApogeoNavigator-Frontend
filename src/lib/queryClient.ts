@@ -23,6 +23,7 @@ export const CLAVES = {
   metricasTodas: ["metricas"] as const,
   puestas: (id: string, desde: string) => ["puestas", id, desde] as const,
   analisis: (id: string, variable?: string) => ["analisis", id, variable] as const,
+  ventanasAlunizaje: (ids: readonly string[], estanciaH: number) => ["ventanas-alunizaje", [...ids], estanciaH] as const,
   analisisTodos: ["analisis"] as const,
   proyeccion: (id: string, pasoHoras: number) => ["proyeccion", id, pasoHoras] as const,
 };

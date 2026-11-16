@@ -1,6 +1,6 @@
 import { CalendarClock, Radio, Sun } from "lucide-react";
 import { PROYECCION_MODELO } from "../../lib/constants";
-import { mesCorto, mesLargo } from "../../lib/fechas";
+import { mesAnio, mesLargo } from "../../lib/fechas";
 import { horas, pct } from "../../lib/formato";
 import { inicioDelMes, type MesProyeccion } from "../../lib/proyeccionModelo";
 import { NOMBRE_NIVEL, T } from "../../lib/textos";
@@ -74,7 +74,7 @@ export function LineaMeses({ meses, elegido, alElegir, parciales }: { meses: rea
                 className={unir("rounded-panel flex w-full flex-col gap-1.5 border p-3 text-left transition-[background-color,border-color,transform] duration-(--dur-micro) ease-salida active:scale-[0.98]",
                   activo ? "border-texto/30 bg-texto/[0.08]" : "border-texto/8 bg-texto/[0.02] hover:border-texto/20")}>
                 <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                  <span className="rotulo text-texto-2!" data-dato>{mesCorto(inicio)}</span>
+                  <span className="rotulo text-texto-2!" data-dato>{mesAnio(inicio)}</span>
                   {parcial && <Parcial />}
                 </span>
                 <span className="flex items-center gap-2"><Sun aria-hidden="true" className="text-sol size-4 shrink-0" /><GlifoSemaforo nivel={m.semaforo.energia} /></span>

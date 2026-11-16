@@ -161,3 +161,47 @@ export interface FilaReferencia extends ValoresMetricas {
   inicio_utc: Utc;
   fin_utc: Utc;
 }
+
+// ---------------------------------------------------------------- GET /api/ventanas-alunizaje (HU-18)
+export type EstanciaH = 72 | 156 | 336;
+/** Una estancia [llegada_utc, salida_utc). Solo las horas con Sol y Tierra son imprescindibles para la interfaz. */
+export interface VentanaAlunizaje {
+  llegada_utc: Utc;
+  salida_utc: Utc;
+  horas_sol?: number;
+  horas_tierra?: number;
+  horas_sol_y_tierra: number;
+  pct_sol?: number;
+  pct_tierra?: number;
+  pct_sol_y_tierra?: number;
+  sol_al_llegar?: boolean;
+  tierra_al_llegar?: boolean;
+  /** Tramo continuo más largo sin la Tierra dentro de la estancia (0 si siempre se ve). */
+  racha_sin_tierra_h?: number;
+}
+/** Mejor hora de llegada de un día UTC: alimenta el calendario de calor. */
+export interface DiaVentana {
+  dia_utc: string; // 'YYYY-MM-DD'
+  llegada_utc: Utc;
+  horas_sol_y_tierra: number;
+  pct_sol_y_tierra: number;
+}
+export interface ResultadoVentanas {
+  site_id: string;
+  inicio_utc?: Utc;
+  fin_utc?: Utc;
+  paso_horas?: number;
+  ventanas_evaluadas?: number;
+  /** Horas de llegada que no se evaluaron porque su estancia sale de los datos. */
+  ventanas_descartadas?: number;
+  trunca?: boolean;
+  serie_diaria: DiaVentana[];
+  /** Hasta 3 ventanas sin solape, la mejor primero. */
+  mejores: VentanaAlunizaje[];
+}
+export interface RespuestaVentanas {
+  estancia_h: number;
+  resultados: ResultadoVentanas[];
+  /** null con un solo sitio o si ninguna ventana cabe. */
+  mejor_global?: { site_id: string; ventana: VentanaAlunizaje } | null;
+}

@@ -5,7 +5,7 @@
 import { DATOS, MARCA, SEMAFORO, UMBRAL_RASANTE_DEG, ZONA_HORARIA_LOCAL } from "./constants";
 import { diaCorto, esMesCompleto, fechaHora, fechaLarga, mesLargo, soloFecha, soloHora } from "./fechas";
 import { grados, horas, numero, pct } from "./formato";
-import { decidir, diferencias, type Diferencia, type LineaComparada } from "./comparar";
+import { decidir, diferencias, type Diferencia, type FraseRacha, type LineaComparada } from "./comparar";
 import type { FilaVeredicto, PartesVeredicto, Textos, TextosApiAnalisis } from "./textos.es";
 import type { Astro, Categoria, EventosAstro, NivelSemaforo, Utc } from "./tipos";
 
@@ -95,45 +95,54 @@ export const T: Textos = {
   },
   inicio: {
     documento: "Home",
-    rotulo: (coordenada: string, periodo: string) => `Shackleton crater · ${coordenada} · ${periodo}`,
-    // Colour accent only on "the Sun". True for the month of the story: with more months of data the Sun at
-    // Shackleton does set (27 Jan 2027), so the copy never says it "never" sets.
-    titular: { antes: "At Shackleton, by the south\u00a0pole, ", acento: "the Sun", despues: " does not set in December: it rolls along the horizon." },
-    apoyo: "A small change of place or date can decide whether a lander has power and a direct line to Earth. Compare it in minutes.",
+    // Colour accent only on "the Sun". True for the whole data period: by the pole the Sun never strays from the
+    // horizon, and with more months it does set (27 Jan 2027), so the copy never says it "never" sets.
+    titular: { antes: "By the Moon's south\u00a0pole, ", acento: "the Sun", despues: " barely rises: it rolls along the horizon." },
+    apoyo: "A small change of place or date decides whether a lander has power and a direct line to Earth.",
+    cta: "Choose a site",
+    hero: {
+      lugar: (dia: string) => `Shackleton crater · ${dia}`,
+      escena: (dia: string) => `Panorama of the horizon at Shackleton on ${dia} (UTC): the Sun and the Earth move through the day following their ephemeris, hour by hour.`,
+      instante: "Scene instant",
+      hoy: "Today's sky, hour by hour.",
+      fuera: {
+        antes: (hoy: string, dia: string) => `Today (${hoy}) has no data yet: showing the first day with data, ${dia}.`,
+        despues: (hoy: string, dia: string) => `Today (${hoy}) is past the data: showing the last day with data, ${dia}.`,
+      },
+      sinEfemeride: "The ephemeris for this day could not be loaded.",
+    },
     actos: {
-      progreso: "Acts of the story",
-      ir: (n: number) => `Go to act ${n}`,
-      uno: { rotulo: "Act 1 · Centre of Shackleton, December 2026, ideal horizon", kpi: "Hours with Sun in December", contexto: (min: string, max: string) => `In December the Sun never climbs above ${max} nor drops below ${min}: it circles the horizon without setting. Real terrain can hide it.` },
-      dos: {
-        rotulo: "Act 2 · The exploration",
-        titular: { antes: "But ", acento: "the Earth", despues: " does hide." },
-        kpi: "Hours with a direct link",
-        contexto: (salida: string, puesta: string, sin: string) => `It rises on ${salida} and sets on ${puesta} (UTC). For the rest of the month, ${sin} with no direct line to Earth.`,
-      },
-      tres: {
-        rotulo: "Act 3 · The decision",
-        titular: "Choose where to land.",
-        kpi: "Sites to compare",
-        contexto: (puesta: string) => `A change of place or date changes everything: on ${puesta} (UTC) the Sun at Shackleton sets too. Compare power and link before you decide.`,
-      },
-      de: (total: string) => `of ${total}`,
+      uno: { contexto: (min: string, max: string) => `In December the Sun never climbs above ${max} nor drops below ${min}: it circles the horizon without setting. Real terrain can hide it.` },
+      dos: { contexto: (salida: string, puesta: string, sin: string) => `It rises on ${salida} and sets on ${puesta} (UTC). For the rest of the month, ${sin} with no direct line to Earth.` },
+      tres: { contexto: (puesta: string) => `A change of place or date changes everything: on ${puesta} (UTC) the Sun at Shackleton sets too. Compare power and link before you decide.` },
       // Day and time of a crossing inside a sentence of the story: "14 Dec at 23:00".
       momento: (utc: Utc) => `${diaCorto(utc)} at ${soloHora(utc)}`,
-      sigue: "Scroll to move through the month",
     },
-    explorar: "Explore sites",
-    verCielo: "See the sky at Shackleton",
-    escena: "360° panorama of the horizon at Shackleton. The Sun travels along the horizon without setting; the Earth rises and sets.",
-    escala: "Vertical scale magnified near the horizon",
-    regla: "Move through the month at Shackleton",
-    datosReales: "Real data from JPL Horizons, one sample every 3 h.",
-    preguntas: {
-      titulo: "Three questions before landing",
-      lista: [
-        { astro: "sol", pregunta: "Is there Sun?", respuesta: "With no Sun above the horizon there is no power. We measure how many hours each site gets it and how high." },
-        { astro: "tierra", pregunta: "Is the Earth in view?", respuesta: "The Earth is the lifeline: if it is not above the horizon, there is no direct communication link." },
-        { astro: "puesta", pregunta: "How long until it sets?", respuesta: "Knowing how many hours remain before either one crosses the line decides the mission plan." },
-      ],
+    cifras: {
+      titulo: "The catalogue in three figures",
+      sitios: { rotulo: "Sites", contexto: "landing sites to explore and compare" },
+      horas: { rotulo: "Ephemeris", contexto: (desde: string, hasta: string) => `of Sun and Earth positions at Shackleton, hour by hour, from ${desde} to ${hasta} (UTC)` },
+      huella: { rotulo: "File fingerprint", contexto: (firma: string) => `SHA3-256 of the Shackleton ephemeris · ${firma}`, completa: (huella: string) => `SHA3-256 fingerprint starting with ${huella}` },
+    },
+    recorrido: {
+      titulo: "Three steps to decide",
+      indice: "Tour steps",
+      paso: (n: number, nombre: string) => `Step ${n} · ${nombre}`,
+      cielo: {
+        nombre: "Sky", titulo: "See where the Sun and the Earth are", enlace: "See the sky at Shackleton",
+        instante: (cuando: string) => `Shackleton · ${cuando} UTC`, tierra: "The Earth does hide.",
+        elevacion: (astro: string) => `Elevation · ${astro}`, sobre: "above the horizon", bajo: "below the horizon",
+      },
+      comparar: {
+        nombre: "Compare", titulo: "Compare power and link across sites", enlace: "Open the comparison",
+        periodo: (mes: string) => `Viability in ${mes}`,
+        fila: (sol: string, tierra: string) => `${sol} of Sun · ${tierra} with the Earth in view`,
+      },
+      analisis: {
+        nombre: "Analysis", titulo: "Check where every figure comes from", enlace: "Open the Shackleton analysis",
+        texto: "Every ephemeris file carries its fingerprint and the signature of the manifest. The analysis shows the path of the data, from the CSV to the chart, and the error of the fit.",
+      },
+      sinDatos: "These data could not be loaded. Try again in a moment.",
     },
     polo: {
       titulo: "Why the pole is extreme",
@@ -186,7 +195,7 @@ export const T: Textos = {
     mapa: (n: number) => `Polar map of the Moon centred on the south pole with ${n} landing sites. The list beside it holds the same sites.`,
     haciaTierra: "0° · towards Earth",
     caraOculta: "Far side: no Earth in the sky",
-    zonaArtemis: "Artemis zone",
+    regionPolarSur: "south polar region",
     ecuador: "equator",
     filtro: "Filter by category",
     todas: "All",
@@ -206,6 +215,12 @@ export const T: Textos = {
     ficha: (nombre: string) => `${nombre} details`,
     tarjeta: (nombre: string) => `Open ${nombre} details`,
     veredicto: "Verdict",
+    verCieloDe: (nombre: string) => `See the sky at ${nombre}`,
+    miniHorizonte: "Sun and Earth over the ideal horizon at the clock instant",
+    relojPausar: "Pause the motion",
+    relojReproducir: "Play the motion",
+    detalles: "Site details",
+    planear: "Plan a landing",
     medidores: (periodo: string) => `Power and comms in ${periodo}`,
   },
   mision: {
@@ -215,16 +230,30 @@ export const T: Textos = {
     mostrar: "Show mission status",
     ocultar: "Hide mission status",
     medidores: "Power and comms for the period",
-    resumen: (energia: string, comunicacion: string) => `Power ${energia} · Comms ${comunicacion}`,
-    puestaCorta: (horas: string) => `sunset in ${horas}`,
     energia: "Power",
     comunicacion: "Comms",
     puestaSol: (horas: string, fecha: string) => `Next sunset in ${horas} · ${fecha} UTC`,
     puestaTierra: (horas: string, fecha: string) => `Next Earthset in ${horas} · ${fecha} UTC`,
     sinPuestaSol: (fin: string) => `No sunset before ${fin} UTC, the end of the queried period.`,
     sinPuestaTierra: (fin: string) => `No Earthset before ${fin} UTC, the end of the queried period.`,
+    noSaleSol: "The Sun does not rise in this period",
+    noSaleTierra: "The Earth is not in view in this period",
     desdeInicio: (inicio: string) => `Hours counted from the start of the period (${inicio} UTC). Hourly step, ±1 h.`,
     tierraVisible: (pct: string, horas: string) => `Earth is in view ${pct} of the period (${horas}).`,
+    solAhora: "Sun now",
+    tierraAhora: "Earth now",
+    proximoEvento: "Next event",
+    sobre: "above the horizon",
+    bajo: "below the horizon",
+    puestaDe: (astro: "sol" | "tierra", fecha: string) => `${astro === "sol" ? "Sunset" : "Earthset"} · ${fecha} UTC · hourly step, ±1 h`,
+    sinEvento: "No sets ahead in this period's data",
+    fueraDePeriodo: "The simulation instant is outside this period",
+    instante: (fecha: string) => `Simulation instant: ${fecha} UTC`,
+    operativa: {
+      noche: { racha: (h: string) => `No Sun for ${h} in a row`, cero: "No night in this period", todo: (h: string) => `No Sun for the whole period (${h})` },
+      apagon: { racha: (h: string) => `No link to Earth for ${h}`, cero: "Link to Earth all period", todo: (h: string) => `No link to Earth for the whole period (${h})` },
+      ventana: { racha: (h: string) => `You get Sun and Earth together for ${h} in a row`, cero: "No Sun and Earth together in this period", todo: (h: string) => `You get Sun and Earth together all period (${h})` },
+    },
     indicadores: "Astronaut indicators",
     sinIndicadores: "This data does not include the astronaut indicators: no figure is shown.",
     alMenos: (valor: string) => `at least ${valor}`,
@@ -841,6 +870,74 @@ export const T: Textos = {
     verCielo: (nombre: string) => `Open the sky of ${nombre} at this instant`,
     verSitio: (nombre: string) => `See the windows at ${nombre}`,
     cargando: "Comparing…",
+    // Longest consecutive hours (astronaut indicators) and their operational reading.
+    // Site ranking (Top 5): the criterion is stated in one line and each row reads at a glance.
+    top: {
+      titulo: (n: number, periodo: string) => `Where to land · Top ${n} for ${periodo}`,
+      criterio: "Order: power and comms verdict first; on a tie, more consecutive hours with Sun and Earth both up.",
+      lista: (n: number) => `Ranking of the top ${n} sites`,
+      zona: "Sites in the ranking",
+      todos: "All",
+      polarSur: "South polar region",
+      polarSurAyuda: (grados: string) => `Latitude ${grados} S or further south.`,
+      puesto: (n: number) => `Rank ${n}`,
+      decisiva: "in a row with Sun and Earth both up",
+      decisivaLeida: (valor: string) => `You get Sun and Earth together for ${valor} in a row`,
+      sinVentana: "No window data",
+      // What the decisive figure is compared with: "14 h more than Chandrayaan-3 (rank 2)".
+      frente: (dif: number, valor: string, rival: string, puesto: number) =>
+        dif === 0 ? `Same as ${rival} (rank ${puesto})` : `${valor} ${dif > 0 ? "more" : "less"} than ${rival} (rank ${puesto})`,
+      elegir: (nombre: string) => `Open the detail for ${nombre}`,
+      enDetalle: "In the detail",
+      tocar: "Tap a site to see its horizon. Up to 3 at once.",
+      elegidos: (n: number, max: number) => `${n} of ${max} in the detail`,
+      irAlDetalle: "See the detail",
+      sinPolares: "No site in the catalogue is in the south polar region.",
+      detalle: "Detail",
+      detalleDe: (nombres: string) => `Horizon of ${nombres}`,
+      planear: "Plan landing",
+      planearDe: (nombre: string) => `Plan the landing at ${nombre}`,
+      sitio: "Site",
+      insignia: (nombre: string) => `${nombre} mission insignia`,
+      creditoInsignia: "Insignia: NASA",
+      avalInsignias: "Mission insignias: NASA, unmodified. NASA does not endorse this project.",
+    },
+    podio: {
+      sensible: "Terrain-sensitive",
+      alMenosLeido: (valor: string) => `at least ${valor}`,
+      enInstante: (sol: number, tierra: number, n: number) => `At the selected instant: ${sol} of ${n} with Sun · ${tierra} of ${n} with Earth`,
+      mision: "What it means for your mission",
+      rachas: {
+        noche_mas_larga: "Longest night",
+        apagon_tierra_mas_largo: "Longest Earth blackout",
+        ventana_sol_y_tierra: "Sun + Earth window",
+      },
+      // Sentences from docs/datos/indicadores-astronauta.md (§4). `borde`: the run started earlier or the period is not a calendar month.
+      frases: {
+        noche_mas_larga: {
+          normal: (f: FraseRacha) => `Up to ${f.horas} in a row without Sun at ${f.sitio} (${f.mes}). Size the battery to cover that night.`,
+          cero: (f: FraseRacha) => `No night in ${f.mes}: the Sun stays above the ideal horizon. Terrain could still block it.`,
+          sigue: (f: FraseRacha) => `At least ${f.horas} without Sun; the night continues into next month. Size the battery for more than ${f.horas}.`,
+          borde: (f: FraseRacha) => `At least ${f.horas} without Sun; the night extends beyond ${f.mes}. Size the battery for more than ${f.horas}.`,
+          todo: (f: FraseRacha) => `No Sun for all of ${f.mes} (${f.horas}); it may continue afterwards. No solar power in this period.`,
+        },
+        apagon_tierra_mas_largo: {
+          normal: (f: FraseRacha) => `Up to ${f.horas} in a row without Earth in view at ${f.sitio} (${f.mes}). Size the relay or onboard data storage.`,
+          cero: (f: FraseRacha) => `Earth never sets in ${f.mes}: direct line of sight all period with an ideal horizon. Terrain could still cut it.`,
+          sigue: (f: FraseRacha) => `At least ${f.horas} without Earth in view; the blackout continues into next month. Size relay or storage for more.`,
+          borde: (f: FraseRacha) => `At least ${f.horas} without Earth in view; the blackout extends beyond ${f.mes}. Size relay or storage for more.`,
+          todo: (f: FraseRacha) => `Earth is not in view for all of ${f.mes} (${f.horas}). No direct link: communications depend on a relay.`,
+        },
+        ventana_sol_y_tierra: {
+          normal: (f: FraseRacha) => `Up to ${f.horas} in a row with Sun and Earth both up: the best window for solar power plus a direct link.`,
+          cero: (f: FraseRacha) => `In ${f.mes} Sun and Earth are never up together: no operation with solar power and a direct link at once.`,
+          sigue: (f: FraseRacha) => `At least ${f.horas} with Sun and Earth both up; the window continues into next month.`,
+          borde: (f: FraseRacha) => `At least ${f.horas} with Sun and Earth both up; the window extends beyond ${f.mes}.`,
+          todo: (f: FraseRacha) => `Sun and Earth both above the horizon all of ${f.mes} (${f.horas}): one continuous window for the period.`,
+        },
+      },
+      avisoRachas: "Ideal horizon: no terrain. Figures are ephemerides computed from JPL Horizons, not measurements; consecutive hours are multiples of 1 h.",
+    },
   },
   diaLunar: {
     documento: (nombre: string) => `Lunar day · ${nombre}`,
@@ -954,6 +1051,85 @@ export const T: Textos = {
     volver: "Back to Sites",
   },
   // Primitives of the «Lujo inmersivo» redesign (src/components/lujo).
+  alunizaje: {
+    documento: (sitio: string) => `Landing window · ${sitio}`,
+    rotulo: "Landing window",
+    titulo: (sitio: string) => `When to land at ${sitio}?`,
+    acceso: "Plan a landing",
+    sitio: "Site",
+    estancia: "Length of stay",
+    estancias: { "72": "3 days", "156": "6.5 days", "336": "14 days" },
+    estanciaCorta: { "72": "3 d", "156": "6.5 d", "336": "14 d" },
+    referencia: "reference",
+    notaReferencia: "6.5 days is this tool's reference stay.",
+    cargando: "Working out landing windows…",
+    mejor: {
+      rotulo: "Best window",
+      llega: (dia: string, hora: string) => `Arrive on ${dia} at ${hora} UTC`,
+      sale: (dia: string, hora: string) => `Departure: ${dia}, ${hora} UTC`,
+      enLima: (dia: string, hora: string) => `${dia}, ${hora}`,
+      conSolYTierra: "with Sun and Earth at once",
+      deEstancia: (pct: string, estancia: string) => `${pct} of a ${estancia} stay`,
+      empate: "First of several equivalent windows",
+      empateCalendario: "The others are on the heat calendar.",
+      sinVentana: "No window with Sun and a direct link to Earth in this period",
+      sinVentanaDetalle: "No arrival date gives hours with the Sun and the Earth above the horizon at once. A link to Earth would need a relay satellite.",
+      sinEvaluadas: "No windows were evaluated for this stay",
+      sinEvaluadasDetalle: "The stay does not fit in the loaded data. Try a shorter stay.",
+      verCielo: "See the sky on arrival",
+      relieve: (nota: string) => `* Grazing Sun, ${nota}: with real terrain there may be fewer hours than calculated.`,
+    },
+    alLlegar: {
+      titulo: "Sun and Earth on arrival?",
+      sol: { si: "Sun on arrival", no: "No Sun on arrival" },
+      tierra: { si: "Earth on arrival", no: "No Earth on arrival" },
+    },
+    riesgo: {
+      sinEnlace: (horas: string) => `No link to Earth for ${horas} in a row`,
+      todaLaEstancia: (horas: string) => `No link to Earth for the whole stay (≥ ${horas})`,
+      enlaceContinuo: "Link to Earth for the whole stay",
+    },
+    alternativas: {
+      titulo: "Alternatives",
+      item: (dia: string, hora: string) => `${dia}, ${hora} UTC`,
+      elegir: (dia: string, hora: string, horas: string) => `Show on the calendar the arrival on ${dia}, ${hora} UTC: ${horas} with Sun and Earth`,
+    },
+    calendario: {
+      titulo: "Arrival calendar",
+      ayuda: "Each day says how much of the stay would have Sun and Earth at once if you arrive at that day's best hour. Tap a day to see the stay.",
+      meses: "Month",
+      mes: (mes: string, max: string) => `${mes}: up to ${max}`,
+      mesSinDatos: (mes: string) => `${mes}: no data`,
+      rejilla: (mes: string) => `Arrival dates in ${mes}. Arrow keys move between days, Page Up and Page Down change month, Enter selects.`,
+      celda: (dia: string, pct: string, horas: string, hora: string) => `${dia}: ${pct} of the stay with Sun and Earth (${horas}), arriving at ${hora} UTC`,
+      celdaMejor: "Best window",
+      celdaSinDatos: (dia: string) => `${dia}: no data, the stay does not fit in the period`,
+      leyenda: "% of the stay with Sun and Earth at once",
+      escalones: ["0%", "under 25%", "25 to 50%", "50 to 75%", "75% or more"],
+      mejorMarca: "best window",
+      tabla: "Show the month as a table",
+      tablaTitulo: (mes: string) => `Arrivals in ${mes}`,
+      columnas: { dia: "Arrival day", hora: "Best hour (UTC)", horas: "Hours with Sun and Earth", pct: "% of the stay" },
+      sinDatos: "no data",
+    },
+    detalle: {
+      titulo: (dia: string, hora: string) => `If you arrive on ${dia} at ${hora} UTC`,
+      resumen: (horas: string, pct: string) => `${horas} with Sun and Earth at once (${pct} of the stay)`,
+      banda: (desde: string, hasta: string) => `Sun and Earth above the horizon during the stay, from ${desde} to ${hasta} UTC.`,
+      cargando: "Loading the stay…",
+      elige: "Tap a day on the calendar to see the stay on the timeline.",
+      verCielo: "See the sky at that moment",
+    },
+    notas: {
+      datos: "Data: six months of hourly ephemerides (December 2026 to May 2027).",
+      descartadas: (n: string) => `${n} arrival hours at the end of the period were not evaluated: their stay runs past the data.`,
+    },
+    noDisponible: {
+      titulo: "The landing window is not available yet",
+      texto: "The server does not offer this calculation yet. No sample data is shown.",
+    },
+    puntoPropio: "The landing window is only worked out for catalogue sites.",
+  },
   lujo: {
     sinDato: "No data",
     medidor: {
@@ -1042,6 +1218,7 @@ export const ERRORES_DE_DOMINIO: Record<string, { titulo: string; mensaje: strin
   FECHA_ANTES_DE_LOS_DATOS: { titulo: "Date before the data", mensaje: "The start date is earlier than the first data available.", accion: "Choose a start date within the period with data." },
   FECHA_FUERA_DE_PROYECCION: { titulo: "Date too far ahead", mensaje: "The end date is too far from the data to be estimated.", accion: "Choose an end date closer to the last data point." },
   RANGO_SIN_DATOS: { titulo: "No data in that range", mensaje: "There is no data in the date range requested.", accion: "Try another date range." },
+  ESTANCIA_INVALIDA: { titulo: "Invalid stay", mensaje: "The length of the stay is not one of the allowed values.", accion: "Choose a stay of 72, 156 or 336 hours." },
   SITIO_REQUERIDO: { titulo: "No site chosen", mensaje: "You did not indicate any site.", accion: "Choose at least one site." },
   COMPARACION_SITIOS_INVALIDA: { titulo: "Too many sites", mensaje: "Only a few sites can be compared at a time.", accion: "Reduce the selection of sites." },
   HORIZONS_FECHAS_FUERA_DE_RANGO: { titulo: "Dates out of range", mensaje: "The dates lie outside the period that can be queried live.", accion: "Choose dates within the allowed period." },
@@ -1166,6 +1343,7 @@ export function describirInstante(utc: Utc, fila: FilaCielo): string {
 
 export const horaLocal = (hora: string): string => `${hora} ${ZONA_HORARIA_LOCAL.NOMBRE}, ${ZONA_HORARIA_LOCAL.DESFASE}`;
 
+export const AGENCIAS_CONOCIDAS: Record<string, string> = { "Referencia (JPL Horizons)": "Reference (JPL Horizons)" };
 export const SIN_LINEA_DIRECTA = "No direct line to Earth: it needs a relay satellite.";
 
 const listar = (nombres: string[]): string =>
