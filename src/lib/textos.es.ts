@@ -37,6 +37,20 @@ export const T = {
   descripcion: "Compara sitios de alunizaje: dónde están el Sol y la Tierra sobre el horizonte, cuántas horas de energía y de enlace directo hay, y cuándo se ponen. Datos de JPL Horizons.",
   utc: "UTC",
   oeste: "O",
+  // Notas y limitaciones que llegan del backend en español: el cliente las traduce por `codigo` (o por su forma conocida).
+  notasApi: {
+    limitaciones: {
+      horizonte_ideal: "Horizonte ideal: se supone una Luna lisa. El relieve real (montañas, cráteres) puede tapar un Sol bajo.",
+      no_sustituye_efemerides: "La proyección es una estimación estadística y no sustituye a las efemérides físicas de Horizons.",
+      validacion_no_ciega: "Se descartaron versiones del modelo mirando el error de validación: las cifras no son una prueba ciega estricta.",
+      sol_rasante_polo: `Sol rasante: si el Sol no supera ${UMBRAL_RASANTE_DEG}° de elevación, un error de 1° cambia el resultado y las puestas casi no se predicen.`,
+      cenit_ecuador: "Sol cerca del cénit: el azimut solar gira de golpe y su proyección no es fiable.",
+      validacion_de_otros_datos: "Estos datos no son los de la validación: sus errores son de referencia y no se han medido con tus datos.",
+    } as Record<string, string>,
+    ventanaCorta: (dias: string, anio: string) => `La ventana de datos es de ${dias} días, menos que el año de eclipses (${anio} d): los ciclos largos no se pueden identificar y el modelo no los ajusta.`,
+    espectro: (sinodico: string, anomalistico: string, draconico: string) => `Con la ventana de datos disponible, la FFT no separa el mes sinódico (${sinodico} d) del anomalístico (${anomalistico} d) ni del dracónico (${draconico} d): por eso el modelo toma esos periodos físicos y la FFT solo los confirma.`,
+    r2: "R² y residuos son del ajuste DENTRO de los datos, que el modelo ya ha visto: pueden acercarse a 1 y no miden cuánto acierta fuera de ellos. Eso lo mide la validación (RMSE de validación).",
+  },
   config: {
     abrir: "Configuración",
     titulo: "Configuración",
@@ -376,7 +390,7 @@ export const T = {
       tabla: "Ver los ritmos en una tabla",
       columnas: ["Periodo (días)", "Peso relativo", "Coincide con"],
       ninguno: "ningún periodo lunar conocido",
-      candidatos: { sinodico: "mes sinódico", anomalistico: "mes anomalístico", draconico: "mes dracónico", sideral: "mes sideral", tropico: "mes trópico" } as Record<string, string>,
+      candidatos: { sinodico: "mes sinódico", anomalistico: "mes anomalístico", draconico: "mes dracónico", anio_de_eclipses: "año de eclipses (~346,6 d)", sideral: "mes sideral", tropico: "mes trópico" } as Record<string, string>,
     },
     modelo: {
       titulo: "Qué tan bien describe el modelo estos datos",
