@@ -16,8 +16,20 @@ const decimal = (n: string): string => {
   return numero(parseFloat(n.replace(",", ".")), fraccion.length);
 };
 
+const SIN_DATOS = /^No hay proyecci[oó]n cargada para: (.+?)\. Se devuelve vac[ií]a/s;
+const METODO_PROYECCION = /^Ajuste arm[oó]nico por m[ií]nimos cuadrados del vector de direcci[oó]n/;
+
+/** Método del modelo de proyección: se traduce su forma conocida; cualquier otro texto se muestra tal cual. */
+export function textoMetodoProyeccion(metodo: string | null | undefined): string | null | undefined {
+  return metodo && METODO_PROYECCION.test(metodo.trim()) ? T.notasApi.metodoProyeccion : metodo;
+}
+
 export function textoLimitacion(codigo: string, mensaje: string): string {
   const n = T.notasApi;
+  if (codigo === "sin_datos_de_proyeccion") {
+    const m = SIN_DATOS.exec(mensaje);
+    return m ? n.sinDatosProyeccion(m[1]) : mensaje;
+  }
   if (codigo === "ventana_corta") {
     const m = VENTANA_CORTA.exec(mensaje);
     return m ? n.ventanaCorta(decimal(m[1]), decimal(m[2])) : mensaje;
